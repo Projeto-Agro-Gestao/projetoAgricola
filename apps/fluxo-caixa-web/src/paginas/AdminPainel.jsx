@@ -104,6 +104,17 @@ function AdminPainel() {
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [salvandoId, setSalvandoId] = useState(null)
+    const [usuarioEmEdicao, setUsuarioEmEdicao] =
+        useState(null)
+    const [formularioEdicao, setFormularioEdicao] =
+        useState({
+            nomeEmpresa: '',
+            nome: '',
+            email: '',
+            telefone: '',
+            agriculturaAtiva: true,
+            pecuariaAtiva: false,
+        })
 
     const resumo = useMemo(() => {
         return usuarios.reduce(
@@ -270,6 +281,95 @@ function AdminPainel() {
         }
     }
 
+    function abrirEdicao(usuario) {
+        setUsuarioEmEdicao(usuario)
+        setFormularioEdicao({
+            nomeEmpresa: usuario.nomeEmpresa ?? '',
+            nome: usuario.nome ?? '',
+            email: usuario.email ?? '',
+            telefone: usuario.telefone ?? '',
+            agriculturaAtiva:
+                usuario.agriculturaAtiva ?? true,
+            pecuariaAtiva:
+                usuario.pecuariaAtiva ?? false,
+        })
+        setMensagem('')
+    }
+
+    function fecharEdicao() {
+        setUsuarioEmEdicao(null)
+    }
+
+    function atualizarCampoEdicao(campo, valor) {
+        setFormularioEdicao((atual) => ({
+            ...atual,
+            [campo]: valor,
+        }))
+    }
+
+    async function salvarDadosUsuario(evento) {
+        evento.preventDefault()
+
+        if (!usuarioEmEdicao || !sessao) {
+            return
+        }
+
+        if (
+            !formularioEdicao.agriculturaAtiva
+            && !formularioEdicao.pecuariaAtiva
+        ) {
+            setMensagem(
+                'Escolha Agricultura, Pecuaria ou as duas atividades.',
+            )
+            return
+        }
+
+        setSalvandoId(usuarioEmEdicao.id)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/usuarios/${usuarioEmEdicao.id}/dados`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                        'Content-Type':
+                            'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify(formularioEdicao),
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(resposta),
+                )
+            }
+
+            const usuarioAtualizado = await resposta.json()
+
+            setUsuarios((listaAtual) =>
+                listaAtual.map((usuario) =>
+                    usuario.id === usuarioAtualizado.id
+                        ? usuarioAtualizado
+                        : usuario,
+                ),
+            )
+            setUsuarioEmEdicao(null)
+            setMensagem('Dados do usuario salvos com sucesso.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel salvar os dados',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
+    }
+
     function sair() {
         limparSessao()
         navigate('/login', { replace: true })
@@ -390,6 +490,13 @@ function AdminPainel() {
                                             <span>
                                                 {usuario.email}
                                             </span>
+                                            {usuario.telefone && (
+                                                <span>
+                                                    {
+                                                        usuario.telefone
+                                                    }
+                                                </span>
+                                            )}
                                             <span>
                                                 {usuario.nomeEmpresa}
                                             </span>
@@ -499,6 +606,22 @@ function AdminPainel() {
 
                                         <td>
                                             <button
+                                                className="admin-botao-secundario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    abrirEdicao(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Editar
+                                            </button>
+
+                                            <button
                                                 className={
                                                     usuario.acessoLiberado
                                                         ? 'admin-botao-perigo'
@@ -527,6 +650,152 @@ function AdminPainel() {
                     </div>
                 )}
             </section>
+
+            {usuarioEmEdicao && (
+                <div
+                    className="admin-modal-fundo"
+                    role="presentation"
+                >
+                    <form
+                        className="admin-modal"
+                        onSubmit={salvarDadosUsuario}
+                    >
+                        <div className="admin-modal-topo">
+                            <div>
+                                <span>Usuario</span>
+                                <h2>Editar dados</h2>
+                            </div>
+
+                            <button
+                                className="admin-modal-fechar"
+                                onClick={fecharEdicao}
+                                type="button"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+
+                        <label>
+                            Nome da propriedade
+                            <input
+                                maxLength={150}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'nomeEmpresa',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                value={
+                                    formularioEdicao.nomeEmpresa
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Nome do responsavel
+                            <input
+                                maxLength={120}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'nome',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                value={formularioEdicao.nome}
+                            />
+                        </label>
+
+                        <label>
+                            E-mail
+                            <input
+                                maxLength={150}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'email',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                type="email"
+                                value={formularioEdicao.email}
+                            />
+                        </label>
+
+                        <label>
+                            Telefone
+                            <input
+                                maxLength={20}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'telefone',
+                                        evento.target.value,
+                                    )
+                                }
+                                value={formularioEdicao.telefone}
+                            />
+                        </label>
+
+                        <fieldset>
+                            <legend>Atividades</legend>
+
+                            <label>
+                                <input
+                                    checked={
+                                        formularioEdicao.agriculturaAtiva
+                                    }
+                                    onChange={(evento) =>
+                                        atualizarCampoEdicao(
+                                            'agriculturaAtiva',
+                                            evento.target.checked,
+                                        )
+                                    }
+                                    type="checkbox"
+                                />
+                                Agricultura
+                            </label>
+
+                            <label>
+                                <input
+                                    checked={
+                                        formularioEdicao.pecuariaAtiva
+                                    }
+                                    onChange={(evento) =>
+                                        atualizarCampoEdicao(
+                                            'pecuariaAtiva',
+                                            evento.target.checked,
+                                        )
+                                    }
+                                    type="checkbox"
+                                />
+                                Pecuaria
+                            </label>
+                        </fieldset>
+
+                        <div className="admin-modal-acoes">
+                            <button
+                                className="admin-botao-secundario"
+                                onClick={fecharEdicao}
+                                type="button"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                className="admin-botao-primario"
+                                disabled={
+                                    salvandoId ===
+                                    usuarioEmEdicao.id
+                                }
+                                type="submit"
+                            >
+                                Salvar dados
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </main>
     )
 }

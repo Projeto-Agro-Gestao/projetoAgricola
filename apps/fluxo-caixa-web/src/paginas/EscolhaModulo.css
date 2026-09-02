@@ -77,7 +77,8 @@
 }
 
 .escolha-modulo-sair,
-.escolha-modulo-admin {
+.escolha-modulo-admin,
+.escolha-modulo-perfil {
     min-height: 41px;
     padding: 0 15px;
     border: 1px solid var(--border);
@@ -101,7 +102,8 @@
 }
 
 .escolha-modulo-sair:hover,
-.escolha-modulo-admin:hover {
+.escolha-modulo-admin:hover,
+.escolha-modulo-perfil:hover {
     border-color: var(--primary);
     color: var(--primary);
     transform: translateY(-1px);

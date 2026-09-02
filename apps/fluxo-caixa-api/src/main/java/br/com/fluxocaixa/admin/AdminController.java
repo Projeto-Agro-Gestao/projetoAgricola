@@ -60,4 +60,19 @@ public class AdminController {
                 )
         );
     }
+
+    @PatchMapping("/usuarios/{usuarioId}/dados")
+    public ResponseEntity<AdminUsuarioResponse>
+    atualizarDados(
+            @PathVariable Long usuarioId,
+            @Valid @RequestBody
+            AtualizarDadosUsuarioRequest request) {
+
+        return ResponseEntity.ok(
+                adminService.atualizarDados(
+                        usuarioId,
+                        request
+                )
+        );
+    }
 }

@@ -113,6 +113,10 @@ function EscolhaModulo() {
         navigate('/admin')
     }
 
+    function abrirPerfil() {
+        navigate('/dashboard/perfil')
+    }
+
     function sair() {
         limparSessao()
 
@@ -159,6 +163,14 @@ function EscolhaModulo() {
                                 Area administrativa
                             </button>
                         )}
+
+                        <button
+                            className="escolha-modulo-perfil"
+                            onClick={abrirPerfil}
+                            type="button"
+                        >
+                            Meus dados
+                        </button>
 
                         <button
                             className="escolha-modulo-sair"

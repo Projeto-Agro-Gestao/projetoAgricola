@@ -6,12 +6,16 @@ import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacao;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UsuarioService {
@@ -89,6 +93,62 @@ public class UsuarioService {
                 usuarioRepository.save(usuario);
 
         return UsuarioResponse.de(usuarioSalvo);
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioResponse buscarPerfilLogado() {
+
+        return UsuarioResponse.de(buscarUsuarioLogado());
+    }
+
+    @Transactional
+    public UsuarioResponse atualizarPerfilLogado(
+            AtualizarPerfilRequest request) {
+
+        Usuario usuario = buscarUsuarioLogado();
+
+        String nome = normalizarTextoObrigatorio(
+                request.nome()
+        );
+
+        String nomeEmpresa = normalizarTextoObrigatorio(
+                request.nomeEmpresa()
+        );
+
+        String telefone = normalizarTextoOpcional(
+                request.telefone()
+        );
+
+        usuario.alterarDados(nome, telefone);
+        usuario.getEmpresa().alterarNome(nomeEmpresa);
+        usuario.getEmpresa().configurarAtividades(
+                request.agriculturaAtiva(),
+                request.pecuariaAtiva()
+        );
+
+        return UsuarioResponse.de(usuario);
+    }
+
+    private Usuario buscarUsuarioLogado() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext()
+                        .getAuthentication();
+
+        if (authentication == null
+                || !(authentication.getPrincipal()
+                instanceof Jwt jwt)) {
+            throw new EntityNotFoundException(
+                    "Usuario nao encontrado"
+            );
+        }
+
+        Long usuarioId = Long.valueOf(jwt.getSubject());
+
+        return usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Usuario nao encontrado"
+                ));
     }
 
     private void cadastrarCategoriasIniciais(

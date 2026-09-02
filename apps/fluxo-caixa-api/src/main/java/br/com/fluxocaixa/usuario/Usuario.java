@@ -111,6 +111,19 @@ public class Usuario {
         this.senhaHash = novaSenhaHash;
     }
 
+    public void alterarDados(
+            String nome,
+            String telefone) {
+
+        this.nome = nome;
+        this.telefone = telefone;
+    }
+
+    public void alterarEmail(String email) {
+
+        this.email = email;
+    }
+
     public Long getId() {
         return id;
     }

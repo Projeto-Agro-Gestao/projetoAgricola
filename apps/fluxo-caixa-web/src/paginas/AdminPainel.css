@@ -151,7 +151,7 @@
 
 .admin-tabela {
     border-collapse: collapse;
-    min-width: 980px;
+    min-width: 1080px;
     width: 100%;
 }
 
@@ -188,6 +188,12 @@
     width: 100%;
 }
 
+.admin-tabela td:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .admin-status {
     border-radius: 999px;
     display: inline-flex;
@@ -215,6 +221,107 @@
 .admin-status-sem_uso {
     background: #eef1ec;
     color: #405241;
+}
+
+.admin-modal-fundo {
+    align-items: center;
+    background: rgb(6 20 7 / 0.42);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 18px;
+    position: fixed;
+    z-index: 50;
+}
+
+.admin-modal {
+    background: #ffffff;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    box-shadow: 0 28px 80px rgb(6 20 7 / 0.22);
+    display: grid;
+    gap: 14px;
+    max-height: 92vh;
+    max-width: 560px;
+    overflow: auto;
+    padding: 22px;
+    width: min(100%, 560px);
+}
+
+.admin-modal-topo {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.admin-modal-topo span {
+    color: #2f8300;
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.admin-modal-topo h2 {
+    margin: 4px 0 0;
+}
+
+.admin-modal-fechar {
+    background: #ffffff;
+    border: 1px solid #b9d5ad;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 800;
+    min-height: 36px;
+    padding: 0 12px;
+}
+
+.admin-modal label,
+.admin-modal fieldset {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-modal label,
+.admin-modal legend {
+    color: #233523;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.admin-modal input {
+    background: #ffffff;
+    border: 1px solid #c7d9bf;
+    border-radius: 8px;
+    color: #061407;
+    font: inherit;
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.admin-modal fieldset {
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    margin: 0;
+    padding: 14px;
+}
+
+.admin-modal fieldset label {
+    align-items: center;
+    display: flex;
+    gap: 9px;
+}
+
+.admin-modal fieldset input {
+    min-height: auto;
+}
+
+.admin-modal-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
 @media (max-width: 860px) {

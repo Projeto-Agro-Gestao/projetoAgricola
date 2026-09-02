@@ -16,6 +16,7 @@ import Cadastro from './paginas/Cadastro.jsx'
 import EsqueciSenha from './paginas/EsqueciSenha.jsx'
 import RedefinirSenha from './paginas/RedefinirSenha.jsx'
 import AdminPainel from './paginas/AdminPainel.jsx'
+import Perfil from './paginas/Perfil.jsx'
 
 function App() {
     return (
@@ -53,6 +54,11 @@ function App() {
             <Route
                 path="/dashboard"
                 element={<EscolhaModulo />}
+            />
+
+            <Route
+                path="/dashboard/perfil"
+                element={<Perfil />}
             />
 
             <Route

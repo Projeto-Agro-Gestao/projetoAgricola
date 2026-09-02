@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class AdminService {
@@ -69,6 +70,41 @@ public class AdminService {
         usuario.atualizarPagamento(
                 request.statusPagamento(),
                 request.dataVencimentoPagamento()
+        );
+
+        return montarResponse(usuario);
+    }
+
+    @Transactional
+    public AdminUsuarioResponse atualizarDados(
+            Long usuarioId,
+            AtualizarDadosUsuarioRequest request) {
+
+        validarAdministrador();
+
+        Usuario usuario = buscarUsuario(usuarioId);
+        String email = normalizarEmail(request.email());
+
+        if (!usuario.getEmail().equalsIgnoreCase(email)
+                && usuarioRepository
+                .existsByEmailIgnoreCase(email)) {
+            throw new br.com.fluxocaixa.usuario
+                    .EmailJaCadastradoException();
+        }
+
+        usuario.alterarDados(
+                normalizarTextoObrigatorio(request.nome()),
+                normalizarTextoOpcional(request.telefone())
+        );
+        usuario.alterarEmail(email);
+        usuario.getEmpresa().alterarNome(
+                normalizarTextoObrigatorio(
+                        request.nomeEmpresa()
+                )
+        );
+        usuario.getEmpresa().configurarAtividades(
+                request.agriculturaAtiva(),
+                request.pecuariaAtiva()
         );
 
         return montarResponse(usuario);
@@ -162,5 +198,30 @@ public class AdminService {
                 .equals(jwt.getClaimAsString("papel"))) {
             throw new AcessoAdministrativoNegadoException();
         }
+    }
+
+    private String normalizarEmail(String email) {
+
+        return email
+                .trim()
+                .toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizarTextoObrigatorio(String texto) {
+
+        return texto
+                .trim()
+                .replaceAll("\\s+", " ");
+    }
+
+    private String normalizarTextoOpcional(String texto) {
+
+        if (texto == null || texto.isBlank()) {
+            return null;
+        }
+
+        return texto
+                .trim()
+                .replaceAll("\\s+", " ");
     }
 }
