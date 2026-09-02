@@ -1,0 +1,2 @@
+# Dump SQL pronto para restauração manual (o Flyway cria o schema no compose)
+databases/

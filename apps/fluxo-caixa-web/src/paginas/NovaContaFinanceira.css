@@ -1,0 +1,457 @@
+.nova-conta-pagina {
+    min-height: 100vh;
+    padding: 38px 20px 70px;
+    background:
+            radial-gradient(
+                    circle at top left,
+                    color-mix(
+                            in oklch,
+                            var(--secondary) 70%,
+                            transparent
+                    ),
+                    transparent 34%
+            ),
+            var(--background);
+    color: var(--foreground);
+}
+
+.nova-conta-conteudo {
+    width: min(790px, 100%);
+    margin: 0 auto;
+}
+
+.nova-conta-cabecalho {
+    margin-bottom: 24px;
+}
+
+.nova-conta-cabecalho > button {
+    margin-bottom: 27px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: color 160ms ease;
+}
+
+.nova-conta-cabecalho > button:hover {
+    color: var(--primary);
+}
+
+.nova-conta-cabecalho > p {
+    margin: 0 0 7px;
+    color: var(--primary);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.nova-conta-cabecalho h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+}
+
+.nova-conta-cabecalho > span {
+    display: block;
+    margin-top: 10px;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+}
+
+.nova-conta-card {
+    padding: 30px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.7);
+    background: var(--card);
+    box-shadow: 0 24px 60px rgb(22 58 25 / 0.08);
+}
+
+.nova-conta-tipos {
+    display: grid;
+    margin-bottom: 28px;
+    padding: 6px;
+    border-radius: calc(var(--radius) * 1.25);
+    background: var(--muted);
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.nova-conta-tipos > button {
+    display: grid;
+    min-height: 62px;
+    place-items: center;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted-foreground);
+    font: inherit;
+    cursor: pointer;
+    gap: 3px;
+    transition:
+            background 160ms ease,
+            border-color 160ms ease,
+            color 160ms ease,
+            box-shadow 160ms ease;
+}
+
+.nova-conta-tipos strong {
+    font-size: 0.85rem;
+}
+
+.nova-conta-tipos small {
+    font-size: 0.67rem;
+}
+
+.nova-conta-tipos
+.nova-conta-tipo-ativo {
+    border-color: var(--border);
+    background: var(--card);
+    box-shadow: 0 5px 16px rgb(22 58 25 / 0.08);
+}
+
+.nova-conta-tipos
+.nova-conta-tipo-pagar {
+    color: var(--destructive);
+}
+
+.nova-conta-tipos
+.nova-conta-tipo-receber {
+    color: var(--primary);
+}
+
+.nova-conta-card form {
+    display: grid;
+    gap: 20px;
+}
+
+.nova-conta-linha {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.nova-conta-campo {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.nova-conta-campo > label {
+    color: var(--foreground);
+    font-size: 0.82rem;
+    font-weight: 750;
+}
+
+.nova-conta-campo input,
+.nova-conta-campo select,
+.nova-conta-campo textarea {
+    width: 100%;
+    border: 1px solid var(--input);
+    border-radius: var(--radius);
+    outline: none;
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.88rem;
+    transition:
+            border-color 160ms ease,
+            background 160ms ease,
+            box-shadow 160ms ease;
+}
+
+.nova-conta-campo input,
+.nova-conta-campo select {
+    min-height: 48px;
+    padding: 0 13px;
+}
+
+.nova-conta-campo textarea {
+    min-height: 108px;
+    padding: 13px;
+    resize: vertical;
+}
+
+.nova-conta-campo input::placeholder,
+.nova-conta-campo textarea::placeholder {
+    color:
+            color-mix(
+                    in oklch,
+                    var(--muted-foreground) 70%,
+                    transparent
+            );
+}
+
+.nova-conta-campo input:focus,
+.nova-conta-campo select:focus,
+.nova-conta-campo textarea:focus {
+    border-color: var(--primary);
+    background: var(--card);
+    box-shadow:
+            0 0 0 4px
+            color-mix(
+                    in oklch,
+                    var(--primary) 12%,
+                    transparent
+            );
+}
+
+.nova-conta-campo select:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.nova-conta-link-categoria {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.nova-conta-lembrete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background:
+            color-mix(
+                    in oklch,
+                    var(--secondary) 35%,
+                    var(--background)
+            );
+}
+
+.nova-conta-lembrete > label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.nova-conta-lembrete
+input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+}
+
+.nova-conta-lembrete strong {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.nova-conta-lembrete small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted-foreground);
+    font-size: 0.67rem;
+}
+
+.nova-conta-lembrete > div {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted-foreground);
+    font-size: 0.7rem;
+}
+
+.nova-conta-lembrete > div label {
+    font-weight: 750;
+}
+
+.nova-conta-lembrete
+input[type="number"] {
+    width: 65px;
+    min-height: 38px;
+    padding: 0 8px;
+    border: 1px solid var(--input);
+    border-radius: calc(var(--radius) * 0.8);
+    outline: none;
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-weight: 750;
+    text-align: center;
+}
+
+.nova-conta-lembrete
+input[type="number"]:focus {
+    border-color: var(--primary);
+    box-shadow:
+            0 0 0 3px
+            color-mix(
+                    in oklch,
+                    var(--primary) 12%,
+                    transparent
+            );
+}
+
+.nova-conta-erro {
+    margin: 0;
+    padding: 13px 15px;
+    border:
+            1px solid
+            color-mix(
+                    in oklch,
+                    var(--destructive) 25%,
+                    var(--border)
+            );
+    border-radius: var(--radius);
+    background:
+            color-mix(
+                    in oklch,
+                    var(--destructive) 8%,
+                    var(--card)
+            );
+    color: var(--destructive);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.nova-conta-sem-categoria {
+    display: grid;
+    padding: 16px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    gap: 6px;
+}
+
+.nova-conta-sem-categoria strong {
+    font-size: 0.82rem;
+}
+
+.nova-conta-sem-categoria span {
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.nova-conta-sem-categoria button {
+    justify-self: start;
+    margin-top: 5px;
+    padding: 9px 13px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.nova-conta-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 11px;
+    margin-top: 5px;
+    padding-top: 21px;
+    border-top: 1px solid var(--border);
+}
+
+.nova-conta-acoes > button {
+    min-height: 46px;
+    padding: 0 19px;
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+            border-color 160ms ease,
+            color 160ms ease,
+            filter 160ms ease,
+            transform 160ms ease;
+}
+
+.nova-conta-cancelar {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+}
+
+.nova-conta-cancelar:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.nova-conta-salvar {
+    border: 0;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow:
+            0 10px 24px
+            color-mix(
+                    in oklch,
+                    var(--primary) 18%,
+                    transparent
+            );
+}
+
+.nova-conta-salvar:hover:not(:disabled) {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+.nova-conta-salvar:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+    box-shadow: none;
+}
+
+@media (max-width: 680px) {
+    .nova-conta-pagina {
+        padding: 24px 12px 45px;
+    }
+
+    .nova-conta-card {
+        padding: 20px;
+    }
+
+    .nova-conta-linha {
+        grid-template-columns: 1fr;
+    }
+
+    .nova-conta-lembrete {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .nova-conta-lembrete > div {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .nova-conta-tipos {
+        grid-template-columns: 1fr;
+    }
+
+    .nova-conta-acoes {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .nova-conta-acoes > button {
+        width: 100%;
+    }
+}

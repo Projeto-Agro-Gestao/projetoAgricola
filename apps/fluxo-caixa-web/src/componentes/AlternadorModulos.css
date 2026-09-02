@@ -1,0 +1,108 @@
+.alternador-modulos {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--secondary);
+}
+
+.alternador-modulos-botao {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted-foreground);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+            color 160ms ease,
+            background 160ms ease,
+            box-shadow 160ms ease,
+            transform 160ms ease;
+}
+
+.alternador-modulos-botao span {
+    display: inline-grid;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+    place-items: center;
+    border-radius: 7px;
+    background:
+            color-mix(
+                    in oklch,
+                    var(--card) 75%,
+                    transparent
+            );
+    font-size: 0.7rem;
+    font-weight: 850;
+}
+
+.alternador-modulos-botao:hover {
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.alternador-modulos-botao.ativo {
+    background: var(--card);
+    color: var(--primary);
+    box-shadow:
+            0 5px 14px
+            color-mix(
+                    in oklch,
+                    var(--foreground) 9%,
+                    transparent
+            );
+}
+
+.alternador-modulos-botao.ativo span {
+    background:
+            color-mix(
+                    in oklch,
+                    var(--primary) 14%,
+                    var(--card)
+            );
+    color: var(--primary);
+}
+
+.alternador-modulos-botao:focus-visible {
+    outline: 3px solid
+    color-mix(
+            in oklch,
+            var(--ring) 35%,
+            transparent
+    );
+    outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+    .alternador-modulos {
+        display: grid;
+        width: 100%;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .alternador-modulos-botao {
+        min-width: 0;
+        padding: 8px 9px;
+        font-size: 0.7rem;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 390px) {
+    .alternador-modulos-botao span {
+        display: none;
+    }
+}

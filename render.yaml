@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: fluxo-caixa-api
+    runtime: java
+    plan: free
+    rootDir: apps/fluxo-caixa-api
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/fluxo-caixa-api-0.0.1-SNAPSHOT.jar
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_SSL
+        value: "true"
+      - key: DB_SSL_MODE
+        value: REQUIRED
+      - key: JWT_SECRET_BASE64
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APP_WEB_ORIGINS
+        sync: false
+      - key: APP_RECUPERACAO_SENHA_URL
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
