@@ -31,6 +31,13 @@ function PaginaInicial() {
                     >
                         Criar conta
                     </Link>
+
+                    <Link
+                        className="publica-botao-app publica-botao-pequeno"
+                        to="/app"
+                    >
+                        Versao app
+                    </Link>
                 </div>
             </header>
 
@@ -59,6 +66,13 @@ function PaginaInicial() {
                                 to="/cadastro"
                             >
                                 Criar sua conta <span>→</span>
+                            </Link>
+
+                            <Link
+                                className="publica-botao-app"
+                                to="/app"
+                            >
+                                Versao app
                             </Link>
 
                             <a
