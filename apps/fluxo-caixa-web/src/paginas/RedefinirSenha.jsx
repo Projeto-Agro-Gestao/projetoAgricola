@@ -1,119 +1,149 @@
-import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import {
+    useMemo,
+    useState,
+} from 'react'
+import {
+    Link,
+    useNavigate,
+    useSearchParams,
+} from 'react-router'
+import { API_REDEFINIR_SENHA_URL } from '../config.js'
 import './Autenticacao.css'
 
-import { API_REDEFINIR_SENHA_URL } from '../config.js'
+async function obterMensagemDeErro(
+    resposta,
+    mensagemPadrao,
+) {
+    const dadosErro = await resposta
+        .json()
+        .catch(() => null)
 
-const API_REDEFINIR_SENHA = API_REDEFINIR_SENHA_URL
+    if (dadosErro?.campos) {
+        const mensagensDosCampos =
+            Object.values(dadosErro.campos)
+
+        if (mensagensDosCampos.length > 0) {
+            return mensagensDosCampos.join(' ')
+        }
+    }
+
+    return dadosErro?.mensagem ?? mensagemPadrao
+}
 
 function RedefinirSenha() {
+    const navigate = useNavigate()
     const [parametros] = useSearchParams()
-    const token = parametros.get('token') ?? ''
 
-    const [mostrarSenha, setMostrarSenha] = useState(false)
-    const [senha, setSenha] = useState('')
-    const [confirmacao, setConfirmacao] = useState('')
-    const [mensagem, setMensagem] = useState('')
-    const [sucesso, setSucesso] = useState(false)
-    const [carregando, setCarregando] = useState(false)
+    const token = useMemo(
+        () => parametros.get('token') ?? '',
+        [parametros],
+    )
 
-    async function redefinir(evento) {
+    const [
+        mostrarSenha,
+        setMostrarSenha,
+    ] = useState(false)
+
+    const [
+        mostrarConfirmacao,
+        setMostrarConfirmacao,
+    ] = useState(false)
+
+    const [novaSenha, setNovaSenha] =
+        useState('')
+
+    const [
+        confirmacaoSenha,
+        setConfirmacaoSenha,
+    ] = useState('')
+
+    const [erro, setErro] = useState('')
+    const [mensagem, setMensagem] =
+        useState('')
+    const [
+        carregando,
+        setCarregando,
+    ] = useState(false)
+
+    async function redefinirSenha(evento) {
         evento.preventDefault()
 
+        setErro('')
         setMensagem('')
-        setSucesso(false)
 
         if (!token) {
-            setMensagem(
-                'O link é inválido. Solicite uma nova recuperação de senha.',
+            setErro(
+                'O link de redefinicao esta incompleto. Solicite um novo link.',
             )
+
             return
         }
 
-        if (senha.length < 8 || senha.length > 72) {
-            setMensagem(
-                'A nova senha deve ter entre 8 e 72 caracteres.',
+        if (novaSenha !== confirmacaoSenha) {
+            setErro(
+                'A confirmacao da senha deve ser igual a nova senha informada.',
             )
+
             return
         }
 
-        if (senha !== confirmacao) {
-            setMensagem(
-                'A confirmação não coincide com a nova senha.',
+        if (novaSenha.length < 8) {
+            setErro(
+                'A nova senha deve possuir pelo menos 8 caracteres.',
             )
+
             return
         }
 
         setCarregando(true)
 
         try {
-            const resposta = await fetch(API_REDEFINIR_SENHA, {
-                method: 'POST',
-                headers: {
-                    'Content-Type':
-                        'application/json; charset=utf-8',
+            const resposta = await fetch(
+                API_REDEFINIR_SENHA_URL,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        token,
+                        novaSenha,
+                    }),
                 },
-                body: JSON.stringify({
-                    token,
-                    novaSenha: senha,
-                }),
-            })
+            )
 
             if (!resposta.ok) {
-                const dados = await resposta
-                    .json()
-                    .catch(() => null)
+                const mensagemErro =
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel redefinir a senha.',
+                    )
 
-                throw new Error(
-                    dados?.mensagem ??
-                        'Não foi possível redefinir a senha',
-                )
+                throw new Error(mensagemErro)
             }
 
-            setSucesso(true)
-            setSenha('')
-            setConfirmacao('')
-        } catch (erro) {
             setMensagem(
-                erro instanceof Error
-                    ? erro.message
-                    : 'Não foi possível redefinir a senha',
+                'Senha redefinida com sucesso. Voce ja pode entrar com a nova senha.',
+            )
+
+            setNovaSenha('')
+            setConfirmacaoSenha('')
+
+            setTimeout(() => {
+                navigate('/login', {
+                    replace: true,
+                })
+            }, 1200)
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'Nao foi possivel redefinir a senha.',
             )
         } finally {
             setCarregando(false)
         }
-    }
-
-    if (sucesso) {
-        return (
-            <main className="autenticacao">
-                <section className="autenticacao-area-formulario">
-                    <div className="autenticacao-formulario-container">
-                        <h2>Senha redefinida</h2>
-
-                        <p className="autenticacao-subtitulo">
-                            Sua senha foi alterada com sucesso.
-                            Agora você já pode entrar na conta.
-                        </p>
-
-                        <div
-                            className="autenticacao-sucesso"
-                            role="alert"
-                        >
-                            Tudo certo! Use sua nova senha para acessar.
-                        </div>
-
-                        <Link
-                            className="autenticacao-botao"
-                            to="/login"
-                        >
-                            <span>→</span>
-                            Ir para o login
-                        </Link>
-                    </div>
-                </section>
-            </main>
-        )
     }
 
     return (
@@ -127,37 +157,28 @@ function RedefinirSenha() {
                         ♧
                     </span>
 
-                    <span>AgroGestão</span>
+                    <span>AgroGestao</span>
                 </Link>
 
                 <div className="autenticacao-mensagem">
                     <h1>
-                        Crie uma nova senha de acesso.
+                        Crie uma nova senha para sua conta.
                     </h1>
 
                     <p>
-                        Escolha uma senha forte e diferente das
-                        anteriores para proteger os dados da sua
-                        propriedade.
+                        Use uma senha segura para continuar
+                        acessando a gestao da sua propriedade.
                     </p>
 
                     <ul className="autenticacao-beneficios">
-                        <li>
-                            Entre 8 e 72 caracteres
-                        </li>
-
-                        <li>
-                            Seu acesso volta ao normal em instantes
-                        </li>
-
-                        <li>
-                            Link válido apenas uma vez
-                        </li>
+                        <li>Link com validade e uso unico</li>
+                        <li>Protegemos seu acesso</li>
+                        <li>Redefinicao rapida e segura</li>
                     </ul>
                 </div>
 
                 <p className="autenticacao-direitos">
-                    © 2026 AgroGestão. Todos os direitos reservados.
+                    © 2026 AgroGestao. Todos os direitos reservados.
                 </p>
             </section>
 
@@ -166,13 +187,22 @@ function RedefinirSenha() {
                     <h2>Redefinir senha</h2>
 
                     <p className="autenticacao-subtitulo">
-                        Informe a nova senha e confirme para concluir.
+                        Informe a nova senha da sua conta.
                     </p>
 
-                    {mensagem && (
+                    {erro && (
                         <div
                             className="autenticacao-alerta"
                             role="alert"
+                        >
+                            {erro}
+                        </div>
+                    )}
+
+                    {mensagem && (
+                        <div
+                            className="autenticacao-sucesso"
+                            role="status"
                         >
                             {mensagem}
                         </div>
@@ -180,7 +210,7 @@ function RedefinirSenha() {
 
                     <form
                         className="autenticacao-formulario"
-                        onSubmit={redefinir}
+                        onSubmit={redefinirSenha}
                     >
                         <div className="autenticacao-campo">
                             <label htmlFor="novaSenha">
@@ -190,22 +220,22 @@ function RedefinirSenha() {
                             <div className="autenticacao-senha">
                                 <input
                                     autoComplete="new-password"
-                                    disabled={carregando}
+                                    disabled={carregando || !token}
                                     id="novaSenha"
-                                    maxLength="72"
                                     minLength="8"
-                                    name="novaSenha"
                                     onChange={(evento) =>
-                                        setSenha(evento.target.value)
+                                        setNovaSenha(
+                                            evento.target.value,
+                                        )
                                     }
-                                    placeholder="Digite a nova senha"
+                                    placeholder="Minimo de 8 caracteres"
                                     required
                                     type={
                                         mostrarSenha
                                             ? 'text'
                                             : 'password'
                                     }
-                                    value={senha}
+                                    value={novaSenha}
                                 />
 
                                 <button
@@ -215,7 +245,7 @@ function RedefinirSenha() {
                                             : 'Mostrar senha'
                                     }
                                     className="autenticacao-mostrar-senha"
-                                    disabled={carregando}
+                                    disabled={carregando || !token}
                                     onClick={() =>
                                         setMostrarSenha(
                                             (valorAtual) =>
@@ -230,34 +260,55 @@ function RedefinirSenha() {
                         </div>
 
                         <div className="autenticacao-campo">
-                            <label htmlFor="confirmarSenha">
+                            <label htmlFor="confirmacaoSenha">
                                 Confirmar nova senha
                             </label>
 
-                            <input
-                                autoComplete="new-password"
-                                disabled={carregando}
-                                id="confirmarSenha"
-                                maxLength="72"
-                                minLength="8"
-                                name="confirmarSenha"
-                                onChange={(evento) =>
-                                    setConfirmacao(evento.target.value)
-                                }
-                                placeholder="Repita a nova senha"
-                                required
-                                type={
-                                    mostrarSenha
-                                        ? 'text'
-                                        : 'password'
-                                }
-                                value={confirmacao}
-                            />
+                            <div className="autenticacao-senha">
+                                <input
+                                    autoComplete="new-password"
+                                    disabled={carregando || !token}
+                                    id="confirmacaoSenha"
+                                    minLength="8"
+                                    onChange={(evento) =>
+                                        setConfirmacaoSenha(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    placeholder="Digite a senha novamente"
+                                    required
+                                    type={
+                                        mostrarConfirmacao
+                                            ? 'text'
+                                            : 'password'
+                                    }
+                                    value={confirmacaoSenha}
+                                />
+
+                                <button
+                                    aria-label={
+                                        mostrarConfirmacao
+                                            ? 'Ocultar confirmacao'
+                                            : 'Mostrar confirmacao'
+                                    }
+                                    className="autenticacao-mostrar-senha"
+                                    disabled={carregando || !token}
+                                    onClick={() =>
+                                        setMostrarConfirmacao(
+                                            (valorAtual) =>
+                                                !valorAtual,
+                                        )
+                                    }
+                                    type="button"
+                                >
+                                    {mostrarConfirmacao ? '●' : '○'}
+                                </button>
+                            </div>
                         </div>
 
                         <button
                             className="autenticacao-botao"
-                            disabled={carregando}
+                            disabled={carregando || !token}
                             type="submit"
                         >
                             <span>→</span>
@@ -267,12 +318,6 @@ function RedefinirSenha() {
                                 : 'Redefinir senha'}
                         </button>
                     </form>
-
-                    <p className="autenticacao-alternativa">
-                        <Link to="/esqueci-senha">
-                            Solicitar um novo link
-                        </Link>
-                    </p>
 
                     <p className="autenticacao-alternativa">
                         <Link to="/login">

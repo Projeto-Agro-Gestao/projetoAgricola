@@ -7,9 +7,8 @@ import {
     useNavigate,
     useParams,
 } from 'react-router'
-import './NovaMovimentacao.css'
-
 import { API_BASE_URL as API_URL } from '../config.js'
+import './NovaMovimentacao.css'
 
 function completarComZero(numero) {
     return String(numero).padStart(2, '0')

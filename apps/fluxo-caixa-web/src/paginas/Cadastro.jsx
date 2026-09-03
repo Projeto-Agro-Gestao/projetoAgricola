@@ -5,13 +5,11 @@ import {
     Link,
     useNavigate,
 } from 'react-router'
+import {
+    API_CADASTRO_URL,
+    API_LOGIN_URL,
+} from '../config.js'
 import './Autenticacao.css'
-
-import { API_CADASTRO_URL, API_LOGIN_URL } from '../config.js'
-
-const API_CADASTRO = API_CADASTRO_URL
-
-const API_LOGIN = API_LOGIN_URL
 
 async function obterMensagemDeErro(
     resposta,
@@ -155,7 +153,7 @@ function Cadastro() {
 
         try {
             const respostaCadastro = await fetch(
-                API_CADASTRO,
+                API_CADASTRO_URL,
                 {
                     method: 'POST',
                     headers: {
@@ -190,7 +188,7 @@ function Cadastro() {
             )
 
             const respostaLogin = await fetch(
-                API_LOGIN,
+                API_LOGIN_URL,
                 {
                     method: 'POST',
                     headers: {

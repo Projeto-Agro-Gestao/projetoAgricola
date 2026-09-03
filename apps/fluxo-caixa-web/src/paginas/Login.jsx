@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { API_LOGIN_URL as API_LOGIN } from '../config.js'
+import { API_LOGIN_URL } from '../config.js'
 import './Autenticacao.css'
 
 function Login() {
@@ -19,7 +19,7 @@ function Login() {
         setCarregando(true)
 
         try {
-            const resposta = await fetch(API_LOGIN, {
+            const resposta = await fetch(API_LOGIN_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type':

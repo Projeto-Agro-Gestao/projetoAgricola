@@ -7,9 +7,8 @@ import {
     useNavigate,
 } from 'react-router'
 import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
-import './Dashboard.css'
-
 import { API_BASE_URL as API_URL } from '../config.js'
+import './Dashboard.css'
 
 const LARGURA_GRAFICO = 720
 const ALTURA_GRAFICO = 220

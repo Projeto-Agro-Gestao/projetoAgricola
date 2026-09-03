@@ -7,9 +7,8 @@ import {
     useNavigate,
     useSearchParams,
 } from 'react-router'
-import './Movimentacoes.css'
-
 import { API_BASE_URL as API_URL } from '../config.js'
+import './Movimentacoes.css'
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {

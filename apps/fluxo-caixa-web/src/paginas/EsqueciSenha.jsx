@@ -1,54 +1,82 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
+import {
+    useState,
+} from 'react'
+import {
+    Link,
+} from 'react-router'
+import { API_ESQUECI_SENHA_URL } from '../config.js'
 import './Autenticacao.css'
 
-import { API_ESQUECI_SENHA_URL } from '../config.js'
+async function obterMensagemDeErro(
+    resposta,
+    mensagemPadrao,
+) {
+    const dadosErro = await resposta
+        .json()
+        .catch(() => null)
 
-const API_ESQUECI_SENHA = API_ESQUECI_SENHA_URL
+    if (dadosErro?.campos) {
+        const mensagensDosCampos =
+            Object.values(dadosErro.campos)
+
+        if (mensagensDosCampos.length > 0) {
+            return mensagensDosCampos.join(' ')
+        }
+    }
+
+    return dadosErro?.mensagem ?? mensagemPadrao
+}
 
 function EsqueciSenha() {
     const [email, setEmail] = useState('')
-    const [mensagem, setMensagem] = useState('')
-    const [carregando, setCarregando] = useState(false)
+    const [erro, setErro] = useState('')
+    const [mensagem, setMensagem] =
+        useState('')
+    const [
+        carregando,
+        setCarregando,
+    ] = useState(false)
 
-    async function solicitar(evento) {
+    async function solicitarRecuperacao(evento) {
         evento.preventDefault()
 
+        setErro('')
         setMensagem('')
         setCarregando(true)
 
         try {
-            const resposta = await fetch(API_ESQUECI_SENHA, {
-                method: 'POST',
-                headers: {
-                    'Content-Type':
-                        'application/json; charset=utf-8',
+            const resposta = await fetch(
+                API_ESQUECI_SENHA_URL,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        email: email.trim(),
+                    }),
                 },
-                body: JSON.stringify({
-                    email: email.trim(),
-                }),
-            })
+            )
 
             if (!resposta.ok) {
-                const dados = await resposta
-                    .json()
-                    .catch(() => null)
+                const mensagemErro =
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel enviar o link de redefinicao.',
+                    )
 
-                throw new Error(
-                    dados?.mensagem ??
-                        'Não foi possível solicitar a recuperação de senha',
-                )
+                throw new Error(mensagemErro)
             }
 
             setMensagem(
-                'Se este e-mail estiver cadastrado, você receberá um link para redefinir sua senha.',
+                'Se este e-mail estiver cadastrado, voce recebera um link para redefinir sua senha.',
             )
-            setEmail('')
-        } catch (erro) {
-            setMensagem(
-                erro instanceof Error
-                    ? erro.message
-                    : 'Não foi possível solicitar a recuperação de senha',
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'Nao foi possivel enviar o link de redefinicao.',
             )
         } finally {
             setCarregando(false)
@@ -66,36 +94,29 @@ function EsqueciSenha() {
                         ♧
                     </span>
 
-                    <span>AgroGestão</span>
+                    <span>AgroGestao</span>
                 </Link>
 
                 <div className="autenticacao-mensagem">
                     <h1>
-                        Recupere o acesso à sua propriedade.
+                        Recupere o acesso a sua propriedade.
                     </h1>
 
                     <p>
-                        Informe o e-mail cadastrado e enviaremos um
-                        link seguro para você redefinir a senha.
+                        Informe o e-mail cadastrado e
+                        enviaremos um link seguro para voce
+                        redefinir a senha.
                     </p>
 
                     <ul className="autenticacao-beneficios">
-                        <li>
-                            Link com validade e uso único
-                        </li>
-
-                        <li>
-                            Protegemos seu e-mail
-                        </li>
-
-                        <li>
-                            Redefinição rápida e segura
-                        </li>
+                        <li>Link com validade e uso unico</li>
+                        <li>Protegemos seu e-mail</li>
+                        <li>Redefinicao rapida e segura</li>
                     </ul>
                 </div>
 
                 <p className="autenticacao-direitos">
-                    © 2026 AgroGestão. Todos os direitos reservados.
+                    © 2026 AgroGestao. Todos os direitos reservados.
                 </p>
             </section>
 
@@ -104,14 +125,23 @@ function EsqueciSenha() {
                     <h2>Esqueci minha senha</h2>
 
                     <p className="autenticacao-subtitulo">
-                        Digite o e-mail da sua conta para receber o
-                        link de redefinição.
+                        Digite o e-mail da sua conta para
+                        receber o link de redefinicao.
                     </p>
+
+                    {erro && (
+                        <div
+                            className="autenticacao-alerta"
+                            role="alert"
+                        >
+                            {erro}
+                        </div>
+                    )}
 
                     {mensagem && (
                         <div
                             className="autenticacao-sucesso"
-                            role="alert"
+                            role="status"
                         >
                             {mensagem}
                         </div>
@@ -119,18 +149,18 @@ function EsqueciSenha() {
 
                     <form
                         className="autenticacao-formulario"
-                        onSubmit={solicitar}
+                        onSubmit={solicitarRecuperacao}
                     >
                         <div className="autenticacao-campo">
-                            <label htmlFor="emailEsqueciSenha">
+                            <label htmlFor="emailRecuperacao">
                                 E-mail
                             </label>
 
                             <input
                                 autoComplete="email"
                                 disabled={carregando}
-                                id="emailEsqueciSenha"
-                                name="email"
+                                id="emailRecuperacao"
+                                maxLength="150"
                                 onChange={(evento) =>
                                     setEmail(evento.target.value)
                                 }

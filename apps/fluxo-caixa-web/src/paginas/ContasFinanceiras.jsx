@@ -8,9 +8,8 @@ import {
     useNavigate,
 } from 'react-router'
 import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
-import './ContasFinanceiras.css'
-
 import { API_BASE_URL as API_URL } from '../config.js'
+import './ContasFinanceiras.css'
 
 const LARGURA_GRAFICO = 900
 const ALTURA_GRAFICO = 280

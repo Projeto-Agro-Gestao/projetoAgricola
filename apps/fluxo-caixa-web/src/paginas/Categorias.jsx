@@ -7,9 +7,8 @@ import {
     Link,
     useNavigate,
 } from 'react-router'
-import './Categorias.css'
-
 import { API_BASE_URL } from '../config.js'
+import './Categorias.css'
 
 function limparSessao() {
     localStorage.removeItem('agrogestao_token')
