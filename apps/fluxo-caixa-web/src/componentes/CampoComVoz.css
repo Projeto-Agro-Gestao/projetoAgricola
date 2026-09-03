@@ -1,0 +1,76 @@
+.campo-voz {
+    display: grid;
+    gap: 8px;
+}
+
+.campo-voz > span {
+    color: var(--foreground);
+    font-size: 0.9rem;
+    font-weight: 850;
+}
+
+.campo-voz-controle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 8px;
+}
+
+.campo-voz-controle input,
+.campo-voz-controle textarea {
+    width: 100%;
+    border: 1px solid var(--input);
+    border-radius: var(--radius);
+    outline: none;
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 1rem;
+}
+
+.campo-voz-controle input {
+    min-height: 54px;
+    padding: 0 15px;
+}
+
+.campo-voz-controle textarea {
+    min-height: 98px;
+    padding: 14px 15px;
+    resize: vertical;
+}
+
+.campo-voz-controle input:focus,
+.campo-voz-controle textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px
+    color-mix(
+            in oklch,
+            var(--primary) 14%,
+            transparent
+    );
+}
+
+.campo-voz-botao {
+    display: grid;
+    min-width: 58px;
+    height: 54px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--secondary);
+    color: var(--primary);
+    font: inherit;
+    font-size: 1.15rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.campo-voz-botao-ativo {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.campo-voz-erro {
+    color: var(--destructive);
+    font-size: 0.75rem;
+    font-weight: 700;
+}

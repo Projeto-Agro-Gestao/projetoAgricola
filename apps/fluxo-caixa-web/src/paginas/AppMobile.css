@@ -1,0 +1,216 @@
+.app-mobile {
+    min-height: 100vh;
+    background: var(--background);
+    color: var(--foreground);
+}
+
+.app-mobile-topo {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    background:
+            color-mix(
+                    in oklch,
+                    var(--background) 94%,
+                    white
+            );
+}
+
+.app-mobile-topo div {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.app-mobile-topo span {
+    color: var(--primary);
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+.app-mobile-topo strong {
+    overflow: hidden;
+    font-size: 0.94rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-mobile-topo button {
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.app-mobile-conteudo {
+    display: grid;
+    gap: 14px;
+    width: min(520px, 100%);
+    margin: 0 auto;
+    padding: 14px;
+}
+
+.app-mobile-resumo,
+.app-mobile-formulario {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: 0 14px 34px rgb(22 58 25 / 0.08);
+}
+
+.app-mobile-resumo {
+    padding: 16px;
+}
+
+.app-mobile-resumo p {
+    margin: 0 0 12px;
+    color: var(--muted-foreground);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.app-mobile-resumo div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.app-mobile-resumo strong {
+    display: grid;
+    gap: 5px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.78rem;
+}
+
+.app-mobile-resumo span {
+    color: var(--foreground);
+    font-size: 1.05rem;
+}
+
+.app-mobile-formulario {
+    padding: 18px;
+}
+
+.app-mobile-etiqueta {
+    margin: 0 0 7px;
+    color: var(--primary);
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.app-mobile-formulario h1 {
+    margin: 0 0 18px;
+    font-size: 1.65rem;
+    line-height: 1.12;
+}
+
+.app-mobile-tipos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 17px;
+}
+
+.app-mobile-tipos button,
+.app-mobile-salvar {
+    min-height: 56px;
+    border: 0;
+    border-radius: var(--radius);
+    font: inherit;
+    font-weight: 900;
+}
+
+.app-mobile-tipos button {
+    background: var(--secondary);
+    color: var(--primary);
+}
+
+.app-mobile-tipos .ativo {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.app-mobile-tipos .despesa {
+    background: var(--destructive);
+}
+
+.app-mobile-formulario form {
+    display: grid;
+    gap: 15px;
+}
+
+.app-mobile-campo {
+    display: grid;
+    gap: 8px;
+    color: var(--foreground);
+    font-size: 0.9rem;
+    font-weight: 850;
+}
+
+.app-mobile-campo input,
+.app-mobile-campo select {
+    min-height: 54px;
+    border: 1px solid var(--input);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    padding: 0 15px;
+}
+
+.app-mobile-erro,
+.app-mobile-sucesso {
+    margin: 0;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-size: 0.86rem;
+    font-weight: 750;
+    line-height: 1.45;
+}
+
+.app-mobile-erro {
+    background:
+            color-mix(
+                    in oklch,
+                    var(--destructive) 10%,
+                    var(--card)
+            );
+    color: var(--destructive);
+}
+
+.app-mobile-sucesso {
+    background: var(--secondary);
+    color: var(--primary);
+}
+
+.app-mobile-salvar {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    cursor: pointer;
+}
+
+.app-mobile-salvar:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+@media (min-width: 700px) {
+    .app-mobile-conteudo {
+        padding-top: 28px;
+    }
+}

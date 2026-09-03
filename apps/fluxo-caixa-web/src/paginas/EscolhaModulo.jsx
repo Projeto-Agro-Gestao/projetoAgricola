@@ -117,6 +117,10 @@ function EscolhaModulo() {
         navigate('/dashboard/perfil')
     }
 
+    function abrirAppSimples() {
+        navigate('/app')
+    }
+
     function sair() {
         limparSessao()
 
@@ -170,6 +174,14 @@ function EscolhaModulo() {
                             type="button"
                         >
                             Meus dados
+                        </button>
+
+                        <button
+                            className="escolha-modulo-perfil"
+                            onClick={abrirAppSimples}
+                            type="button"
+                        >
+                            App simples
                         </button>
 
                         <button
