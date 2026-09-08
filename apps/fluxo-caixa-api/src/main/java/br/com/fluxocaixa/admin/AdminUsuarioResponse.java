@@ -2,6 +2,7 @@ package br.com.fluxocaixa.admin;
 
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
+import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
 
 import java.math.BigDecimal;
@@ -19,6 +20,8 @@ public record AdminUsuarioResponse(
         PapelUsuario papel,
         boolean ativo,
         boolean acessoLiberado,
+        TipoAcessoUsuario tipoAcesso,
+        LocalDate acessoExpiraEm,
         StatusPagamento statusPagamento,
         LocalDate dataVencimentoPagamento,
         boolean agriculturaAtiva,
@@ -51,6 +54,8 @@ public record AdminUsuarioResponse(
                 usuario.getPapel(),
                 usuario.isAtivo(),
                 usuario.isAcessoLiberado(),
+                usuario.getTipoAcesso(),
+                usuario.getAcessoExpiraEm(),
                 usuario.getStatusPagamento(),
                 usuario.getDataVencimentoPagamento(),
                 usuario.getEmpresa().isAgriculturaAtiva(),

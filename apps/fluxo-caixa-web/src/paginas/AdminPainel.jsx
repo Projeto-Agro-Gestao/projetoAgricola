@@ -14,6 +14,12 @@ const STATUS_PAGAMENTO = [
     'TESTE',
 ]
 
+const TIPOS_ACESSO = {
+    NORMAL: 'Normal',
+    VITALICIO: 'Vitalicio',
+    PRAZO: 'Por prazo',
+}
+
 function limparSessao() {
     localStorage.removeItem('agrogestao_token')
     localStorage.removeItem('agrogestao_tipo_token')
@@ -74,6 +80,7 @@ function formatarSituacao(valor) {
         ATRASADO: 'Atrasado',
         USANDO_SEM_PAGAR: 'Usando sem pagar',
         SEM_USO: 'Sem uso recente',
+        ACESSO_EXPIRADO: 'Acesso expirado',
     }[valor] ?? valor
 }
 
@@ -84,6 +91,10 @@ function formatarData(data) {
 
     const [ano, mes, dia] = data.split('-')
     return `${dia}/${mes}/${ano}`
+}
+
+function formatarTipoAcesso(valor) {
+    return TIPOS_ACESSO[valor] ?? 'Normal'
 }
 
 function formatarDataHora(dataHora) {
@@ -104,6 +115,7 @@ function AdminPainel() {
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [salvandoId, setSalvandoId] = useState(null)
+    const [diasAcesso, setDiasAcesso] = useState({})
     const [usuarioEmEdicao, setUsuarioEmEdicao] =
         useState(null)
     const [formularioEdicao, setFormularioEdicao] =
@@ -214,8 +226,57 @@ function AdminPainel() {
             `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
             {
                 acessoLiberado: !usuario.acessoLiberado,
+                tipoAcesso: usuario.tipoAcesso ?? 'NORMAL',
+                acessoExpiraEm: usuario.acessoExpiraEm ?? null,
             },
         )
+    }
+
+    async function darAcessoVitalicio(usuario) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'VITALICIO',
+                acessoExpiraEm: null,
+                diasAcesso: null,
+            },
+        )
+    }
+
+    async function liberarPorPrazo(usuario) {
+        const dias = Number(diasAcesso[usuario.id] ?? 30)
+
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'PRAZO',
+                diasAcesso: dias,
+            },
+        )
+    }
+
+    async function voltarAcessoNormal(usuario) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'NORMAL',
+                acessoExpiraEm: null,
+                diasAcesso: null,
+            },
+        )
+    }
+
+    function atualizarDiasAcesso(usuarioId, valor) {
+        setDiasAcesso((atual) => ({
+            ...atual,
+            [usuarioId]: valor,
+        }))
     }
 
     async function atualizarPagamento(usuario, campos) {
@@ -605,6 +666,20 @@ function AdminPainel() {
                                         </td>
 
                                         <td>
+                                            <div className="admin-acesso-info">
+                                                <strong>
+                                                    {formatarTipoAcesso(
+                                                        usuario.tipoAcesso,
+                                                    )}
+                                                </strong>
+                                                <span>
+                                                    Expira:{' '}
+                                                    {formatarData(
+                                                        usuario.acessoExpiraEm,
+                                                    )}
+                                                </span>
+                                            </div>
+
                                             <button
                                                 className="admin-botao-secundario"
                                                 disabled={
@@ -641,6 +716,81 @@ function AdminPainel() {
                                                 {usuario.acessoLiberado
                                                     ? 'Bloquear'
                                                     : 'Liberar'}
+                                            </button>
+
+                                            <button
+                                                className="admin-botao-primario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    darAcessoVitalicio(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Vitalicio
+                                            </button>
+
+                                            <div className="admin-prazo-acesso">
+                                                <input
+                                                    aria-label="Dias de acesso"
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    min="1"
+                                                    onChange={(
+                                                        evento,
+                                                    ) =>
+                                                        atualizarDiasAcesso(
+                                                            usuario.id,
+                                                            evento
+                                                                .target
+                                                                .value,
+                                                        )
+                                                    }
+                                                    type="number"
+                                                    value={
+                                                        diasAcesso[
+                                                            usuario.id
+                                                        ] ?? 30
+                                                    }
+                                                />
+
+                                                <button
+                                                    className="admin-botao-secundario"
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    onClick={() =>
+                                                        liberarPorPrazo(
+                                                            usuario,
+                                                        )
+                                                    }
+                                                    type="button"
+                                                >
+                                                    Liberar por prazo
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                className="admin-botao-secundario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    voltarAcessoNormal(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Normal
                                             </button>
                                         </td>
                                     </tr>

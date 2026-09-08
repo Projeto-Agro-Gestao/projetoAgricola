@@ -66,6 +66,14 @@ public class Usuario {
     private boolean acessoLiberado = true;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_acesso", nullable = false, length = 30)
+    private TipoAcessoUsuario tipoAcesso =
+            TipoAcessoUsuario.NORMAL;
+
+    @Column(name = "acesso_expira_em")
+    private LocalDate acessoExpiraEm;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "status_pagamento", nullable = false, length = 30)
     private StatusPagamento statusPagamento =
             StatusPagamento.EM_DIA;
@@ -176,6 +184,14 @@ public class Usuario {
         return acessoLiberado;
     }
 
+    public TipoAcessoUsuario getTipoAcesso() {
+        return tipoAcesso;
+    }
+
+    public LocalDate getAcessoExpiraEm() {
+        return acessoExpiraEm;
+    }
+
     public StatusPagamento getStatusPagamento() {
         return statusPagamento;
     }
@@ -213,6 +229,31 @@ public class Usuario {
             boolean acessoLiberado) {
 
         this.acessoLiberado = acessoLiberado;
+    }
+
+    public void configurarAcesso(
+            boolean acessoLiberado,
+            TipoAcessoUsuario tipoAcesso,
+            LocalDate acessoExpiraEm) {
+
+        this.acessoLiberado = acessoLiberado;
+        this.tipoAcesso = tipoAcesso;
+        this.acessoExpiraEm = acessoExpiraEm;
+    }
+
+    public boolean possuiAcessoValido(LocalDate hoje) {
+
+        if (!acessoLiberado) {
+            return false;
+        }
+
+        if (tipoAcesso == TipoAcessoUsuario.PRAZO
+                && acessoExpiraEm != null
+                && acessoExpiraEm.isBefore(hoje)) {
+            return false;
+        }
+
+        return true;
     }
 
     public void atualizarPagamento(

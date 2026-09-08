@@ -255,9 +255,81 @@ public class RelatorioPdfService {
 
         documento.add(tabela);
 
+        adicionarExplicacaoLucroEMargem(
+                documento,
+                dados
+        );
+
         adicionarDiagnosticoResultado(
                 documento,
                 dados
+        );
+    }
+
+    private void adicionarExplicacaoLucroEMargem(
+            Document documento,
+            DadosRelatorioGerencial dados) {
+
+        BigDecimal receitas =
+                valor(
+                        dados.resumoRealizado()
+                                .totalEntrou()
+                );
+
+        BigDecimal despesas =
+                valor(
+                        dados.resumoRealizado()
+                                .totalSaiu()
+                );
+
+        BigDecimal lucro =
+                valor(
+                        dados.resumoRealizado()
+                                .quantoSobrou()
+                );
+
+        String margem =
+                formatarPercentual(
+                        dados.resumoRealizado()
+                                .margemLucro()
+                );
+
+        adicionarSubtituloSecao(
+                documento,
+                "Como entender lucro e margem de lucro"
+        );
+
+        adicionarObservacao(
+                documento,
+                "Lucro é o dinheiro que sobrou no período depois de pagar as despesas. "
+                        + "Neste relatório, a conta usada foi: "
+                        + formatarMoeda(receitas)
+                        + " de receitas - "
+                        + formatarMoeda(despesas)
+                        + " de despesas = "
+                        + formatarMoeda(lucro)
+                        + "."
+        );
+
+        adicionarObservacao(
+                documento,
+                "Margem de lucro é o percentual das receitas que realmente virou sobra. "
+                        + "A conta usada foi: lucro dividido pelas receitas, multiplicado por 100. "
+                        + "Neste período: "
+                        + formatarMoeda(lucro)
+                        + " / "
+                        + formatarMoeda(receitas)
+                        + " x 100 = "
+                        + margem
+                        + "."
+        );
+
+        adicionarObservacao(
+                documento,
+                "Diferenciar esses dois números é importante porque uma propriedade pode "
+                        + "ter lucro em reais, mas margem baixa. Isso ajuda o contador e o produtor "
+                        + "a perceber se os custos estão altos, se o preço de venda precisa ser revisto "
+                        + "ou se o negócio está ficando mais eficiente."
         );
     }
 
@@ -796,6 +868,30 @@ public class RelatorioPdfService {
 
         paragrafo.setSpacingBefore(14);
         paragrafo.setSpacingAfter(7);
+
+        documento.add(paragrafo);
+    }
+
+    private void adicionarSubtituloSecao(
+            Document documento,
+            String titulo) {
+
+        Paragraph paragrafo =
+                new Paragraph(
+                        titulo,
+                        FontFactory.getFont(
+                                FontFactory.HELVETICA_BOLD,
+                                10,
+                                new Color(
+                                        31,
+                                        78,
+                                        45
+                                )
+                        )
+                );
+
+        paragrafo.setSpacingBefore(9);
+        paragrafo.setSpacingAfter(3);
 
         documento.add(paragrafo);
     }

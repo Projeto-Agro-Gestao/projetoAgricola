@@ -2,6 +2,7 @@ package br.com.fluxocaixa.admin;
 
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
+import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -54,7 +55,11 @@ public class AdminService {
         validarAdministrador();
 
         Usuario usuario = buscarUsuario(usuarioId);
-        usuario.alterarAcessoLiberado(request.acessoLiberado());
+        usuario.configurarAcesso(
+                request.acessoLiberado(),
+                obterTipoAcesso(request),
+                obterDataExpiracao(request)
+        );
 
         return montarResponse(usuario);
     }
@@ -154,14 +159,23 @@ public class AdminService {
                 usosTotais,
                 diasComUso,
                 media,
-                calcularSituacao(usuario)
+                calcularSituacao(
+                        usuario,
+                        hoje
+                )
         );
     }
 
-    private String calcularSituacao(Usuario usuario) {
+    private String calcularSituacao(
+            Usuario usuario,
+            LocalDate hoje) {
 
         if (!usuario.isAcessoLiberado()) {
             return "BLOQUEADO";
+        }
+
+        if (!usuario.possuiAcessoValido(hoje)) {
+            return "ACESSO_EXPIRADO";
         }
 
         if (usuario.getStatusPagamento()
@@ -184,6 +198,49 @@ public class AdminService {
         }
 
         return "EM_DIA";
+    }
+
+    private TipoAcessoUsuario obterTipoAcesso(
+            AtualizarAcessoUsuarioRequest request) {
+
+        TipoAcessoUsuario tipoAcesso =
+                request.tipoAcesso() == null
+                        ? TipoAcessoUsuario.NORMAL
+                        : request.tipoAcesso();
+
+        if (tipoAcesso == TipoAcessoUsuario.PRAZO
+                && request.diasAcesso() == null
+                && request.acessoExpiraEm() == null) {
+            throw new IllegalArgumentException(
+                    "Informe a quantidade de dias ou a data final do acesso"
+            );
+        }
+
+        return tipoAcesso;
+    }
+
+    private LocalDate obterDataExpiracao(
+            AtualizarAcessoUsuarioRequest request) {
+
+        TipoAcessoUsuario tipoAcesso =
+                obterTipoAcesso(request);
+
+        if (tipoAcesso != TipoAcessoUsuario.PRAZO) {
+            return null;
+        }
+
+        if (request.diasAcesso() != null) {
+            if (request.diasAcesso() <= 0) {
+                throw new IllegalArgumentException(
+                        "A quantidade de dias deve ser maior que zero"
+                );
+            }
+
+            return LocalDate.now()
+                    .plusDays(request.diasAcesso());
+        }
+
+        return request.acessoExpiraEm();
     }
 
     private void validarAdministrador() {

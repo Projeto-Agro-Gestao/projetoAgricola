@@ -59,7 +59,9 @@ public class AutenticacaoService {
             throw new CredenciaisInvalidasException();
         }
 
-        if (!usuario.isAcessoLiberado()) {
+        if (!usuario.possuiAcessoValido(
+                java.time.LocalDate.now()
+        )) {
             throw new AcessoUsuarioBloqueadoException();
         }
 

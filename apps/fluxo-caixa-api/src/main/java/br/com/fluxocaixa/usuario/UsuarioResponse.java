@@ -15,6 +15,8 @@ public record UsuarioResponse(
         boolean ativo,
         boolean emailVerificado,
         boolean acessoLiberado,
+        TipoAcessoUsuario tipoAcesso,
+        LocalDate acessoExpiraEm,
         StatusPagamento statusPagamento,
         LocalDate dataVencimentoPagamento,
         boolean agriculturaAtiva,
@@ -38,6 +40,8 @@ public record UsuarioResponse(
                 usuario.isAtivo(),
                 usuario.isEmailVerificado(),
                 usuario.isAcessoLiberado(),
+                usuario.getTipoAcesso(),
+                usuario.getAcessoExpiraEm(),
                 usuario.getStatusPagamento(),
                 usuario.getDataVencimentoPagamento(),
                 usuario.getEmpresa()

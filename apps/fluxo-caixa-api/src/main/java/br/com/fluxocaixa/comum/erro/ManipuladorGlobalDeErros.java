@@ -352,6 +352,21 @@ public class ManipuladorGlobalDeErros {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErroResposta>
+    tratarArgumentoInvalido(
+            IllegalArgumentException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.BAD_REQUEST,
+                "Dados invÃ¡lidos",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResposta>
     tratarErroInesperado(
