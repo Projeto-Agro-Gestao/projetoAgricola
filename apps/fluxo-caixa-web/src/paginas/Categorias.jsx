@@ -118,6 +118,10 @@ function Categorias() {
     const [sucesso, setSucesso] = useState('')
     const [confirmacao, setConfirmacao] =
         useState(null)
+    const [
+        avisoCategoriaBloqueada,
+        setAvisoCategoriaBloqueada,
+    ] = useState('')
 
     const empresaId =
         sessao?.usuario?.empresaId
@@ -549,6 +553,11 @@ function Categorias() {
 
             if (erroDaRequisicao.status === 409) {
                 await carregarCategorias()
+                setAvisoCategoriaBloqueada(
+                    erroDaRequisicao.message ??
+                    'Só pode deletar essa categoria após deletar todas as movimentações.',
+                )
+                return
             }
 
             setErro(
@@ -591,7 +600,7 @@ function Categorias() {
             return
         }
 
-        setConfirmacao(null)
+            setConfirmacao(null)
     }
 
     async function confirmarAcao() {
@@ -1014,6 +1023,43 @@ function Categorias() {
                                     : confirmacao.tipo === 'desativar'
                                       ? 'Sim, desativar'
                                       : 'Sim, excluir'}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {avisoCategoriaBloqueada && (
+                <div
+                    className="categorias-modal-fundo"
+                    role="presentation"
+                >
+                    <section
+                        aria-modal="true"
+                        className="categorias-modal"
+                        role="dialog"
+                    >
+                        <div className="categorias-modal-topo">
+                            <p className="categorias-etiqueta">
+                                Categoria não excluída
+                            </p>
+                        </div>
+
+                        <h2>Antes, esvazie a categoria</h2>
+
+                        <p>{avisoCategoriaBloqueada}</p>
+
+                        <div className="categorias-modal-acoes">
+                            <button
+                                className="categorias-modal-confirmar"
+                                onClick={() =>
+                                    setAvisoCategoriaBloqueada(
+                                        '',
+                                    )
+                                }
+                                type="button"
+                            >
+                                OK
                             </button>
                         </div>
                     </section>

@@ -33,8 +33,8 @@ public class Movimentacao {
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "categoria_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
     @Column(nullable = false, length = 150)
@@ -65,6 +65,15 @@ public class Movimentacao {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 
+    @Column(nullable = false)
+    private boolean excluida = false;
+
+    @Column(name = "excluida_em")
+    private LocalDateTime excluidaEm;
+
+    @Column(name = "categoria_original_nome", length = 100)
+    private String categoriaOriginalNome;
+
     protected Movimentacao() {
     }
 
@@ -84,6 +93,28 @@ public class Movimentacao {
         this.tipo = tipo;
         this.dataMovimentacao = dataMovimentacao;
         this.observacao = observacao;
+    }
+
+    public void moverParaLixeira() {
+        this.categoriaOriginalNome = categoria == null
+                ? categoriaOriginalNome
+                : categoria.getNome();
+        this.categoria = null;
+        this.excluida = true;
+        this.excluidaEm = LocalDateTime.now();
+    }
+
+    public void restaurar(Categoria categoria) {
+        this.categoria = categoria;
+        this.tipo = categoria.getTipo();
+        this.excluida = false;
+        this.excluidaEm = null;
+        this.categoriaOriginalNome = null;
+    }
+
+    public void trocarCategoria(Categoria categoria) {
+        this.categoria = categoria;
+        this.tipo = categoria.getTipo();
     }
 
     public void atualizar(
@@ -144,5 +175,17 @@ public class Movimentacao {
 
     public LocalDateTime getAtualizadoEm() {
         return atualizadoEm;
+    }
+
+    public boolean isExcluida() {
+        return excluida;
+    }
+
+    public LocalDateTime getExcluidaEm() {
+        return excluidaEm;
+    }
+
+    public String getCategoriaOriginalNome() {
+        return categoriaOriginalNome;
     }
 }

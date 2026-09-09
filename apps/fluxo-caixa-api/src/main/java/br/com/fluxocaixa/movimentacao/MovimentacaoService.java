@@ -140,6 +140,19 @@ public class MovimentacaoService {
     }
 
     @Transactional(readOnly = true)
+    public List<MovimentacaoResponse> listarLixeira(
+            Long empresaId) {
+
+        verificarEmpresa(empresaId);
+
+        return movimentacaoRepository
+                .buscarLixeira(empresaId)
+                .stream()
+                .map(MovimentacaoResponse::de)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public MovimentacaoResponse buscarPorId(
             Long empresaId,
             Long movimentacaoId) {
@@ -199,6 +212,17 @@ public class MovimentacaoService {
             Long empresaId,
             Long movimentacaoId) {
 
+        moverParaLixeira(
+                empresaId,
+                movimentacaoId
+        );
+    }
+
+    @Transactional
+    public MovimentacaoResponse moverParaLixeira(
+            Long empresaId,
+            Long movimentacaoId) {
+
         verificarEmpresa(empresaId);
 
         Movimentacao movimentacao = buscarMovimentacao(
@@ -206,7 +230,87 @@ public class MovimentacaoService {
                 movimentacaoId
         );
 
-        movimentacaoRepository.delete(movimentacao);
+        movimentacao.moverParaLixeira();
+
+        Movimentacao movimentacaoAtualizada =
+                movimentacaoRepository.saveAndFlush(
+                        movimentacao
+                );
+
+        return MovimentacaoResponse.de(
+                movimentacaoAtualizada
+        );
+    }
+
+    @Transactional
+    public MovimentacaoResponse restaurar(
+            Long empresaId,
+            Long movimentacaoId,
+            RestaurarMovimentacaoRequest request) {
+
+        verificarEmpresa(empresaId);
+
+        Movimentacao movimentacao =
+                buscarMovimentacaoExcluida(
+                        empresaId,
+                        movimentacaoId
+                );
+
+        Categoria categoria =
+                buscarCategoriaValida(
+                        empresaId,
+                        request.categoriaId(),
+                        movimentacao.getTipo()
+                );
+
+        movimentacao.restaurar(categoria);
+
+        Movimentacao movimentacaoAtualizada =
+                movimentacaoRepository.saveAndFlush(
+                        movimentacao
+                );
+
+        return MovimentacaoResponse.de(
+                movimentacaoAtualizada
+        );
+    }
+
+    @Transactional
+    public MovimentacaoResponse trocarCategoria(
+            Long empresaId,
+            Long movimentacaoId,
+            TrocarCategoriaMovimentacaoRequest request) {
+
+        verificarEmpresa(empresaId);
+
+        Movimentacao movimentacao = buscarMovimentacao(
+                empresaId,
+                movimentacaoId
+        );
+
+        Categoria categoria =
+                categoriaRepository
+                        .findByIdAndEmpresa_Id(
+                                request.categoriaId(),
+                                empresaId
+                        )
+                        .filter(Categoria::isAtivo)
+                        .orElseThrow(
+                                () -> new CategoriaNaoEncontradaException(
+                                        request.categoriaId()
+                                )
+                        );
+
+        movimentacao.trocarCategoria(categoria);
+
+        Movimentacao movimentacaoAtualizada =
+                movimentacaoRepository.saveAndFlush(
+                        movimentacao
+                );
+
+        return MovimentacaoResponse.de(
+                movimentacaoAtualizada
+        );
     }
 
     private Movimentacao buscarMovimentacao(
@@ -214,7 +318,23 @@ public class MovimentacaoService {
             Long movimentacaoId) {
 
         return movimentacaoRepository
-                .findByIdAndEmpresa_Id(
+                .findByIdAndEmpresa_IdAndExcluidaFalse(
+                        movimentacaoId,
+                        empresaId
+                )
+                .orElseThrow(
+                        () -> new MovimentacaoNaoEncontradaException(
+                                movimentacaoId
+                        )
+                );
+    }
+
+    private Movimentacao buscarMovimentacaoExcluida(
+            Long empresaId,
+            Long movimentacaoId) {
+
+        return movimentacaoRepository
+                .findByIdAndEmpresa_IdAndExcluidaTrue(
                         movimentacaoId,
                         empresaId
                 )

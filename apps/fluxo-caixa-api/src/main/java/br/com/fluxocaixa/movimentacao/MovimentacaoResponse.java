@@ -16,6 +16,8 @@ public record MovimentacaoResponse(
         String explicacao,
         LocalDate dataMovimentacao,
         String observacao,
+        boolean excluida,
+        LocalDateTime excluidaEm,
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm
 
@@ -27,14 +29,20 @@ public record MovimentacaoResponse(
         return new MovimentacaoResponse(
                 movimentacao.getId(),
                 movimentacao.getEmpresa().getId(),
-                movimentacao.getCategoria().getId(),
-                movimentacao.getCategoria().getNome(),
+                movimentacao.getCategoria() == null
+                        ? null
+                        : movimentacao.getCategoria().getId(),
+                movimentacao.getCategoria() == null
+                        ? movimentacao.getCategoriaOriginalNome()
+                        : movimentacao.getCategoria().getNome(),
                 movimentacao.getDescricao(),
                 movimentacao.getValor(),
                 movimentacao.getTipo(),
                 movimentacao.getTipo().getDescricao(),
                 movimentacao.getDataMovimentacao(),
                 movimentacao.getObservacao(),
+                movimentacao.isExcluida(),
+                movimentacao.getExcluidaEm(),
                 movimentacao.getCriadoEm(),
                 movimentacao.getAtualizadoEm()
         );

@@ -22,6 +22,16 @@ public interface MovimentacaoRepository
             Long empresaId
     );
 
+    Optional<Movimentacao> findByIdAndEmpresa_IdAndExcluidaFalse(
+            Long movimentacaoId,
+            Long empresaId
+    );
+
+    Optional<Movimentacao> findByIdAndEmpresa_IdAndExcluidaTrue(
+            Long movimentacaoId,
+            Long empresaId
+    );
+
     boolean existsByEmpresa_IdAndCategoria_Id(
             Long empresaId,
             Long categoriaId
@@ -61,6 +71,7 @@ public interface MovimentacaoRepository
                     :categoriaId IS NULL
                     OR movimentacao.categoria.id = :categoriaId
               )
+              AND movimentacao.excluida = false
             """)
     Page<Movimentacao> buscar(
             @Param("empresaId")
@@ -90,6 +101,7 @@ public interface MovimentacaoRepository
                     :categoriaId IS NULL
                     OR movimentacao.categoria.id = :categoriaId
               )
+              AND movimentacao.excluida = false
             ORDER BY
                 movimentacao.dataMovimentacao ASC,
                 movimentacao.id ASC
@@ -114,6 +126,7 @@ public interface MovimentacaoRepository
               AND movimentacao.tipo = :tipo
               AND movimentacao.dataMovimentacao
                   BETWEEN :dataInicial AND :dataFinal
+              AND movimentacao.excluida = false
             """)
     BigDecimal somarPorTipoEPeriodo(
             @Param("empresaId")
@@ -135,6 +148,7 @@ public interface MovimentacaoRepository
             WHERE movimentacao.empresa.id = :empresaId
               AND movimentacao.dataMovimentacao
                   BETWEEN :dataInicial AND :dataFinal
+              AND movimentacao.excluida = false
             GROUP BY
                 movimentacao.dataMovimentacao,
                 movimentacao.tipo
@@ -149,5 +163,19 @@ public interface MovimentacaoRepository
             LocalDate dataInicial,
             @Param("dataFinal")
             LocalDate dataFinal
+    );
+
+    @Query("""
+            SELECT movimentacao
+            FROM Movimentacao movimentacao
+            WHERE movimentacao.empresa.id = :empresaId
+              AND movimentacao.excluida = true
+            ORDER BY
+                movimentacao.excluidaEm DESC,
+                movimentacao.id DESC
+            """)
+    List<Movimentacao> buscarLixeira(
+            @Param("empresaId")
+            Long empresaId
     );
 }

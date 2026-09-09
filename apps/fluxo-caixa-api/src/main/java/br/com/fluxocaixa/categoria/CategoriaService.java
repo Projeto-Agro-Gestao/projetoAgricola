@@ -3,6 +3,7 @@ package br.com.fluxocaixa.categoria;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.contafinanceira.ContaFinanceiraRepository;
 import br.com.fluxocaixa.movimentacao.MovimentacaoRepository;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacao;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,18 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
     private final EmpresaRepository empresaRepository;
     private final MovimentacaoRepository movimentacaoRepository;
+    private final ContaFinanceiraRepository contaFinanceiraRepository;
 
     public CategoriaService(
             CategoriaRepository categoriaRepository,
             EmpresaRepository empresaRepository,
-            MovimentacaoRepository movimentacaoRepository) {
+            MovimentacaoRepository movimentacaoRepository,
+            ContaFinanceiraRepository contaFinanceiraRepository) {
 
         this.categoriaRepository = categoriaRepository;
         this.empresaRepository = empresaRepository;
         this.movimentacaoRepository = movimentacaoRepository;
+        this.contaFinanceiraRepository = contaFinanceiraRepository;
     }
 
     @Transactional
@@ -218,28 +222,21 @@ public class CategoriaService {
                                 categoriaId
                         );
 
-        if (!possuiMovimentacoes) {
-            categoriaRepository.delete(categoria);
-            categoriaRepository.flush();
-            return;
+        boolean possuiContas =
+                contaFinanceiraRepository
+                        .existsByEmpresa_IdAndCategoria_Id(
+                                empresaId,
+                                categoriaId
+                        );
+
+        if (possuiMovimentacoes || possuiContas) {
+            throw new CategoriaComMovimentacoesException(
+                    categoria.getNome()
+            );
         }
 
-        categoria.desativar();
-
-        Categoria categoriaArquivada =
-                categoriaRepository.saveAndFlush(
-                        categoria
-                );
-
-        LocalDateTime dataReavaliacao =
-                calcularDataLiberacao(
-                        categoriaArquivada
-                );
-
-        throw new CategoriaComMovimentacoesException(
-                categoriaArquivada.getNome(),
-                dataReavaliacao
-        );
+        categoriaRepository.delete(categoria);
+        categoriaRepository.flush();
     }
 
     @Transactional

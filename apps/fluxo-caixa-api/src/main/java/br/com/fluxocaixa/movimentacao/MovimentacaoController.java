@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/empresas/{empresaId}/movimentacoes")
@@ -114,6 +116,19 @@ public class MovimentacaoController {
         return ResponseEntity.ok(movimentacao);
     }
 
+    @GetMapping("/lixeira")
+    public ResponseEntity<List<MovimentacaoResponse>>
+    listarLixeira(
+            @PathVariable Long empresaId) {
+
+        List<MovimentacaoResponse> movimentacoes =
+                movimentacaoService.listarLixeira(
+                        empresaId
+                );
+
+        return ResponseEntity.ok(movimentacoes);
+    }
+
     @PutMapping("/{movimentacaoId}")
     public ResponseEntity<MovimentacaoResponse> atualizar(
             @PathVariable Long empresaId,
@@ -142,5 +157,56 @@ public class MovimentacaoController {
         );
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{movimentacaoId}/restaurar")
+    public ResponseEntity<MovimentacaoResponse> restaurar(
+            @PathVariable Long empresaId,
+            @PathVariable Long movimentacaoId,
+            @Valid @RequestBody
+            RestaurarMovimentacaoRequest request) {
+
+        MovimentacaoResponse movimentacao =
+                movimentacaoService.restaurar(
+                        empresaId,
+                        movimentacaoId,
+                        request
+                );
+
+        return ResponseEntity.ok(movimentacao);
+    }
+
+    @PatchMapping("/{movimentacaoId}/categoria")
+    public ResponseEntity<MovimentacaoResponse> trocarCategoria(
+            @PathVariable Long empresaId,
+            @PathVariable Long movimentacaoId,
+            @Valid @RequestBody
+            TrocarCategoriaMovimentacaoRequest request) {
+
+        MovimentacaoResponse movimentacao =
+                movimentacaoService.trocarCategoria(
+                        empresaId,
+                        movimentacaoId,
+                        request
+                );
+
+        return ResponseEntity.ok(movimentacao);
+    }
+
+    @PatchMapping("/{movimentacaoId}/converter-tipo")
+    public ResponseEntity<MovimentacaoResponse> converterTipo(
+            @PathVariable Long empresaId,
+            @PathVariable Long movimentacaoId,
+            @Valid @RequestBody
+            TrocarCategoriaMovimentacaoRequest request) {
+
+        MovimentacaoResponse movimentacao =
+                movimentacaoService.trocarCategoria(
+                        empresaId,
+                        movimentacaoId,
+                        request
+                );
+
+        return ResponseEntity.ok(movimentacao);
     }
 }

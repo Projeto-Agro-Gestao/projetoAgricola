@@ -251,6 +251,31 @@
     background: #f1f8ee;
 }
 
+.movimentacoes-cabecalho-acoes {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.movimentacoes-lixeira {
+    min-height: 48px;
+    padding: 0 18px;
+    border: 1px solid #cad8c5;
+    border-radius: 11px;
+    background: #ffffff;
+    color: #355a2c;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.movimentacoes-lixeira:hover {
+    border-color: #328d0c;
+    background: #f1f8ee;
+}
+
 .movimentacoes-trocar {
     border: 1px solid #bfd7b8;
     color: #267a08;
@@ -356,7 +381,8 @@
     font-weight: 800;
 }
 
-.movimentacoes-modal-form select {
+.movimentacoes-modal-form select,
+.movimentacoes-modal-form input {
     width: 100%;
     min-height: 42px;
     padding: 0 12px;
@@ -425,6 +451,11 @@
     }
 
     .movimentacoes-nova {
+        width: 100%;
+    }
+
+    .movimentacoes-cabecalho-acoes,
+    .movimentacoes-lixeira {
         width: 100%;
     }
 

@@ -144,15 +144,7 @@ public class ManipuladorGlobalDeErros {
                 "Categoria possui movimentações",
                 exception.getMessage(),
                 request.getRequestURI(),
-                Map.of(
-                        "dataReavaliacao",
-                        exception.getDataReavaliacao()
-                                .toLocalDate()
-                                .toString(),
-                        "dataHoraReavaliacao",
-                        exception.getDataReavaliacao()
-                                .toString()
-                )
+                Map.of()
         );
     }
 
