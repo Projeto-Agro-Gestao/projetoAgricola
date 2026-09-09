@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import br.com.fluxocaixa.movimentacao.Movimentacao;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -125,6 +126,22 @@ public class ContaFinanceira {
 
     @Column(length = 500)
     private String observacao;
+
+    @Column(nullable = false)
+    private boolean excluida = false;
+
+    @Column(name = "excluida_em")
+    private LocalDateTime excluidaEm;
+
+    @Column(
+            name = "categoria_original_nome",
+            length = 100
+    )
+    private String categoriaOriginalNome;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movimentacao_financeiro_id")
+    private Movimentacao movimentacaoFinanceiro;
 
     @Version
     @Column(nullable = false)
@@ -247,6 +264,22 @@ public class ContaFinanceira {
 
     public String getObservacao() {
         return observacao;
+    }
+
+    public boolean isExcluida() {
+        return excluida;
+    }
+
+    public LocalDateTime getExcluidaEm() {
+        return excluidaEm;
+    }
+
+    public String getCategoriaOriginalNome() {
+        return categoriaOriginalNome;
+    }
+
+    public Movimentacao getMovimentacaoFinanceiro() {
+        return movimentacaoFinanceiro;
     }
 
     public Long getVersao() {
@@ -417,6 +450,43 @@ public class ContaFinanceira {
                 SituacaoContaFinanceira.CANCELADA;
 
         lembreteAtivo = false;
+    }
+
+    public void moverParaLixeira() {
+        this.categoriaOriginalNome =
+                categoria == null
+                        ? categoriaOriginalNome
+                        : categoria.getNome();
+
+        this.excluida = true;
+        this.excluidaEm = LocalDateTime.now();
+        this.lembreteAtivo = false;
+    }
+
+    public void restaurarDaLixeira() {
+        this.excluida = false;
+        this.excluidaEm = null;
+    }
+
+    public void trocarCategoria(Categoria categoria) {
+        this.categoria = categoria;
+        this.tipo =
+                categoria.getTipo()
+                        == br.com.fluxocaixa.movimentacao.TipoMovimentacao.RECEITA
+                        ? TipoContaFinanceira.RECEBER
+                        : TipoContaFinanceira.PAGAR;
+        this.categoriaOriginalNome = null;
+    }
+
+    public void marcarEnviadaAoFinanceiro(
+            Movimentacao movimentacao,
+            LocalDate dataLiquidacao) {
+
+        this.movimentacaoFinanceiro = movimentacao;
+        this.valorLiquidado = this.valorTotal;
+        this.situacao = SituacaoContaFinanceira.QUITADA;
+        this.dataLiquidacao = dataLiquidacao;
+        this.lembreteAtivo = false;
     }
 
     public void ativarLembrete(

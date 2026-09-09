@@ -461,6 +461,12 @@ function ContasFinanceiras() {
     const [contas, setContas] =
         useState([])
 
+    const [contasLixeira, setContasLixeira] =
+        useState([])
+
+    const [mostrandoLixeira, setMostrandoLixeira] =
+        useState(false)
+
     const [lembretes, setLembretes] =
         useState([])
 
@@ -496,6 +502,16 @@ function ContasFinanceiras() {
     ] = useState(null)
 
     const [
+        contaParaExcluirPermanente,
+        setContaParaExcluirPermanente,
+    ] = useState(null)
+
+    const [
+        contaParaEnviarFinanceiro,
+        setContaParaEnviarFinanceiro,
+    ] = useState(null)
+
+    const [
         categoriasLiquidacao,
         setCategoriasLiquidacao,
     ] = useState([])
@@ -513,6 +529,21 @@ function ContasFinanceiras() {
     const [
         cancelandoConta,
         setCancelandoConta,
+    ] = useState(false)
+
+    const [
+        excluindoContaPermanente,
+        setExcluindoContaPermanente,
+    ] = useState(false)
+
+    const [
+        restaurandoContaId,
+        setRestaurandoContaId,
+    ] = useState(null)
+
+    const [
+        enviandoFinanceiro,
+        setEnviandoFinanceiro,
     ] = useState(false)
 
     const [valorLiquidacao, setValorLiquidacao] =
@@ -534,6 +565,11 @@ function ContasFinanceiras() {
     const [
         categoriaLiquidacaoId,
         setCategoriaLiquidacaoId,
+    ] = useState('')
+
+    const [
+        novaCategoriaFinanceiro,
+        setNovaCategoriaFinanceiro,
     ] = useState('')
 
     const [erroModal, setErroModal] =
@@ -755,6 +791,70 @@ function ContasFinanceiras() {
             tipo,
         ])
 
+    const carregarLixeira =
+        useCallback(async () => {
+            if (!sessao) {
+                return
+            }
+
+            try {
+                setCarregando(true)
+                setErro('')
+
+                const empresaId =
+                    sessao.usuario.empresaId
+
+                const resposta = await fetch(
+                    `${API_URL}/empresas/${empresaId}/contas-financeiras/lixeira`,
+                    {
+                        headers: criarCabecalhos(),
+                    },
+                )
+
+                if (
+                    resposta.status === 401
+                    || resposta.status === 403
+                ) {
+                    limparSessao()
+
+                    navigate('/login', {
+                        replace: true,
+                    })
+
+                    return
+                }
+
+                if (!resposta.ok) {
+                    throw new Error(
+                        await obterMensagemDeErro(
+                            resposta,
+                            'NÃ£o foi possÃ­vel carregar a lixeira de contas.',
+                        ),
+                    )
+                }
+
+                const dados = await resposta.json()
+
+                setContasLixeira(
+                    Array.isArray(dados)
+                        ? dados
+                        : [],
+                )
+                setMostrandoLixeira(true)
+            } catch (erroDaRequisicao) {
+                setErro(
+                    erroDaRequisicao instanceof Error
+                        ? erroDaRequisicao.message
+                        : 'NÃ£o foi possÃ­vel carregar a lixeira de contas.',
+                )
+            } finally {
+                setCarregando(false)
+            }
+        }, [
+            navigate,
+            sessao,
+        ])
+
     useEffect(() => {
         if (!sessao) {
             navigate('/login', {
@@ -798,7 +898,9 @@ function ContasFinanceiras() {
         )
 
     const contasVisiveis =
-        situacao === 'CANCELADA'
+        mostrandoLixeira
+            ? contasLixeira
+            : situacao === 'CANCELADA'
             ? contas
             : contasAtivas
 
@@ -1173,6 +1275,248 @@ function ContasFinanceiras() {
         }
     }
 
+    async function restaurarConta(conta) {
+        if (!sessao) {
+            return
+        }
+
+        try {
+            setRestaurandoContaId(conta.id)
+            setErro('')
+
+            const empresaId =
+                sessao.usuario.empresaId
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/contas-financeiras/${conta.id}/restaurar`,
+                {
+                    method: 'PATCH',
+                    headers: criarCabecalhos(),
+                },
+            )
+
+            if (
+                resposta.status === 401 ||
+                resposta.status === 403
+            ) {
+                limparSessao()
+
+                navigate('/login', {
+                    replace: true,
+                })
+
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'NÃ£o foi possÃ­vel restaurar a conta.',
+                    ),
+                )
+            }
+
+            setContasLixeira(
+                (contasAtuais) =>
+                    contasAtuais.filter(
+                        (item) => item.id !== conta.id,
+                    ),
+            )
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'NÃ£o foi possÃ­vel restaurar a conta.',
+            )
+        } finally {
+            setRestaurandoContaId(null)
+        }
+    }
+
+    function abrirExclusaoPermanente(conta) {
+        setContaParaExcluirPermanente(conta)
+        setErroModal('')
+    }
+
+    function fecharExclusaoPermanente() {
+        if (excluindoContaPermanente) {
+            return
+        }
+
+        setContaParaExcluirPermanente(null)
+        setErroModal('')
+    }
+
+    async function excluirContaPermanentemente() {
+        if (!sessao || !contaParaExcluirPermanente) {
+            return
+        }
+
+        try {
+            setExcluindoContaPermanente(true)
+            setErroModal('')
+
+            const empresaId =
+                sessao.usuario.empresaId
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaExcluirPermanente.id}/permanente`,
+                {
+                    method: 'DELETE',
+                    headers: criarCabecalhos(),
+                },
+            )
+
+            if (
+                resposta.status === 401 ||
+                resposta.status === 403
+            ) {
+                limparSessao()
+
+                navigate('/login', {
+                    replace: true,
+                })
+
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'NÃ£o foi possÃ­vel excluir definitivamente a conta.',
+                    ),
+                )
+            }
+
+            setContasLixeira(
+                (contasAtuais) =>
+                    contasAtuais.filter(
+                        (item) =>
+                            item.id !==
+                            contaParaExcluirPermanente.id,
+                    ),
+            )
+
+            setContaParaExcluirPermanente(null)
+        } catch (erroDaRequisicao) {
+            setErroModal(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'NÃ£o foi possÃ­vel excluir definitivamente a conta.',
+            )
+        } finally {
+            setExcluindoContaPermanente(false)
+        }
+    }
+
+    function abrirEnvioFinanceiro(conta) {
+        setContaParaEnviarFinanceiro(conta)
+        setObservacaoLiquidacao('')
+        setNovaCategoriaFinanceiro('')
+        setCategoriaLiquidacaoId('')
+        setCategoriasLiquidacao([])
+        setErroModal('')
+
+        void carregarCategoriasLiquidacao(conta)
+    }
+
+    function fecharEnvioFinanceiro() {
+        if (enviandoFinanceiro) {
+            return
+        }
+
+        setContaParaEnviarFinanceiro(null)
+        setErroModal('')
+        setNovaCategoriaFinanceiro('')
+    }
+
+    async function enviarContaAoFinanceiro(evento) {
+        evento.preventDefault()
+
+        if (!sessao || !contaParaEnviarFinanceiro) {
+            return
+        }
+
+        if (
+            !categoriaLiquidacaoId &&
+            !novaCategoriaFinanceiro.trim()
+        ) {
+            setErroModal(
+                'Escolha uma categoria existente ou crie uma nova categoria.',
+            )
+
+            return
+        }
+
+        try {
+            setEnviandoFinanceiro(true)
+            setErroModal('')
+
+            const empresaId =
+                sessao.usuario.empresaId
+
+            const corpo = {
+                categoriaId:
+                    categoriaLiquidacaoId
+                        ? Number(categoriaLiquidacaoId)
+                        : null,
+                novaCategoriaNome:
+                    novaCategoriaFinanceiro.trim()
+                    || null,
+                observacao:
+                    observacaoLiquidacao.trim()
+                    || null,
+            }
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaEnviarFinanceiro.id}/enviar-financeiro`,
+                {
+                    method: 'POST',
+                    headers:
+                        criarCabecalhos(true),
+                    body:
+                        JSON.stringify(corpo),
+                },
+            )
+
+            if (
+                resposta.status === 401 ||
+                resposta.status === 403
+            ) {
+                limparSessao()
+
+                navigate('/login', {
+                    replace: true,
+                })
+
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'NÃ£o foi possÃ­vel enviar a conta ao financeiro.',
+                    ),
+                )
+            }
+
+            setContaParaEnviarFinanceiro(null)
+            setNovaCategoriaFinanceiro('')
+            await carregarDados()
+        } catch (erroDaRequisicao) {
+            setErroModal(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'NÃ£o foi possÃ­vel enviar a conta ao financeiro.',
+            )
+        } finally {
+            setEnviandoFinanceiro(false)
+        }
+    }
+
     if (!sessao) {
         return null
     }
@@ -1213,6 +1557,23 @@ function ContasFinanceiras() {
                         </div>
 
                         <div className="contas-acoes">
+                            <button
+                                className="contas-botao contas-botao-secundario"
+                                onClick={() => {
+                                    if (mostrandoLixeira) {
+                                        setMostrandoLixeira(false)
+                                        void carregarDados()
+                                    } else {
+                                        void carregarLixeira()
+                                    }
+                                }}
+                                type="button"
+                            >
+                                {mostrandoLixeira
+                                    ? 'Ver contas cadastradas'
+                                    : 'Lixeira'}
+                            </button>
+
                             <button
                                 className="contas-botao contas-botao-secundario"
                                 onClick={() =>
@@ -1502,6 +1863,23 @@ function ContasFinanceiras() {
                         </button>
 
                         <button
+                            onClick={() => {
+                                if (mostrandoLixeira) {
+                                    setMostrandoLixeira(false)
+                                    void carregarDados()
+                                } else {
+                                    void carregarLixeira()
+                                }
+                            }}
+                            type="button"
+                        >
+                            <span>âŒ«</span>
+                            {mostrandoLixeira
+                                ? 'Ver contas cadastradas'
+                                : 'Lixeira'}
+                        </button>
+
+                        <button
                             disabled={Boolean(
                                 baixandoRelatorio,
                             )}
@@ -1545,7 +1923,11 @@ function ContasFinanceiras() {
                 >
                     <div className="contas-lista-topo">
                         <div>
-                            <h2>Contas cadastradas</h2>
+                            <h2>
+                                {mostrandoLixeira
+                                    ? 'Contas na lixeira'
+                                    : 'Contas cadastradas'}
+                            </h2>
 
                             <p>
                                 {contasVisiveis.length}{' '}
@@ -1553,6 +1935,7 @@ function ContasFinanceiras() {
                             </p>
                         </div>
 
+                        {!mostrandoLixeira && (
                         <div className="contas-filtros">
                             <select
                                 aria-label="Filtrar pelo tipo"
@@ -1610,6 +1993,7 @@ function ContasFinanceiras() {
                                 </option>
                             </select>
                         </div>
+                        )}
                     </div>
 
                     {carregando ? (
@@ -1729,35 +2113,88 @@ function ContasFinanceiras() {
                                     </div>
 
                                     <div className="contas-item-acoes">
-                                        {conta.situacao !== 'QUITADA'
-                                            && conta.situacao !== 'CANCELADA' && (
+                                        {mostrandoLixeira ? (
+                                            <>
                                                 <button
                                                     className="contas-acao-principal"
+                                                    disabled={
+                                                        restaurandoContaId ===
+                                                        conta.id
+                                                    }
                                                     onClick={() =>
-                                                        abrirLiquidacao(
+                                                        restaurarConta(
                                                             conta,
                                                         )
                                                     }
                                                     type="button"
                                                 >
-                                                    Quitar
+                                                    {restaurandoContaId ===
+                                                    conta.id
+                                                        ? 'Restaurando...'
+                                                        : 'Restaurar conta'}
                                                 </button>
-                                            )}
 
-                                        {conta.situacao !== 'QUITADA'
-                                            && conta.situacao !== 'CANCELADA' && (
                                                 <button
                                                     className="contas-acao-perigo"
                                                     onClick={() =>
-                                                        abrirCancelamento(
+                                                        abrirExclusaoPermanente(
                                                             conta,
                                                         )
                                                     }
                                                     type="button"
                                                 >
-                                                    Cancelar
+                                                    Excluir permanentemente
                                                 </button>
-                                            )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {conta.situacao !== 'QUITADA'
+                                                    && conta.situacao !== 'CANCELADA' && (
+                                                        <button
+                                                            className="contas-acao-principal"
+                                                            onClick={() =>
+                                                                abrirLiquidacao(
+                                                                    conta,
+                                                                )
+                                                            }
+                                                            type="button"
+                                                        >
+                                                            Quitar
+                                                        </button>
+                                                    )}
+
+                                                {conta.situacao !== 'QUITADA'
+                                                    && conta.situacao !== 'CANCELADA'
+                                                    && !conta.movimentacaoFinanceiroId && (
+                                                        <button
+                                                            className="contas-acao-principal"
+                                                            onClick={() =>
+                                                                abrirEnvioFinanceiro(
+                                                                    conta,
+                                                                )
+                                                            }
+                                                            type="button"
+                                                        >
+                                                            Enviar ao financeiro
+                                                        </button>
+                                                    )}
+
+                                                {conta.situacao !== 'QUITADA'
+                                                    && conta.situacao !== 'CANCELADA' && (
+                                                        <button
+                                                            className="contas-acao-perigo"
+                                                            onClick={() =>
+                                                                abrirCancelamento(
+                                                                    conta,
+                                                                )
+                                                            }
+                                                            type="button"
+                                                        >
+                                                            Enviar para lixeira
+                                                        </button>
+                                                    )}
+                                            </>
+                                        )}
                                     </div>
                                 </article>
                             ))}
@@ -2012,6 +2449,206 @@ function ContasFinanceiras() {
                                     : 'Sim, cancelar conta'}
                             </button>
                         </div>
+                    </section>
+                </div>
+            )}
+
+            {contaParaExcluirPermanente && (
+                <div
+                    className="contas-modal-fundo"
+                    role="presentation"
+                >
+                    <section
+                        aria-modal="true"
+                        className="contas-modal contas-modal-perigo"
+                        role="dialog"
+                    >
+                        <div className="contas-modal-topo">
+                            <div>
+                                <p className="contas-etiqueta">
+                                    ExclusÃ£o definitiva
+                                </p>
+
+                                <h2>
+                                    {contaParaExcluirPermanente.descricao}
+                                </h2>
+                            </div>
+
+                            <button
+                                aria-label="Fechar"
+                                onClick={fecharExclusaoPermanente}
+                                type="button"
+                            >
+                                Ã—
+                            </button>
+                        </div>
+
+                        <p className="contas-modal-texto">
+                            Esta conta serÃ¡ apagada permanentemente.
+                            Depois disso nÃ£o serÃ¡ possÃ­vel recuperar.
+                        </p>
+
+                        {erroModal && (
+                            <p className="contas-modal-erro">
+                                {erroModal}
+                            </p>
+                        )}
+
+                        <div className="contas-modal-acoes">
+                            <button
+                                onClick={fecharExclusaoPermanente}
+                                type="button"
+                            >
+                                Voltar
+                            </button>
+
+                            <button
+                                className="contas-modal-confirmar-perigo"
+                                disabled={excluindoContaPermanente}
+                                onClick={excluirContaPermanentemente}
+                                type="button"
+                            >
+                                {excluindoContaPermanente
+                                    ? 'Excluindo...'
+                                    : 'Sim, excluir de vez'}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {contaParaEnviarFinanceiro && (
+                <div
+                    className="contas-modal-fundo"
+                    role="presentation"
+                >
+                    <section
+                        aria-modal="true"
+                        className="contas-modal"
+                        role="dialog"
+                    >
+                        <div className="contas-modal-topo">
+                            <div>
+                                <p className="contas-etiqueta">
+                                    Enviar ao financeiro
+                                </p>
+
+                                <h2>
+                                    {contaParaEnviarFinanceiro.descricao}
+                                </h2>
+                            </div>
+
+                            <button
+                                aria-label="Fechar"
+                                onClick={fecharEnvioFinanceiro}
+                                type="button"
+                            >
+                                Ã—
+                            </button>
+                        </div>
+
+                        <form
+                            className="contas-modal-formulario"
+                            onSubmit={enviarContaAoFinanceiro}
+                        >
+                            <p className="contas-modal-texto">
+                                O valor pendente serÃ¡ lanÃ§ado no Dashboard
+                                financeiro e esta conta sairÃ¡ da previsÃ£o futura.
+                            </p>
+
+                            <label>
+                                Categoria existente
+                                <select
+                                    disabled={
+                                        enviandoFinanceiro
+                                        || carregandoCategoriasLiquidacao
+                                    }
+                                    onChange={(evento) =>
+                                        setCategoriaLiquidacaoId(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={categoriaLiquidacaoId}
+                                >
+                                    <option value="">
+                                        Escolher categoria existente
+                                    </option>
+
+                                    {carregandoCategoriasLiquidacao ? (
+                                        <option value="">
+                                            Carregando categorias...
+                                        </option>
+                                    ) : (
+                                        categoriasLiquidacao.map(
+                                            (categoria) => (
+                                                <option
+                                                    key={categoria.id}
+                                                    value={categoria.id}
+                                                >
+                                                    {categoria.nome}
+                                                </option>
+                                            ),
+                                        )
+                                    )}
+                                </select>
+                            </label>
+
+                            <label>
+                                Ou criar nova categoria
+                                <input
+                                    disabled={enviandoFinanceiro}
+                                    maxLength="100"
+                                    onChange={(evento) =>
+                                        setNovaCategoriaFinanceiro(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    placeholder="Ex.: Venda de soja"
+                                    type="text"
+                                    value={novaCategoriaFinanceiro}
+                                />
+                            </label>
+
+                            <label>
+                                ObservaÃ§Ã£o
+                                <textarea
+                                    disabled={enviandoFinanceiro}
+                                    maxLength="500"
+                                    onChange={(evento) =>
+                                        setObservacaoLiquidacao(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    placeholder="Detalhes opcionais"
+                                    value={observacaoLiquidacao}
+                                />
+                            </label>
+
+                            {erroModal && (
+                                <p className="contas-modal-erro">
+                                    {erroModal}
+                                </p>
+                            )}
+
+                            <div className="contas-modal-acoes">
+                                <button
+                                    onClick={fecharEnvioFinanceiro}
+                                    type="button"
+                                >
+                                    Voltar
+                                </button>
+
+                                <button
+                                    className="contas-modal-confirmar"
+                                    disabled={enviandoFinanceiro}
+                                    type="submit"
+                                >
+                                    {enviandoFinanceiro
+                                        ? 'Enviando...'
+                                        : 'Enviar ao financeiro'}
+                                </button>
+                            </div>
+                        </form>
                     </section>
                 </div>
             )}

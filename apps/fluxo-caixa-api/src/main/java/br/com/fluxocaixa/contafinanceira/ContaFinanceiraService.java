@@ -146,7 +146,7 @@ public class ContaFinanceiraService {
         buscarEmpresa(empresaId);
 
         return contaFinanceiraRepository
-                .findAllByEmpresa_IdOrderByDataVencimentoAsc(
+                .findAllByEmpresa_IdAndExcluidaFalseOrderByDataVencimentoAsc(
                         empresaId
                 )
                 .stream()
@@ -162,6 +162,21 @@ public class ContaFinanceiraService {
                                         || conta.getSituacao()
                                         == situacao
                 )
+                .map(ContaFinanceiraResponse::de)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContaFinanceiraResponse> listarLixeira(
+            Long empresaId) {
+
+        buscarEmpresa(empresaId);
+
+        return contaFinanceiraRepository
+                .findAllByEmpresa_IdAndExcluidaTrueOrderByExcluidaEmDescIdDesc(
+                        empresaId
+                )
+                .stream()
                 .map(ContaFinanceiraResponse::de)
                 .toList();
     }
@@ -312,17 +327,124 @@ public class ContaFinanceiraService {
                         contaId
                 );
 
-        try {
-            conta.cancelar();
-        } catch (
-                IllegalArgumentException
-                | IllegalStateException exception
+        conta.moverParaLixeira();
+
+        ContaFinanceira contaSalva =
+                contaFinanceiraRepository
+                        .saveAndFlush(conta);
+
+        return ContaFinanceiraResponse.de(
+                contaSalva
+        );
+    }
+
+    @Transactional
+    public ContaFinanceiraResponse restaurar(
+            Long empresaId,
+            Long contaId) {
+
+        ContaFinanceira conta =
+                buscarContaExcluida(
+                        empresaId,
+                        contaId
+                );
+
+        conta.restaurarDaLixeira();
+
+        ContaFinanceira contaSalva =
+                contaFinanceiraRepository
+                        .saveAndFlush(conta);
+
+        return ContaFinanceiraResponse.de(
+                contaSalva
+        );
+    }
+
+    @Transactional
+    public void excluirPermanentemente(
+            Long empresaId,
+            Long contaId) {
+
+        ContaFinanceira conta =
+                buscarContaExcluida(
+                        empresaId,
+                        contaId
+                );
+
+        contaFinanceiraRepository.delete(
+                conta
+        );
+    }
+
+    @Transactional
+    public ContaFinanceiraResponse enviarAoFinanceiro(
+            Long empresaId,
+            Long contaId,
+            EnviarContaAoFinanceiroRequest request) {
+
+        ContaFinanceira conta =
+                buscarConta(
+                        empresaId,
+                        contaId
+                );
+
+        if (conta.getMovimentacaoFinanceiro() != null) {
+            throw new
+                    OperacaoContaFinanceiraInvalidaException(
+                    "Esta conta já foi enviada ao financeiro"
+            );
+        }
+
+        BigDecimal valorPendente =
+                conta.getValorPendente();
+
+        if (
+                valorPendente.compareTo(
+                        BigDecimal.ZERO
+                ) <= 0
         ) {
             throw new
                     OperacaoContaFinanceiraInvalidaException(
-                    exception.getMessage()
+                    "Esta conta não possui valor pendente para enviar ao financeiro"
             );
         }
+
+        TipoMovimentacao tipoMovimentacao =
+                converterParaTipoMovimentacao(
+                        conta.getTipo()
+                );
+
+        Categoria categoria =
+                buscarOuCriarCategoriaFinanceiro(
+                        empresaId,
+                        conta.getEmpresa(),
+                        request,
+                        tipoMovimentacao
+                );
+
+        Movimentacao movimentacao =
+                new Movimentacao(
+                        conta.getEmpresa(),
+                        categoria,
+                        criarDescricaoMovimentacao(conta),
+                        valorPendente,
+                        tipoMovimentacao,
+                        LocalDate.now(),
+                        criarObservacaoMovimentacao(
+                                conta,
+                                request.observacao()
+                        )
+                );
+
+        Movimentacao movimentacaoSalva =
+                movimentacaoRepository.save(
+                        movimentacao
+                );
+
+        conta.marcarEnviadaAoFinanceiro(
+                movimentacaoSalva,
+                LocalDate.now()
+        );
 
         ContaFinanceira contaSalva =
                 contaFinanceiraRepository
@@ -577,7 +699,7 @@ public class ContaFinanceiraService {
 
         List<ContaFinanceira> contas =
                 contaFinanceiraRepository
-                        .findAllByEmpresa_IdOrderByDataVencimentoAsc(
+                        .findAllByEmpresa_IdAndExcluidaFalseOrderByDataVencimentoAsc(
                                 empresaId
                         );
 
@@ -701,7 +823,25 @@ public class ContaFinanceiraService {
             Long contaId) {
 
         return contaFinanceiraRepository
-                .findByIdAndEmpresa_Id(
+                .findByIdAndEmpresa_IdAndExcluidaFalse(
+                        contaId,
+                        empresaId
+                )
+                .orElseThrow(
+                        () ->
+                                new
+                                        ContaFinanceiraNaoEncontradaException(
+                                        contaId
+                                )
+                );
+    }
+
+    private ContaFinanceira buscarContaExcluida(
+            Long empresaId,
+            Long contaId) {
+
+        return contaFinanceiraRepository
+                .findByIdAndEmpresa_IdAndExcluidaTrue(
                         contaId,
                         empresaId
                 )
@@ -743,6 +883,69 @@ public class ContaFinanceiraService {
                                         CategoriaNaoEncontradaException(
                                         categoriaId
                                 )
+                );
+    }
+
+    private Categoria buscarOuCriarCategoriaFinanceiro(
+            Long empresaId,
+            Empresa empresa,
+            EnviarContaAoFinanceiroRequest request,
+            TipoMovimentacao tipo) {
+
+        if (request.categoriaId() != null) {
+            Categoria categoria =
+                    buscarCategoria(
+                            empresaId,
+                            request.categoriaId()
+                    );
+
+            validarCategoriaCompativel(
+                    categoria,
+                    tipo == TipoMovimentacao.RECEITA
+                            ? TipoContaFinanceira.RECEBER
+                            : TipoContaFinanceira.PAGAR
+            );
+
+            return categoria;
+        }
+
+        if (
+                request.novaCategoriaNome() == null
+                        || request.novaCategoriaNome()
+                        .isBlank()
+        ) {
+            throw new
+                    OperacaoContaFinanceiraInvalidaException(
+                    "Escolha uma categoria existente ou informe uma nova categoria"
+            );
+        }
+
+        String nome =
+                normalizarTextoObrigatorio(
+                        request.novaCategoriaNome()
+                );
+
+        if (nome.length() > 100) {
+            throw new
+                    OperacaoContaFinanceiraInvalidaException(
+                    "O nome da categoria deve ter no máximo 100 caracteres"
+            );
+        }
+
+        return categoriaRepository
+                .findByEmpresa_IdAndNomeIgnoreCaseAndTipo(
+                        empresaId,
+                        nome,
+                        tipo
+                )
+                .orElseGet(
+                        () -> categoriaRepository.save(
+                                new Categoria(
+                                        empresa,
+                                        nome,
+                                        tipo
+                                )
+                        )
                 );
     }
 

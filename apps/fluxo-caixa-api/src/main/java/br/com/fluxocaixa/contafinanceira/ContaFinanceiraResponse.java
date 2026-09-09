@@ -41,6 +41,10 @@ public record ContaFinanceiraResponse(
 
         String observacao,
 
+        boolean excluida,
+        LocalDateTime excluidaEm,
+        Long movimentacaoFinanceiroId,
+
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm
 
@@ -68,8 +72,12 @@ public record ContaFinanceiraResponse(
         return new ContaFinanceiraResponse(
                 conta.getId(),
                 conta.getEmpresa().getId(),
-                conta.getCategoria().getId(),
-                conta.getCategoria().getNome(),
+                conta.getCategoria() == null
+                        ? null
+                        : conta.getCategoria().getId(),
+                conta.getCategoria() == null
+                        ? conta.getCategoriaOriginalNome()
+                        : conta.getCategoria().getNome(),
 
                 conta.getDescricao(),
                 conta.getFavorecido(),
@@ -101,6 +109,12 @@ public record ContaFinanceiraResponse(
                 ),
 
                 conta.getObservacao(),
+
+                conta.isExcluida(),
+                conta.getExcluidaEm(),
+                conta.getMovimentacaoFinanceiro() == null
+                        ? null
+                        : conta.getMovimentacaoFinanceiro().getId(),
 
                 conta.getCriadoEm(),
                 conta.getAtualizadoEm()

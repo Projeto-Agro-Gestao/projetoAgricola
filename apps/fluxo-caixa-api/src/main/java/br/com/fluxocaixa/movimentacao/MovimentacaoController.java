@@ -159,6 +159,19 @@ public class MovimentacaoController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{movimentacaoId}/permanente")
+    public ResponseEntity<Void> excluirPermanentemente(
+            @PathVariable Long empresaId,
+            @PathVariable Long movimentacaoId) {
+
+        movimentacaoService.excluirPermanentemente(
+                empresaId,
+                movimentacaoId
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{movimentacaoId}/restaurar")
     public ResponseEntity<MovimentacaoResponse> restaurar(
             @PathVariable Long empresaId,

@@ -571,6 +571,12 @@ function Dashboard() {
         )
     }
 
+    function abrirLixeiraMovimentacoes() {
+        navigate(
+            '/dashboard/movimentacoes?lixeira=1',
+        )
+    }
+
     function abrirCategorias() {
         navigate(
             '/dashboard/categorias',
@@ -1347,6 +1353,17 @@ function Dashboard() {
                             >
                                 <span>☷</span>
                                 Ver todas as movimentações
+                            </button>
+
+                            <button
+                                className="dashboard-atalho"
+                                onClick={
+                                    abrirLixeiraMovimentacoes
+                                }
+                                type="button"
+                            >
+                                <span>âŒ«</span>
+                                Lixeira
                             </button>
 
                             <button

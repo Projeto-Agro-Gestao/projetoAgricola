@@ -3,6 +3,7 @@ package br.com.fluxocaixa.contafinanceira;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -171,6 +172,22 @@ public class ContaFinanceiraController {
         );
     }
 
+    @GetMapping("/lixeira")
+    public ResponseEntity<
+            List<ContaFinanceiraResponse>
+            >
+    listarLixeira(
+            @PathVariable Long empresaId) {
+
+        List<ContaFinanceiraResponse> contas =
+                contaFinanceiraService
+                        .listarLixeira(
+                                empresaId
+                        );
+
+        return ResponseEntity.ok(contas);
+    }
+
     @GetMapping("/{contaId}")
     public ResponseEntity<ContaFinanceiraResponse>
     buscarPorId(
@@ -239,6 +256,56 @@ public class ContaFinanceiraController {
                         empresaId,
                         contaId
                 );
+
+        return ResponseEntity.ok(conta);
+    }
+
+    @PatchMapping("/{contaId}/restaurar")
+    public ResponseEntity<ContaFinanceiraResponse>
+    restaurar(
+            @PathVariable Long empresaId,
+            @PathVariable Long contaId) {
+
+        ContaFinanceiraResponse conta =
+                contaFinanceiraService.restaurar(
+                        empresaId,
+                        contaId
+                );
+
+        return ResponseEntity.ok(conta);
+    }
+
+    @DeleteMapping("/{contaId}/permanente")
+    public ResponseEntity<Void>
+    excluirPermanentemente(
+            @PathVariable Long empresaId,
+            @PathVariable Long contaId) {
+
+        contaFinanceiraService.excluirPermanentemente(
+                empresaId,
+                contaId
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{contaId}/enviar-financeiro")
+    public ResponseEntity<ContaFinanceiraResponse>
+    enviarAoFinanceiro(
+            @PathVariable Long empresaId,
+            @PathVariable Long contaId,
+
+            @Valid
+            @RequestBody
+            EnviarContaAoFinanceiroRequest request) {
+
+        ContaFinanceiraResponse conta =
+                contaFinanceiraService
+                        .enviarAoFinanceiro(
+                                empresaId,
+                                contaId,
+                                request
+                        );
 
         return ResponseEntity.ok(conta);
     }

@@ -150,6 +150,11 @@ function Movimentacoes() {
     ] = useState(null)
 
     const [
+        movimentacaoParaExcluirPermanente,
+        setMovimentacaoParaExcluirPermanente,
+    ] = useState(null)
+
+    const [
         movimentacaoParaConverter,
         setMovimentacaoParaConverter,
     ] = useState(null)
@@ -351,6 +356,18 @@ function Movimentacoes() {
         }
     }
 
+    useEffect(() => {
+        if (
+            searchParams.get('lixeira') === '1' &&
+            !mostrandoLixeira
+        ) {
+            void carregarLixeira()
+        }
+    }, [
+        searchParams,
+        mostrandoLixeira,
+    ])
+
     async function excluirMovimentacao(
         movimentacao,
     ) {
@@ -420,6 +437,71 @@ function Movimentacoes() {
         }
     }
 
+    async function excluirMovimentacaoPermanentemente(
+        movimentacao,
+    ) {
+        if (!sessao || !empresaId) {
+            limparSessao()
+
+            navigate('/login', {
+                replace: true,
+            })
+
+            return
+        }
+
+        setExcluindoId(movimentacao.id)
+        setErro('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacao.id}/permanente`,
+                {
+                    method: 'DELETE',
+                    headers: criarCabecalhos(),
+                },
+            )
+
+            if (
+                resposta.status === 401 ||
+                resposta.status === 403
+            ) {
+                limparSessao()
+
+                navigate('/login', {
+                    replace: true,
+                })
+
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'NÃ£o foi possÃ­vel excluir permanentemente a movimentaÃ§Ã£o.',
+                    ),
+                )
+            }
+
+            setMovimentacoesLixeira(
+                (movimentacoesAtuais) =>
+                    movimentacoesAtuais.filter(
+                        (item) =>
+                            item.id !== movimentacao.id,
+                    ),
+            )
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'NÃ£o foi possÃ­vel excluir permanentemente a movimentaÃ§Ã£o.',
+            )
+        } finally {
+            setExcluindoId(null)
+        }
+    }
+
     function abrirConfirmacaoExclusao(movimentacao) {
         setErro('')
         setMovimentacaoParaExcluir(movimentacao)
@@ -433,6 +515,14 @@ function Movimentacoes() {
         setMovimentacaoParaExcluir(null)
     }
 
+    function fecharConfirmacaoExclusaoPermanente() {
+        if (excluindoId) {
+            return
+        }
+
+        setMovimentacaoParaExcluirPermanente(null)
+    }
+
     async function confirmarExclusao() {
         if (!movimentacaoParaExcluir) {
             return
@@ -443,6 +533,18 @@ function Movimentacoes() {
         )
 
         setMovimentacaoParaExcluir(null)
+    }
+
+    async function confirmarExclusaoPermanente() {
+        if (!movimentacaoParaExcluirPermanente) {
+            return
+        }
+
+        await excluirMovimentacaoPermanentemente(
+            movimentacaoParaExcluirPermanente,
+        )
+
+        setMovimentacaoParaExcluirPermanente(null)
     }
 
     async function prepararAcaoCategoria(
@@ -912,24 +1014,45 @@ function Movimentacoes() {
                                         <td>
                                             <div className="movimentacoes-acoes">
                                                 {mostrandoLixeira ? (
-                                                    <button
-                                                        className="movimentacoes-trocar"
-                                                        disabled={
-                                                            restaurandoId ===
+                                                    <>
+                                                        <button
+                                                            className="movimentacoes-trocar"
+                                                            disabled={
+                                                                restaurandoId ===
+                                                                movimentacao.id
+                                                            }
+                                                            onClick={() =>
+                                                                abrirRestauracao(
+                                                                    movimentacao,
+                                                                )
+                                                            }
+                                                            type="button"
+                                                        >
+                                                            {restaurandoId ===
                                                             movimentacao.id
-                                                        }
-                                                        onClick={() =>
-                                                            abrirRestauracao(
-                                                                movimentacao,
-                                                            )
-                                                        }
-                                                        type="button"
-                                                    >
-                                                        {restaurandoId ===
-                                                        movimentacao.id
-                                                            ? 'Restaurando...'
-                                                            : 'Restaurar'}
-                                                    </button>
+                                                                ? 'Restaurando...'
+                                                                : 'Restaurar movimentaÃ§Ã£o'}
+                                                        </button>
+
+                                                        <button
+                                                            className="movimentacoes-excluir"
+                                                            disabled={
+                                                                excluindoId ===
+                                                                movimentacao.id
+                                                            }
+                                                            onClick={() =>
+                                                                setMovimentacaoParaExcluirPermanente(
+                                                                    movimentacao,
+                                                                )
+                                                            }
+                                                            type="button"
+                                                        >
+                                                            {excluindoId ===
+                                                            movimentacao.id
+                                                                ? 'Excluindo...'
+                                                                : 'Excluir permanentemente'}
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <>
                                                         <Link
@@ -1059,6 +1182,71 @@ function Movimentacoes() {
                                 {excluindoId
                                     ? 'Excluindo...'
                                     : 'Sim, enviar para lixeira'}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {movimentacaoParaExcluirPermanente && (
+                <div
+                    className="movimentacoes-modal-fundo"
+                    role="presentation"
+                >
+                    <section
+                        aria-modal="true"
+                        className="movimentacoes-modal"
+                        role="dialog"
+                    >
+                        <div className="movimentacoes-modal-topo">
+                            <p className="movimentacoes-etiqueta">
+                                ExclusÃ£o definitiva
+                            </p>
+
+                            <button
+                                aria-label="Fechar confirmaÃ§Ã£o"
+                                onClick={
+                                    fecharConfirmacaoExclusaoPermanente
+                                }
+                                type="button"
+                            >
+                                Ã—
+                            </button>
+                        </div>
+
+                        <h2>Excluir permanentemente?</h2>
+
+                        <p>
+                            A movimentaÃ§Ã£o "
+                            {movimentacaoParaExcluirPermanente.descricao}
+                            " serÃ¡ apagada de vez e nÃ£o poderÃ¡ ser
+                            recuperada.
+                        </p>
+
+                        <div className="movimentacoes-modal-acoes">
+                            <button
+                                className="movimentacoes-modal-cancelar"
+                                onClick={
+                                    fecharConfirmacaoExclusaoPermanente
+                                }
+                                type="button"
+                            >
+                                Voltar
+                            </button>
+
+                            <button
+                                className="movimentacoes-modal-confirmar"
+                                disabled={Boolean(
+                                    excluindoId,
+                                )}
+                                onClick={
+                                    confirmarExclusaoPermanente
+                                }
+                                type="button"
+                            >
+                                {excluindoId
+                                    ? 'Excluindo...'
+                                    : 'Sim, excluir de vez'}
                             </button>
                         </div>
                     </section>

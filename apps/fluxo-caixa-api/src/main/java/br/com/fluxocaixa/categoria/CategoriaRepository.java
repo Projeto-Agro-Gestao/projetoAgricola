@@ -15,6 +15,12 @@ public interface CategoriaRepository
             TipoMovimentacao tipo
     );
 
+    Optional<Categoria> findByEmpresa_IdAndNomeIgnoreCaseAndTipo(
+            Long empresaId,
+            String nome,
+            TipoMovimentacao tipo
+    );
+
     List<Categoria> findAllByEmpresa_IdAndAtivoTrueOrderByNomeAsc(
             Long empresaId
     );

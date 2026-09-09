@@ -17,8 +17,23 @@ public interface ContaFinanceiraRepository
             Long empresaId
     );
 
+    Optional<ContaFinanceira> findByIdAndEmpresa_IdAndExcluidaFalse(
+            Long contaId,
+            Long empresaId
+    );
+
+    Optional<ContaFinanceira> findByIdAndEmpresa_IdAndExcluidaTrue(
+            Long contaId,
+            Long empresaId
+    );
+
     List<ContaFinanceira>
-    findAllByEmpresa_IdOrderByDataVencimentoAsc(
+    findAllByEmpresa_IdAndExcluidaFalseOrderByDataVencimentoAsc(
+            Long empresaId
+    );
+
+    List<ContaFinanceira>
+    findAllByEmpresa_IdAndExcluidaTrueOrderByExcluidaEmDescIdDesc(
             Long empresaId
     );
 
@@ -39,6 +54,7 @@ public interface ContaFinanceiraRepository
             FROM ContaFinanceira conta
             WHERE conta.empresa.id = :empresaId
               AND conta.lembreteAtivo = true
+              AND conta.excluida = false
               AND conta.situacao IN (
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PENDENTE,
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PARCIAL
@@ -65,6 +81,7 @@ public interface ContaFinanceiraRepository
             FROM ContaFinanceira conta
             WHERE conta.empresa.id = :empresaId
               AND conta.tipo = :tipo
+              AND conta.excluida = false
               AND conta.situacao IN (
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PENDENTE,
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PARCIAL
@@ -97,6 +114,7 @@ public interface ContaFinanceiraRepository
             FROM ContaFinanceira conta
             WHERE conta.empresa.id = :empresaId
               AND conta.tipo = :tipo
+              AND conta.excluida = false
               AND conta.situacao IN (
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PENDENTE,
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PARCIAL
@@ -147,6 +165,7 @@ public interface ContaFinanceiraRepository
             FROM ContaFinanceira conta
 
             WHERE conta.empresa.id = :empresaId
+              AND conta.excluida = false
 
               AND conta.situacao IN (
                     br.com.fluxocaixa.contafinanceira.SituacaoContaFinanceira.PENDENTE,

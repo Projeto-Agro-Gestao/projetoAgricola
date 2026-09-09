@@ -243,6 +243,24 @@ public class MovimentacaoService {
     }
 
     @Transactional
+    public void excluirPermanentemente(
+            Long empresaId,
+            Long movimentacaoId) {
+
+        verificarEmpresa(empresaId);
+
+        Movimentacao movimentacao =
+                buscarMovimentacaoExcluida(
+                        empresaId,
+                        movimentacaoId
+                );
+
+        movimentacaoRepository.delete(
+                movimentacao
+        );
+    }
+
+    @Transactional
     public MovimentacaoResponse restaurar(
             Long empresaId,
             Long movimentacaoId,
