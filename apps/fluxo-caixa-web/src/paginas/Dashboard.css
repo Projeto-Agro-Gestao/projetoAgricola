@@ -310,6 +310,53 @@
     box-shadow: 0 4px 12px rgb(22 58 25 / 0.08);
 }
 
+.dashboard-periodo-personalizado {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dashboard-periodo-personalizado label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.dashboard-periodo-personalizado input {
+    min-height: 34px;
+    padding: 0 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.dashboard-periodo-personalizado button {
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--background);
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.dashboard-periodo-personalizado button:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--secondary);
+}
+
 .dashboard-grafico-legenda {
     display: flex;
     align-items: center;
@@ -947,6 +994,17 @@ button:hover:not(:disabled) {
     .dashboard-grafico-periodos button {
         flex: 1;
         padding-inline: 8px;
+    }
+
+    .dashboard-periodo-personalizado {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dashboard-periodo-personalizado label,
+    .dashboard-periodo-personalizado input,
+    .dashboard-periodo-personalizado button {
+        width: 100%;
     }
 
     .dashboard-grafico-legenda {

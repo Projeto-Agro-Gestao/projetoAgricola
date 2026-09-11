@@ -319,6 +319,16 @@ function Dashboard() {
     ] = useState(30)
 
     const [
+        dataInicialPersonalizada,
+        setDataInicialPersonalizada,
+    ] = useState('')
+
+    const [
+        dataFinalPersonalizada,
+        setDataFinalPersonalizada,
+    ] = useState('')
+
+    const [
         graficoVisivel,
         setGraficoVisivel,
     ] = useState(true)
@@ -341,6 +351,30 @@ function Dashboard() {
     const [erro, setErro] =
         useState('')
 
+    const periodoSelecionado = useMemo(() => {
+        if (
+            dataInicialPersonalizada
+            && dataFinalPersonalizada
+        ) {
+            return {
+                dataInicial:
+                    dataInicialPersonalizada,
+                dataFinal:
+                    dataFinalPersonalizada,
+                personalizado: true,
+            }
+        }
+
+        return {
+            ...obterPeriodo(periodoGrafico),
+            personalizado: false,
+        }
+    }, [
+        dataFinalPersonalizada,
+        dataInicialPersonalizada,
+        periodoGrafico,
+    ])
+
     useEffect(() => {
         if (!sessao) {
             navigate('/login', {
@@ -360,15 +394,26 @@ function Dashboard() {
                 `${sessao.tipoToken} ${sessao.token}`,
         }
 
-        const periodo =
-            obterPeriodo(periodoGrafico)
+        if (
+            periodoSelecionado.dataInicial
+            > periodoSelecionado.dataFinal
+        ) {
+            setErro(
+                'A data inicial não pode ser maior que a data final.',
+            )
+            setFluxoCaixa([])
+            setCarregando(false)
+            setCarregandoGrafico(false)
+
+            return undefined
+        }
 
         const parametrosGrafico =
             new URLSearchParams({
                 dataInicial:
-                periodo.dataInicial,
+                periodoSelecionado.dataInicial,
                 dataFinal:
-                periodo.dataFinal,
+                periodoSelecionado.dataFinal,
             })
 
         async function carregarDashboard() {
@@ -509,7 +554,8 @@ function Dashboard() {
         }
     }, [
         navigate,
-        periodoGrafico,
+        periodoSelecionado.dataFinal,
+        periodoSelecionado.dataInicial,
         sessao,
     ])
 
@@ -623,9 +669,26 @@ function Dashboard() {
         try {
             setBaixandoRelatorio(tipo)
 
+            if (
+                periodoSelecionado.dataInicial
+                > periodoSelecionado.dataFinal
+            ) {
+                throw new Error(
+                    'A data inicial não pode ser maior que a data final.',
+                )
+            }
+
+            const parametrosRelatorio =
+                new URLSearchParams({
+                    dataInicial:
+                        periodoSelecionado.dataInicial,
+                    dataFinal:
+                        periodoSelecionado.dataFinal,
+                })
+
             const resposta =
                 await fetch(
-                    `${API_URL}/empresas/${empresaId}/relatorios/${tipo}`,
+                    `${API_URL}/empresas/${empresaId}/relatorios/${tipo}?${parametrosRelatorio}`,
                     {
                         headers: {
                             Authorization:
@@ -1023,8 +1086,8 @@ function Dashboard() {
                                 (dias) => (
                                     <button
                                         className={
-                                            periodoGrafico
-                                            === dias
+                                            !periodoSelecionado.personalizado
+                                            && periodoGrafico === dias
                                                 ? 'dashboard-grafico-periodo-ativo'
                                                 : ''
                                         }
@@ -1032,16 +1095,74 @@ function Dashboard() {
                                             carregandoGrafico
                                         }
                                         key={dias}
-                                        onClick={() =>
+                                        onClick={() => {
+                                            setDataInicialPersonalizada(
+                                                '',
+                                            )
+                                            setDataFinalPersonalizada(
+                                                '',
+                                            )
                                             setPeriodoGrafico(
                                                 dias,
                                             )
-                                        }
+                                        }}
                                         type="button"
                                     >
                                         {dias} dias
                                     </button>
                                 ),
+                            )}
+                        </div>
+
+                        <div className="dashboard-periodo-personalizado">
+                            <label>
+                                De
+                                <input
+                                    disabled={carregandoGrafico}
+                                    onChange={(evento) =>
+                                        setDataInicialPersonalizada(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    type="date"
+                                    value={
+                                        dataInicialPersonalizada
+                                    }
+                                />
+                            </label>
+
+                            <label>
+                                Até
+                                <input
+                                    disabled={carregandoGrafico}
+                                    onChange={(evento) =>
+                                        setDataFinalPersonalizada(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    type="date"
+                                    value={
+                                        dataFinalPersonalizada
+                                    }
+                                />
+                            </label>
+
+                            {(dataInicialPersonalizada
+                                || dataFinalPersonalizada) && (
+                                <button
+                                    disabled={carregandoGrafico}
+                                    onClick={() => {
+                                        setDataInicialPersonalizada(
+                                            '',
+                                        )
+                                        setDataFinalPersonalizada(
+                                            '',
+                                        )
+                                    }}
+                                    type="button"
+                                >
+                                    Limpar datas
+                                </button>
                             )}
                         </div>
                     </div>
