@@ -17,6 +17,28 @@ const ESPACO_HORIZONTAL = 54
 const ESPACO_SUPERIOR = 24
 const ESPACO_INFERIOR = 42
 
+function IconeLixeira() {
+    return (
+        <svg
+            aria-hidden="true"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="18"
+        >
+            <path d="M3 6h18" />
+            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+        </svg>
+    )
+}
+
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -1863,6 +1885,7 @@ function ContasFinanceiras() {
                         </button>
 
                         <button
+                            className="contas-atalho-lixeira"
                             onClick={() => {
                                 if (mostrandoLixeira) {
                                     setMostrandoLixeira(false)
@@ -1873,6 +1896,9 @@ function ContasFinanceiras() {
                             }}
                             type="button"
                         >
+                            <span>
+                                <IconeLixeira />
+                            </span>
                             <span>âŒ«</span>
                             {mostrandoLixeira
                                 ? 'Ver contas cadastradas'
@@ -2003,7 +2029,9 @@ function ContasFinanceiras() {
                     ) : contasVisiveis.length === 0 ? (
                         <div className="contas-vazio">
                             <strong>
-                                Nenhuma conta encontrada
+                                {mostrandoLixeira
+                                    ? 'A lixeira está vazia'
+                                    : 'Nenhuma conta encontrada'}
                             </strong>
 
                             <p>

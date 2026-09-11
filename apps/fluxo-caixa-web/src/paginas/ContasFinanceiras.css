@@ -378,6 +378,15 @@
     font-weight: 900;
 }
 
+.contas-atalhos span svg {
+    width: 16px;
+    height: 16px;
+}
+
+.contas-atalho-lixeira span:nth-of-type(2) {
+    display: none;
+}
+
 .contas-lista-topo {
     display: flex;
     align-items: flex-end;
