@@ -268,6 +268,10 @@
 }
 
 .movimentacoes-lixeira {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     min-height: 48px;
     padding: 0 18px;
     border: 1px solid #cad8c5;
@@ -278,6 +282,10 @@
     font-size: 14px;
     font-weight: 800;
     cursor: pointer;
+}
+
+.movimentacoes-lixeira svg {
+    flex-shrink: 0;
 }
 
 .movimentacoes-lixeira:hover {
@@ -508,7 +516,11 @@
 
     .movimentacoes-cabecalho-acoes,
     .movimentacoes-lixeira {
-        width: 100%;
+        display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
     }
 
     .movimentacoes-tabela {

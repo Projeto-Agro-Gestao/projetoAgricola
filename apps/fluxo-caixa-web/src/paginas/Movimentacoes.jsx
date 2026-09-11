@@ -17,6 +17,27 @@ function formatarDinheiro(valor) {
     }).format(valor ?? 0)
 }
 
+function IconeLixeira() {
+    return (
+        <svg
+            aria-hidden="true"
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="18"
+        >
+            <path d="M3 6h18" />
+            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+        </svg>
+    )
+}
 function formatarData(data) {
     if (!data) {
         return ''
@@ -934,6 +955,7 @@ function Movimentacoes() {
                         }}
                         type="button"
                     >
+                        <IconeLixeira />
                         {mostrandoLixeira
                             ? 'Ver movimentações'
                             : 'Lixeira'}
