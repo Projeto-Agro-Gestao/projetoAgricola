@@ -1,5 +1,6 @@
 package br.com.fluxocaixa.admin;
 
+import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
 import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
@@ -25,13 +26,16 @@ public class AdminService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAcessoRepository usuarioAcessoRepository;
+    private final CategoriaSugeridaService categoriaSugeridaService;
 
     public AdminService(
             UsuarioRepository usuarioRepository,
-            UsuarioAcessoRepository usuarioAcessoRepository) {
+            UsuarioAcessoRepository usuarioAcessoRepository,
+            CategoriaSugeridaService categoriaSugeridaService) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
+        this.categoriaSugeridaService = categoriaSugeridaService;
     }
 
     @Transactional(readOnly = true)
@@ -108,6 +112,11 @@ public class AdminService {
                 )
         );
         usuario.getEmpresa().configurarAtividades(
+                request.agriculturaAtiva(),
+                request.pecuariaAtiva()
+        );
+        categoriaSugeridaService.garantirCategoriasPorAtividade(
+                usuario.getEmpresa(),
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
         );

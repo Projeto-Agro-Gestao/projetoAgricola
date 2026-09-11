@@ -36,6 +36,7 @@ function IconeLixeira() {
         </svg>
     )
 }
+
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -115,6 +116,35 @@ function obterPeriodo(dias) {
             formatarDataParaApi(dataInicial),
         dataFinal:
             formatarDataParaApi(dataFinal),
+    }
+}
+
+function obterPerfilAtividade(usuario) {
+    const agriculturaAtiva =
+        usuario?.agriculturaAtiva ?? true
+    const pecuariaAtiva =
+        usuario?.pecuariaAtiva ?? false
+
+    if (agriculturaAtiva && pecuariaAtiva) {
+        return {
+            titulo: 'Agricultura e pecuária',
+            descricao:
+                'Categorias preparadas para lavoura, criação e manejo.',
+        }
+    }
+
+    if (pecuariaAtiva) {
+        return {
+            titulo: 'Pecuária',
+            descricao:
+                'Categorias preparadas para animais, leite e manejo.',
+        }
+    }
+
+    return {
+        titulo: 'Agricultura',
+        descricao:
+            'Categorias preparadas para lavoura, safra e insumos.',
     }
 }
 
@@ -299,6 +329,8 @@ function Dashboard() {
 
     const [sessao] =
         useState(obterSessao)
+    const perfilAtividade =
+        obterPerfilAtividade(sessao?.usuario)
 
     const [resumo, setResumo] =
         useState(null)
@@ -879,6 +911,16 @@ function Dashboard() {
                             resultado da sua
                             propriedade.
                         </p>
+
+                        <div className="dashboard-perfil-atividade">
+                            <strong>
+                                {perfilAtividade.titulo}
+                            </strong>
+
+                            <span>
+                                {perfilAtividade.descricao}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="dashboard-acoes">
