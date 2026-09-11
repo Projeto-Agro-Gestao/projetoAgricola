@@ -96,6 +96,24 @@ async function obterMensagemDeErro(
     return dadosErro?.mensagem ?? mensagemPadrao
 }
 
+function normalizarParaComparacao(texto) {
+    return String(texto ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase()
+}
+
+function categoriaEhOriginal(categoria, movimentacao) {
+    return (
+        categoria?.tipo === movimentacao?.tipo &&
+        normalizarParaComparacao(categoria?.nome) ===
+            normalizarParaComparacao(
+                movimentacao?.categoriaNome,
+            )
+    )
+}
+
 function Movimentacoes() {
     const navigate = useNavigate()
     const [parametros] = useSearchParams()
@@ -185,6 +203,23 @@ function Movimentacoes() {
     const movimentacoesExibidas = mostrandoLixeira
         ? movimentacoesLixeira
         : movimentacoes
+
+    const categoriaOriginalRestauracao =
+        movimentacaoParaConverter
+            ?.acaoCategoria === 'restaurar'
+            ? categoriasConversao.find((categoria) =>
+                  categoriaEhOriginal(
+                      categoria,
+                      movimentacaoParaConverter,
+                  ),
+              )
+            : null
+
+    const usandoCategoriaOriginal =
+        Boolean(categoriaOriginalRestauracao) &&
+        categoriaConversaoId ===
+            String(categoriaOriginalRestauracao.id) &&
+        !novaCategoriaNome.trim()
 
     function criarCabecalhos(possuiCorpo = false) {
         const cabecalhos = {
@@ -479,7 +514,7 @@ function Movimentacoes() {
                 throw new Error(
                     await obterMensagemDeErro(
                         resposta,
-                        'NÃ£o foi possÃ­vel excluir permanentemente a movimentaÃ§Ã£o.',
+                        'Não foi possível excluir permanentemente a movimentação.',
                     ),
                 )
             }
@@ -495,7 +530,7 @@ function Movimentacoes() {
             setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
-                    : 'NÃ£o foi possÃ­vel excluir permanentemente a movimentaÃ§Ã£o.',
+                    : 'Não foi possível excluir permanentemente a movimentação.',
             )
         } finally {
             setExcluindoId(null)
@@ -615,9 +650,23 @@ function Movimentacoes() {
 
             setCategoriasConversao(categoriasAtivas)
 
-            if (categoriasAtivas.length > 0) {
+            const categoriaOriginal =
+                acao === 'restaurar'
+                    ? categoriasAtivas.find(
+                          (categoria) =>
+                              categoriaEhOriginal(
+                                  categoria,
+                                  movimentacao,
+                              ),
+                      )
+                    : null
+
+            const categoriaInicial =
+                categoriaOriginal ?? categoriasAtivas[0]
+
+            if (categoriaInicial) {
                 setCategoriaConversaoId(
-                    String(categoriasAtivas[0].id),
+                    String(categoriaInicial.id),
                 )
             }
         } catch (erroDaRequisicao) {
@@ -1012,7 +1061,13 @@ function Movimentacoes() {
                                         </td>
 
                                         <td>
-                                            <div className="movimentacoes-acoes">
+                                            <div
+                                                className={
+                                                    mostrandoLixeira
+                                                        ? 'movimentacoes-acoes movimentacoes-acoes-lixeira'
+                                                        : 'movimentacoes-acoes'
+                                                }
+                                            >
                                                 {mostrandoLixeira ? (
                                                     <>
                                                         <button
@@ -1031,7 +1086,7 @@ function Movimentacoes() {
                                                             {restaurandoId ===
                                                             movimentacao.id
                                                                 ? 'Restaurando...'
-                                                                : 'Restaurar movimentaÃ§Ã£o'}
+                                                                : 'Restaurar movimentação'}
                                                         </button>
 
                                                         <button
@@ -1200,26 +1255,26 @@ function Movimentacoes() {
                     >
                         <div className="movimentacoes-modal-topo">
                             <p className="movimentacoes-etiqueta">
-                                ExclusÃ£o definitiva
+                                Exclusão definitiva
                             </p>
 
                             <button
-                                aria-label="Fechar confirmaÃ§Ã£o"
+                                aria-label="Fechar confirmação"
                                 onClick={
                                     fecharConfirmacaoExclusaoPermanente
                                 }
                                 type="button"
                             >
-                                Ã—
+                                ×
                             </button>
                         </div>
 
                         <h2>Excluir permanentemente?</h2>
 
                         <p>
-                            A movimentaÃ§Ã£o "
+                            A movimentação "
                             {movimentacaoParaExcluirPermanente.descricao}
-                            " serÃ¡ apagada de vez e nÃ£o poderÃ¡ ser
+                            " será apagada de vez e não poderá ser
                             recuperada.
                         </p>
 
@@ -1306,14 +1361,66 @@ function Movimentacoes() {
                             className="movimentacoes-modal-form"
                             onSubmit={confirmarConversao}
                         >
+                            {movimentacaoParaConverter.acaoCategoria ===
+                                'restaurar' && (
+                                <div className="movimentacoes-restauracao-opcoes">
+                                    <strong>
+                                        Categoria original
+                                    </strong>
+
+                                    {categoriaOriginalRestauracao ? (
+                                        <button
+                                            className={
+                                                usandoCategoriaOriginal
+                                                    ? 'movimentacoes-opcao-original selecionada'
+                                                    : 'movimentacoes-opcao-original'
+                                            }
+                                            disabled={
+                                                carregandoCategoriasConversao ||
+                                                Boolean(restaurandoId)
+                                            }
+                                            onClick={() => {
+                                                setCategoriaConversaoId(
+                                                    String(
+                                                        categoriaOriginalRestauracao.id,
+                                                    ),
+                                                )
+                                                setNovaCategoriaNome('')
+                                            }}
+                                            type="button"
+                                        >
+                                            Restaurar em{' '}
+                                            {
+                                                categoriaOriginalRestauracao.nome
+                                            }
+                                        </button>
+                                    ) : (
+                                        <p>
+                                            A categoria original "
+                                            {
+                                                movimentacaoParaConverter.categoriaNome
+                                            }
+                                            " não está ativa ou não
+                                            existe mais. Escolha outra
+                                            categoria abaixo ou crie uma
+                                            nova.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             <label htmlFor="categoriaConversao">
-                                Categoria de destino
+                                {movimentacaoParaConverter.acaoCategoria ===
+                                'restaurar'
+                                    ? 'Restaurar para outra categoria'
+                                    : 'Categoria de destino'}
                             </label>
 
                             <select
                                 disabled={
                                     carregandoCategoriasConversao ||
-                                    Boolean(convertendoId)
+                                    Boolean(convertendoId) ||
+                                    Boolean(restaurandoId)
                                 }
                                 id="categoriaConversao"
                                 onChange={(evento) =>
@@ -1399,7 +1506,10 @@ function Movimentacoes() {
                                 >
                                     {convertendoId || restaurandoId
                                         ? 'Salvando...'
-                                        : 'Confirmar troca'}
+                                        : movimentacaoParaConverter.acaoCategoria ===
+                                            'restaurar'
+                                          ? 'Restaurar movimentação'
+                                          : 'Confirmar troca'}
                                 </button>
                             </div>
                         </form>
