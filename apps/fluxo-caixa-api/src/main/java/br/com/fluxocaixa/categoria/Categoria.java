@@ -43,6 +43,10 @@ public class Categoria {
     @Column(nullable = false, length = 20)
     private TipoMovimentacao tipo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AreaCategoria area = AreaCategoria.GERAL;
+
     @Column(nullable = false)
     private boolean ativo = true;
 
@@ -72,9 +76,21 @@ public class Categoria {
             String nome,
             TipoMovimentacao tipo) {
 
+        this(empresa, nome, tipo, AreaCategoria.GERAL);
+    }
+
+    public Categoria(
+            Empresa empresa,
+            String nome,
+            TipoMovimentacao tipo,
+            AreaCategoria area) {
+
         this.empresa = empresa;
         this.nome = nome;
         this.tipo = tipo;
+        this.area = area != null
+                ? area
+                : AreaCategoria.GERAL;
     }
 
     public Long getId() {
@@ -91,6 +107,10 @@ public class Categoria {
 
     public TipoMovimentacao getTipo() {
         return tipo;
+    }
+
+    public AreaCategoria getArea() {
+        return area;
     }
 
     public boolean isAtivo() {
@@ -111,6 +131,12 @@ public class Categoria {
 
     public void alterarNome(String nome) {
         this.nome = nome;
+    }
+
+    public void alterarArea(AreaCategoria area) {
+        this.area = area != null
+                ? area
+                : AreaCategoria.GERAL;
     }
 
     public void desativar() {

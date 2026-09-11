@@ -10,7 +10,9 @@ public record AtualizarCategoriaRequest(
                 max = 100,
                 message = "O nome da categoria deve possuir no máximo 100 caracteres"
         )
-        String nome
+        String nome,
+
+        AreaCategoria area
 
 ) {
 }

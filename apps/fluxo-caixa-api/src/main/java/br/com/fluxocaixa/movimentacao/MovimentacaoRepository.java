@@ -1,6 +1,7 @@
 package br.com.fluxocaixa.movimentacao;
 
 import br.com.fluxocaixa.categoria.Categoria;
+import br.com.fluxocaixa.categoria.AreaCategoria;
 import br.com.fluxocaixa.dashboard.TotalDiarioMovimentacaoProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -126,9 +127,13 @@ public interface MovimentacaoRepository
               AND movimentacao.tipo = :tipo
               AND movimentacao.dataMovimentacao
                   BETWEEN :dataInicial AND :dataFinal
+              AND (
+                    :area IS NULL
+                    OR movimentacao.categoria.area = :area
+              )
               AND movimentacao.excluida = false
             """)
-    BigDecimal somarPorTipoEPeriodo(
+    BigDecimal somarPorTipoEPeriodoEArea(
             @Param("empresaId")
             Long empresaId,
             @Param("tipo")
@@ -136,7 +141,9 @@ public interface MovimentacaoRepository
             @Param("dataInicial")
             LocalDate dataInicial,
             @Param("dataFinal")
-            LocalDate dataFinal
+            LocalDate dataFinal,
+            @Param("area")
+            AreaCategoria area
     );
 
     @Query("""
@@ -148,6 +155,10 @@ public interface MovimentacaoRepository
             WHERE movimentacao.empresa.id = :empresaId
               AND movimentacao.dataMovimentacao
                   BETWEEN :dataInicial AND :dataFinal
+              AND (
+                    :area IS NULL
+                    OR movimentacao.categoria.area = :area
+              )
               AND movimentacao.excluida = false
             GROUP BY
                 movimentacao.dataMovimentacao,
@@ -156,13 +167,15 @@ public interface MovimentacaoRepository
                 movimentacao.dataMovimentacao ASC
             """)
     List<TotalDiarioMovimentacaoProjection>
-    somarTotaisDiariosPorPeriodo(
+    somarTotaisDiariosPorPeriodoEArea(
             @Param("empresaId")
             Long empresaId,
             @Param("dataInicial")
             LocalDate dataInicial,
             @Param("dataFinal")
-            LocalDate dataFinal
+            LocalDate dataFinal,
+            @Param("area")
+            AreaCategoria area
     );
 
     @Query("""

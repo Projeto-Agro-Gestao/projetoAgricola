@@ -10,6 +10,27 @@ import {
 import { API_BASE_URL } from '../config.js'
 import './Categorias.css'
 
+const AREAS_CATEGORIA = [
+    {
+        valor: 'GERAL',
+        rotulo: 'Geral',
+    },
+    {
+        valor: 'AGRICULTURA',
+        rotulo: 'Agricultura',
+    },
+    {
+        valor: 'PECUARIA',
+        rotulo: 'Pecuaria',
+    },
+]
+
+function obterRotuloArea(area) {
+    return AREAS_CATEGORIA.find(
+        (item) => item.valor === area,
+    )?.rotulo ?? 'Geral'
+}
+
 function limparSessao() {
     localStorage.removeItem('agrogestao_token')
     localStorage.removeItem('agrogestao_tipo_token')
@@ -114,6 +135,7 @@ function Categorias() {
 
     const [nome, setNome] = useState('')
     const [tipo, setTipo] = useState('RECEITA')
+    const [area, setArea] = useState('GERAL')
     const [erro, setErro] = useState('')
     const [sucesso, setSucesso] = useState('')
     const [confirmacao, setConfirmacao] =
@@ -297,6 +319,7 @@ function Categorias() {
         setCategoriaEmEdicao(null)
         setNome('')
         setTipo('RECEITA')
+        setArea('GERAL')
         setErro('')
     }
 
@@ -304,6 +327,7 @@ function Categorias() {
         setCategoriaEmEdicao(categoria)
         setNome(categoria.nome)
         setTipo(categoria.tipo)
+        setArea(categoria.area ?? 'GERAL')
         setErro('')
         setSucesso('')
 
@@ -355,10 +379,12 @@ function Categorias() {
         const corpo = editando
             ? {
                 nome: nome.trim(),
+                area,
             }
             : {
                 nome: nome.trim(),
                 tipo,
+                area,
             }
 
         try {
@@ -392,6 +418,7 @@ function Categorias() {
             setCategoriaEmEdicao(null)
             setNome('')
             setTipo('RECEITA')
+            setArea('GERAL')
 
             await carregarCategorias()
         } catch (erroDaRequisicao) {
@@ -661,6 +688,10 @@ function Categorias() {
                     </span>
                 </div>
 
+                <span className="categoria-area">
+                    {obterRotuloArea(categoria.area)}
+                </span>
+
                 <h4>{categoria.nome}</h4>
                 <p>{categoria.explicacao}</p>
 
@@ -820,6 +851,34 @@ function Categorias() {
                                 <option value="DESPESA">
                                     Despesa — saiu dinheiro
                                 </option>
+                            </select>
+                        </div>
+
+                        <div className="categorias-campo">
+                            <label htmlFor="areaCategoria">
+                                Area
+                            </label>
+
+                            <select
+                                disabled={salvando}
+                                id="areaCategoria"
+                                onChange={(evento) =>
+                                    setArea(
+                                        evento.target.value,
+                                    )
+                                }
+                                value={area}
+                            >
+                                {AREAS_CATEGORIA.map(
+                                    (item) => (
+                                        <option
+                                            key={item.valor}
+                                            value={item.valor}
+                                        >
+                                            {item.rotulo}
+                                        </option>
+                                    ),
+                                )}
                             </select>
                         </div>
                     </div>

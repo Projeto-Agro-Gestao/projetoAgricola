@@ -64,62 +64,73 @@ public class CategoriaSugeridaService {
         adicionarCategoria(
                 categorias,
                 "Outras receitas",
-                TipoMovimentacao.RECEITA
+                TipoMovimentacao.RECEITA,
+                AreaCategoria.GERAL
         );
 
         adicionarCategoria(
                 categorias,
                 "Combustível",
-                TipoMovimentacao.DESPESA
+                TipoMovimentacao.DESPESA,
+                AreaCategoria.GERAL
         );
 
         adicionarCategoria(
                 categorias,
                 "Manutenção",
-                TipoMovimentacao.DESPESA
+                TipoMovimentacao.DESPESA,
+                AreaCategoria.GERAL
         );
 
         adicionarCategoria(
                 categorias,
                 "Outras despesas",
-                TipoMovimentacao.DESPESA
+                TipoMovimentacao.DESPESA,
+                AreaCategoria.GERAL
         );
     }
 
     private void adicionarCategoriasAgricultura(
             List<CategoriaSugerida> categorias) {
 
-        adicionarCategoria(categorias, "Venda de soja", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Venda de milho", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Venda da produção", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Sementes", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Adubo e fertilizantes", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Defensivos agrícolas", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Diesel e combustível", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Máquinas e implementos", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Arrendamento", TipoMovimentacao.DESPESA);
+        adicionarCategoria(categorias, "Venda de soja", TipoMovimentacao.RECEITA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Venda de milho", TipoMovimentacao.RECEITA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Venda da produção", TipoMovimentacao.RECEITA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Sementes", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Adubo e fertilizantes", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Defensivos agrícolas", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Diesel e combustível", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Máquinas e implementos", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
+        adicionarCategoria(categorias, "Arrendamento", TipoMovimentacao.DESPESA, AreaCategoria.AGRICULTURA);
     }
 
     private void adicionarCategoriasPecuaria(
             List<CategoriaSugerida> categorias) {
 
-        adicionarCategoria(categorias, "Venda de gado", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Venda de leite", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Venda de animais", TipoMovimentacao.RECEITA);
-        adicionarCategoria(categorias, "Ração", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Sal mineral", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Vacinas", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Veterinário", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Pastagem", TipoMovimentacao.DESPESA);
-        adicionarCategoria(categorias, "Compra de bezerros", TipoMovimentacao.DESPESA);
+        adicionarCategoria(categorias, "Venda de gado", TipoMovimentacao.RECEITA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Venda de leite", TipoMovimentacao.RECEITA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Venda de animais", TipoMovimentacao.RECEITA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Ração", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Sal mineral", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Vacinas", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Veterinário", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Pastagem", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
+        adicionarCategoria(categorias, "Compra de bezerros", TipoMovimentacao.DESPESA, AreaCategoria.PECUARIA);
     }
 
     private void adicionarCategoria(
             List<CategoriaSugerida> categorias,
             String nome,
-            TipoMovimentacao tipo) {
+            TipoMovimentacao tipo,
+            AreaCategoria area) {
 
-        categorias.add(new CategoriaSugerida(nome, tipo));
+        categorias.add(
+                new CategoriaSugerida(
+                        nome,
+                        tipo,
+                        area
+                )
+        );
     }
 
     private void salvarCategoriasNovas(
@@ -140,7 +151,8 @@ public class CategoriaSugeridaService {
                                 new Categoria(
                                         empresa,
                                         categoria.nome(),
-                                        categoria.tipo()
+                                        categoria.tipo(),
+                                        categoria.area()
                                 )
                         )
                         .toList();
@@ -152,6 +164,7 @@ public class CategoriaSugeridaService {
 
     private record CategoriaSugerida(
             String nome,
-            TipoMovimentacao tipo) {
+            TipoMovimentacao tipo,
+            AreaCategoria area) {
     }
 }

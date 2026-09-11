@@ -15,7 +15,9 @@ public record CriarCategoriaRequest(
         String nome,
 
         @NotNull(message = "Informe se o dinheiro entrou ou saiu")
-        TipoMovimentacao tipo
+        TipoMovimentacao tipo,
+
+        AreaCategoria area
 
 ) {
 }

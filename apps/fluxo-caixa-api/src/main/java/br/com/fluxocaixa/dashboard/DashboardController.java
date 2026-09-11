@@ -1,5 +1,6 @@
 package br.com.fluxocaixa.dashboard;
 
+import br.com.fluxocaixa.categoria.AreaCategoria;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +40,10 @@ public class DashboardController {
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE
             )
-            LocalDate dataFinal) {
+            LocalDate dataFinal,
+
+            @RequestParam(required = false)
+            AreaCategoria area) {
 
         LocalDate hoje = LocalDate.now();
 
@@ -57,7 +61,8 @@ public class DashboardController {
                 dashboardService.obterResumo(
                         empresaId,
                         inicio,
-                        fim
+                        fim,
+                        area
                 );
 
         return ResponseEntity.ok(resumo);
@@ -79,7 +84,10 @@ public class DashboardController {
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE
             )
-            LocalDate dataFinal) {
+            LocalDate dataFinal,
+
+            @RequestParam(required = false)
+            AreaCategoria area) {
 
         LocalDate hoje = LocalDate.now();
 
@@ -97,7 +105,8 @@ public class DashboardController {
                 dashboardService.obterFluxoCaixa(
                         empresaId,
                         inicio,
-                        fim
+                        fim,
+                        area
                 );
 
         return ResponseEntity.ok(pontos);

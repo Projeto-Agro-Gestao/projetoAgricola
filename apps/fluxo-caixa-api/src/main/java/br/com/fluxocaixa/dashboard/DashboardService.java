@@ -2,6 +2,7 @@ package br.com.fluxocaixa.dashboard;
 
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.categoria.AreaCategoria;
 import br.com.fluxocaixa.movimentacao.MovimentacaoRepository;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacao;
@@ -45,6 +46,21 @@ public class DashboardService {
             LocalDate dataInicial,
             LocalDate dataFinal) {
 
+        return obterResumo(
+                empresaId,
+                dataInicial,
+                dataFinal,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ResumoFinanceiroResponse obterResumo(
+            Long empresaId,
+            LocalDate dataInicial,
+            LocalDate dataFinal,
+            AreaCategoria area) {
+
         verificarEmpresa(empresaId);
         verificarPeriodo(dataInicial, dataFinal);
 
@@ -52,14 +68,16 @@ public class DashboardService {
                 empresaId,
                 TipoMovimentacao.RECEITA,
                 dataInicial,
-                dataFinal
+                dataFinal,
+                area
         );
 
         BigDecimal totalSaiu = obterTotal(
                 empresaId,
                 TipoMovimentacao.DESPESA,
                 dataInicial,
-                dataFinal
+                dataFinal,
+                area
         );
 
         BigDecimal quantoSobrou =
@@ -95,16 +113,33 @@ public class DashboardService {
             LocalDate dataInicial,
             LocalDate dataFinal) {
 
+        return obterFluxoCaixa(
+                empresaId,
+                dataInicial,
+                dataFinal,
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<PontoFluxoCaixaResponse>
+    obterFluxoCaixa(
+            Long empresaId,
+            LocalDate dataInicial,
+            LocalDate dataFinal,
+            AreaCategoria area) {
+
         verificarEmpresa(empresaId);
         verificarPeriodo(dataInicial, dataFinal);
 
         List<TotalDiarioMovimentacaoProjection>
                 totaisEncontrados =
                 movimentacaoRepository
-                        .somarTotaisDiariosPorPeriodo(
+                        .somarTotaisDiariosPorPeriodoEArea(
                                 empresaId,
                                 dataInicial,
-                                dataFinal
+                                dataFinal,
+                                area
                         );
 
         Map<LocalDate, BigDecimal> receitasPorData =
@@ -205,15 +240,17 @@ public class DashboardService {
             Long empresaId,
             TipoMovimentacao tipo,
             LocalDate dataInicial,
-            LocalDate dataFinal) {
+            LocalDate dataFinal,
+            AreaCategoria area) {
 
         BigDecimal total =
                 movimentacaoRepository
-                        .somarPorTipoEPeriodo(
+                        .somarPorTipoEPeriodoEArea(
                                 empresaId,
                                 tipo,
                                 dataInicial,
-                                dataFinal
+                                dataFinal,
+                                area
                         );
 
         return normalizarValor(total);

@@ -15,6 +15,21 @@ const ALTURA_GRAFICO = 220
 const ESPACO_SUPERIOR = 18
 const ESPACO_INFERIOR = 20
 
+const AREAS_DASHBOARD = [
+    {
+        valor: 'TODAS',
+        rotulo: 'Tudo',
+    },
+    {
+        valor: 'AGRICULTURA',
+        rotulo: 'Agricultura',
+    },
+    {
+        valor: 'PECUARIA',
+        rotulo: 'Pecuaria',
+    },
+]
+
 function IconeLixeira() {
     return (
         <svg
@@ -361,6 +376,11 @@ function Dashboard() {
     ] = useState('')
 
     const [
+        areaSelecionada,
+        setAreaSelecionada,
+    ] = useState('TODAS')
+
+    const [
         graficoVisivel,
         setGraficoVisivel,
     ] = useState(true)
@@ -448,6 +468,13 @@ function Dashboard() {
                 periodoSelecionado.dataFinal,
             })
 
+        if (areaSelecionada !== 'TODAS') {
+            parametrosGrafico.set(
+                'area',
+                areaSelecionada,
+            )
+        }
+
         async function carregarDashboard() {
             try {
                 setCarregandoGrafico(true)
@@ -458,7 +485,7 @@ function Dashboard() {
                     respostaFluxoCaixa,
                 ] = await Promise.all([
                     fetch(
-                        `${API_URL}/empresas/${empresaId}/dashboard/resumo`,
+                        `${API_URL}/empresas/${empresaId}/dashboard/resumo?${parametrosGrafico}`,
                         {
                             headers: cabecalhos,
                         },
@@ -586,6 +613,7 @@ function Dashboard() {
         }
     }, [
         navigate,
+        areaSelecionada,
         periodoSelecionado.dataFinal,
         periodoSelecionado.dataInicial,
         sessao,
@@ -1206,6 +1234,31 @@ function Dashboard() {
                                     Limpar datas
                                 </button>
                             )}
+                        </div>
+
+                        <div
+                            aria-label="Area produtiva"
+                            className="dashboard-area-filtro"
+                        >
+                            {AREAS_DASHBOARD.map((area) => (
+                                <button
+                                    className={
+                                        areaSelecionada === area.valor
+                                            ? 'dashboard-area-filtro-ativo'
+                                            : ''
+                                    }
+                                    disabled={carregandoGrafico}
+                                    key={area.valor}
+                                    onClick={() =>
+                                        setAreaSelecionada(
+                                            area.valor,
+                                        )
+                                    }
+                                    type="button"
+                                >
+                                    {area.rotulo}
+                                </button>
+                            ))}
                         </div>
                     </div>
 

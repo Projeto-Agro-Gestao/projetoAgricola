@@ -51,6 +51,8 @@ public class CategoriaService {
 
         String nome = normalizarNome(request.nome());
         TipoMovimentacao tipo = request.tipo();
+        AreaCategoria area =
+                normalizarArea(request.area());
 
         verificarCategoriaDuplicada(
                 empresaId,
@@ -61,7 +63,8 @@ public class CategoriaService {
         Categoria categoria = new Categoria(
                 empresa,
                 nome,
-                tipo
+                tipo,
+                area
         );
 
         Categoria categoriaSalva =
@@ -144,6 +147,14 @@ public class CategoriaService {
                         novoNome
                 );
 
+        AreaCategoria novaArea =
+                request.area() != null
+                        ? request.area()
+                        : categoria.getArea();
+
+        boolean areaFoiAlterada =
+                categoria.getArea() != novaArea;
+
         if (nomeFoiAlterado) {
             verificarCategoriaDuplicada(
                     empresaId,
@@ -152,6 +163,10 @@ public class CategoriaService {
             );
 
             categoria.alterarNome(novoNome);
+        }
+
+        if (areaFoiAlterada) {
+            categoria.alterarArea(novaArea);
         }
 
         Categoria categoriaSalva =
@@ -436,5 +451,13 @@ public class CategoriaService {
         return nome
                 .trim()
                 .replaceAll("\\s+", " ");
+    }
+
+    private AreaCategoria normalizarArea(
+            AreaCategoria area) {
+
+        return area != null
+                ? area
+                : AreaCategoria.GERAL;
     }
 }
