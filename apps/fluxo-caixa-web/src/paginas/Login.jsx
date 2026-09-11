@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import {
+    useEffect,
+    useState,
+} from 'react'
 import { Link, useNavigate } from 'react-router'
 import { API_LOGIN_URL } from '../config.js'
 import './Autenticacao.css'
@@ -9,8 +12,20 @@ function Login() {
     const [mostrarSenha, setMostrarSenha] = useState(false)
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
+    const [lembrarAcesso, setLembrarAcesso] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
+
+    useEffect(() => {
+        const emailLembrado = localStorage.getItem(
+            'agrogestao_email_lembrado',
+        )
+
+        if (emailLembrado) {
+            setEmail(emailLembrado)
+            setLembrarAcesso(true)
+        }
+    }, [])
 
     async function entrar(evento) {
         evento.preventDefault()
@@ -71,6 +86,17 @@ function Login() {
                 'agrogestao_token_expira_em',
                 String(expiraEm),
             )
+
+            if (lembrarAcesso) {
+                localStorage.setItem(
+                    'agrogestao_email_lembrado',
+                    email.trim(),
+                )
+            } else {
+                localStorage.removeItem(
+                    'agrogestao_email_lembrado',
+                )
+            }
 
             navigate(
                 dados.usuario.papel === 'ADMINISTRADOR'
@@ -222,6 +248,21 @@ function Login() {
                                 </button>
                             </div>
                         </div>
+
+                        <label className="autenticacao-lembrar">
+                            <input
+                                checked={lembrarAcesso}
+                                disabled={carregando}
+                                onChange={(evento) =>
+                                    setLembrarAcesso(
+                                        evento.target.checked,
+                                    )
+                                }
+                                type="checkbox"
+                            />
+
+                            <span>Lembrar meu acesso</span>
+                        </label>
 
                         <button
                             className="autenticacao-botao"

@@ -249,6 +249,31 @@
     color: var(--primary);
 }
 
+.autenticacao-lembrar {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 32px;
+    align-items: center;
+    gap: 8px;
+    color: var(--foreground);
+    font-size: 0.73rem;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.autenticacao-lembrar input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.autenticacao-lembrar:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
 .autenticacao-esqueci-senha {
     margin: 0;
     text-align: right;
