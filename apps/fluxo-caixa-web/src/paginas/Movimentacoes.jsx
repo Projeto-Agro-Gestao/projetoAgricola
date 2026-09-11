@@ -358,13 +358,13 @@ function Movimentacoes() {
 
     useEffect(() => {
         if (
-            searchParams.get('lixeira') === '1' &&
+            parametros.get('lixeira') === '1' &&
             !mostrandoLixeira
         ) {
             void carregarLixeira()
         }
     }, [
-        searchParams,
+        parametros,
         mostrandoLixeira,
     ])
 
