@@ -137,6 +137,7 @@ public class ContaFinanceiraService {
                         normalizarTextoOpcional(
                                 request.compradorNome()
                         ),
+                        null,
                         normalizarTextoOpcional(
                                 request.produtoNome()
                         ),
@@ -287,6 +288,7 @@ public class ContaFinanceiraService {
                     normalizarTextoOpcional(
                             request.compradorNome()
                     ),
+                    null,
                     normalizarTextoOpcional(
                             request.produtoNome()
                     ),
@@ -485,6 +487,7 @@ public class ContaFinanceiraService {
                             ),
                             conta.getFornecedor(),
                             conta.getCompradorNome(),
+                            null,
                             conta.getProdutoNome(),
                             conta.getProdutoClassificacao(),
                             conta.getQuantidade(),
@@ -614,6 +617,7 @@ public class ContaFinanceiraService {
                             observacaoMovimentacao,
                             conta.getFornecedor(),
                             conta.getCompradorNome(),
+                            null,
                             conta.getProdutoNome(),
                             conta.getProdutoClassificacao(),
                             conta.getQuantidade(),

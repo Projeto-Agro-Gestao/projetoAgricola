@@ -77,6 +77,7 @@ public class MovimentacaoService {
                 normalizarTextoOpcional(
                         request.compradorNome()
                 ),
+                null,
                 normalizarTextoOpcional(request.produtoNome()),
                 normalizarTextoOpcional(
                         request.produtoClassificacao()
@@ -232,6 +233,7 @@ public class MovimentacaoService {
                 normalizarTextoOpcional(
                         request.compradorNome()
                 ),
+                null,
                 normalizarTextoOpcional(request.produtoNome()),
                 normalizarTextoOpcional(
                         request.produtoClassificacao()

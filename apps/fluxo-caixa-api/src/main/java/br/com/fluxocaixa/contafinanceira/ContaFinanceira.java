@@ -3,6 +3,7 @@ package br.com.fluxocaixa.contafinanceira;
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.fornecedor.Fornecedor;
+import br.com.fluxocaixa.produto.Produto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -157,6 +158,10 @@ public class ContaFinanceira {
     )
     private String compradorNome;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produto_id")
+    private Produto produto;
+
     @Column(
             name = "produto_nome",
             length = 150
@@ -238,6 +243,7 @@ public class ContaFinanceira {
                 null,
                 null,
                 null,
+                null,
                 null
         );
     }
@@ -255,6 +261,7 @@ public class ContaFinanceira {
             String observacao,
             Fornecedor fornecedor,
             String compradorNome,
+            Produto produto,
             String produtoNome,
             String produtoClassificacao,
             BigDecimal quantidade,
@@ -275,8 +282,13 @@ public class ContaFinanceira {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
-        this.produtoNome = produtoNome;
-        this.produtoClassificacao = produtoClassificacao;
+        this.produto = produto;
+        this.produtoNome = produto == null
+                ? produtoNome
+                : produto.getNome();
+        this.produtoClassificacao = produto == null
+                ? produtoClassificacao
+                : produto.getCategoria().getNome();
         this.quantidade = quantidade;
         this.unidadeMedida = unidadeMedida;
         this.valorUnitario = calcularValorUnitario(
@@ -388,12 +400,20 @@ public class ContaFinanceira {
         return compradorNome;
     }
 
+    public Produto getProduto() {
+        return produto;
+    }
+
     public String getProdutoNome() {
-        return produtoNome;
+        return produto == null
+                ? produtoNome
+                : produto.getNome();
     }
 
     public String getProdutoClassificacao() {
-        return produtoClassificacao;
+        return produto == null
+                ? produtoClassificacao
+                : produto.getCategoria().getNome();
     }
 
     public BigDecimal getQuantidade() {
@@ -473,6 +493,7 @@ public class ContaFinanceira {
             String observacao,
             Fornecedor fornecedor,
             String compradorNome,
+            Produto produto,
             String produtoNome,
             String produtoClassificacao,
             BigDecimal quantidade,
@@ -502,8 +523,13 @@ public class ContaFinanceira {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
-        this.produtoNome = produtoNome;
-        this.produtoClassificacao = produtoClassificacao;
+        this.produto = produto;
+        this.produtoNome = produto == null
+                ? produtoNome
+                : produto.getNome();
+        this.produtoClassificacao = produto == null
+                ? produtoClassificacao
+                : produto.getCategoria().getNome();
         this.quantidade = quantidade;
         this.unidadeMedida = unidadeMedida;
         this.valorUnitario = calcularValorUnitario(

@@ -109,13 +109,32 @@
     gap: 10px;
 }
 
+.fornecedores-form-bloco {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.fornecedores-linha-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+.fornecedores-grade-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
 .fornecedores-card label {
     font-size: 0.82rem;
     font-weight: 800;
 }
 
 .fornecedores-card input,
-.fornecedores-card textarea {
+.fornecedores-card textarea,
+.fornecedores-card select {
     width: 100%;
     border: 1px solid var(--input);
     border-radius: var(--radius);
@@ -125,6 +144,11 @@
 }
 
 .fornecedores-card input {
+    min-height: 46px;
+    padding: 0 13px;
+}
+
+.fornecedores-card select {
     min-height: 46px;
     padding: 0 13px;
 }
@@ -202,6 +226,53 @@
 .fornecedores-barra-linha span {
     color: var(--muted-foreground);
     font-size: 0.8rem;
+}
+
+.fornecedores-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.fornecedores-tags span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.fornecedores-cotacoes-lista {
+    display: grid;
+    gap: 10px;
+}
+
+.fornecedores-cotacao-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(120px, 0.7fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+}
+
+.fornecedores-cotacao-item > div {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.fornecedores-cotacao-item span,
+.fornecedores-cotacao-item small {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
 }
 
 .fornecedores-barras {
@@ -344,6 +415,12 @@
     }
 
     .fornecedores-barra-linha {
+        grid-template-columns: 1fr;
+    }
+
+    .fornecedores-linha-form,
+    .fornecedores-grade-form,
+    .fornecedores-cotacao-item {
         grid-template-columns: 1fr;
     }
 
