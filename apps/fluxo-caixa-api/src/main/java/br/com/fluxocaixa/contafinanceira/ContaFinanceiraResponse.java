@@ -43,6 +43,11 @@ public record ContaFinanceiraResponse(
         Long fornecedorId,
         String fornecedorNome,
         String compradorNome,
+        String produtoNome,
+        String produtoClassificacao,
+        BigDecimal quantidade,
+        String unidadeMedida,
+        BigDecimal valorUnitario,
 
         boolean excluida,
         LocalDateTime excluidaEm,
@@ -117,6 +122,11 @@ public record ContaFinanceiraResponse(
                         : conta.getFornecedor().getId(),
                 conta.getFornecedorNome(),
                 conta.getCompradorNome(),
+                conta.getProdutoNome(),
+                conta.getProdutoClassificacao(),
+                conta.getQuantidade(),
+                conta.getUnidadeMedida(),
+                conta.getValorUnitario(),
 
                 conta.isExcluida(),
                 conta.getExcluidaEm(),

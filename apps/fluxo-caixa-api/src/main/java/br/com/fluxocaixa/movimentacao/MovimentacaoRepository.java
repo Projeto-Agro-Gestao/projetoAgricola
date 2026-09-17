@@ -202,4 +202,9 @@ public interface MovimentacaoRepository
             Long empresaId,
             Long fornecedorId
     );
+
+    List<Movimentacao>
+    findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
+            Long empresaId
+    );
 }

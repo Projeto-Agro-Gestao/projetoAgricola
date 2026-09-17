@@ -20,6 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -156,6 +157,34 @@ public class ContaFinanceira {
     )
     private String compradorNome;
 
+    @Column(
+            name = "produto_nome",
+            length = 150
+    )
+    private String produtoNome;
+
+    @Column(
+            name = "produto_classificacao",
+            length = 100
+    )
+    private String produtoClassificacao;
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal quantidade;
+
+    @Column(
+            name = "unidade_medida",
+            length = 30
+    )
+    private String unidadeMedida;
+
+    @Column(
+            name = "valor_unitario",
+            precision = 19,
+            scale = 4
+    )
+    private BigDecimal valorUnitario;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movimentacao_financeiro_id")
     private Movimentacao movimentacaoFinanceiro;
@@ -205,6 +234,10 @@ public class ContaFinanceira {
                 dataVencimento,
                 observacao,
                 null,
+                null,
+                null,
+                null,
+                null,
                 null
         );
     }
@@ -221,7 +254,11 @@ public class ContaFinanceira {
             LocalDate dataVencimento,
             String observacao,
             Fornecedor fornecedor,
-            String compradorNome) {
+            String compradorNome,
+            String produtoNome,
+            String produtoClassificacao,
+            BigDecimal quantidade,
+            String unidadeMedida) {
 
         this.empresa = empresa;
         this.categoria = categoria;
@@ -238,6 +275,14 @@ public class ContaFinanceira {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
+        this.produtoNome = produtoNome;
+        this.produtoClassificacao = produtoClassificacao;
+        this.quantidade = quantidade;
+        this.unidadeMedida = unidadeMedida;
+        this.valorUnitario = calcularValorUnitario(
+                valorTotal,
+                quantidade
+        );
         this.valorLiquidado = BigDecimal.ZERO;
 
         this.situacao =
@@ -343,6 +388,26 @@ public class ContaFinanceira {
         return compradorNome;
     }
 
+    public String getProdutoNome() {
+        return produtoNome;
+    }
+
+    public String getProdutoClassificacao() {
+        return produtoClassificacao;
+    }
+
+    public BigDecimal getQuantidade() {
+        return quantidade;
+    }
+
+    public String getUnidadeMedida() {
+        return unidadeMedida;
+    }
+
+    public BigDecimal getValorUnitario() {
+        return valorUnitario;
+    }
+
     public Movimentacao getMovimentacaoFinanceiro() {
         return movimentacaoFinanceiro;
     }
@@ -407,7 +472,11 @@ public class ContaFinanceira {
             LocalDate dataVencimento,
             String observacao,
             Fornecedor fornecedor,
-            String compradorNome) {
+            String compradorNome,
+            String produtoNome,
+            String produtoClassificacao,
+            BigDecimal quantidade,
+            String unidadeMedida) {
 
         if (
                 valorTotal.compareTo(
@@ -433,6 +502,14 @@ public class ContaFinanceira {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
+        this.produtoNome = produtoNome;
+        this.produtoClassificacao = produtoClassificacao;
+        this.quantidade = quantidade;
+        this.unidadeMedida = unidadeMedida;
+        this.valorUnitario = calcularValorUnitario(
+                valorTotal,
+                quantidade
+        );
 
         atualizarSituacaoAposAlteracao();
     }
@@ -633,5 +710,24 @@ public class ContaFinanceira {
                 SituacaoContaFinanceira.PARCIAL;
 
         dataLiquidacao = null;
+    }
+
+    private BigDecimal calcularValorUnitario(
+            BigDecimal valor,
+            BigDecimal quantidade) {
+
+        if (
+                valor == null
+                        || quantidade == null
+                        || quantidade.compareTo(BigDecimal.ZERO) <= 0
+        ) {
+            return null;
+        }
+
+        return valor.divide(
+                quantidade,
+                4,
+                RoundingMode.HALF_UP
+        );
     }
 }

@@ -59,7 +59,37 @@ public record CriarMovimentacaoRequest(
                 max = 150,
                 message = "O nome do comprador deve possuir no maximo 150 caracteres"
         )
-        String compradorNome
+        String compradorNome,
+
+        @Size(
+                max = 150,
+                message = "O nome da mercadoria deve possuir no maximo 150 caracteres"
+        )
+        String produtoNome,
+
+        @Size(
+                max = 100,
+                message = "A classificacao do produto deve possuir no maximo 100 caracteres"
+        )
+        String produtoClassificacao,
+
+        @DecimalMin(
+                value = "0.00",
+                inclusive = false,
+                message = "A quantidade deve ser maior que zero"
+        )
+        @Digits(
+                integer = 16,
+                fraction = 3,
+                message = "Digite uma quantidade valida"
+        )
+        BigDecimal quantidade,
+
+        @Size(
+                max = 30,
+                message = "A unidade deve possuir no maximo 30 caracteres"
+        )
+        String unidadeMedida
 
 ) {
 }

@@ -110,7 +110,38 @@ public record CriarContaFinanceiraRequest(
                         "O nome do comprador deve ter no maximo "
                                 + "150 caracteres"
         )
-        String compradorNome
+        String compradorNome,
+
+        @Size(
+                max = 150,
+                message =
+                        "O nome da mercadoria deve ter no maximo "
+                                + "150 caracteres"
+        )
+        String produtoNome,
+
+        @Size(
+                max = 100,
+                message =
+                        "A classificacao do produto deve ter no maximo "
+                                + "100 caracteres"
+        )
+        String produtoClassificacao,
+
+        @DecimalMin(
+                value = "0.00",
+                inclusive = false,
+                message =
+                        "A quantidade deve ser maior que zero"
+        )
+        BigDecimal quantidade,
+
+        @Size(
+                max = 30,
+                message =
+                        "A unidade deve ter no maximo 30 caracteres"
+        )
+        String unidadeMedida
 
 ) {
 }

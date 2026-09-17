@@ -136,6 +136,16 @@ public class ContaFinanceiraService {
                         fornecedor,
                         normalizarTextoOpcional(
                                 request.compradorNome()
+                        ),
+                        normalizarTextoOpcional(
+                                request.produtoNome()
+                        ),
+                        normalizarTextoOpcional(
+                                request.produtoClassificacao()
+                        ),
+                        request.quantidade(),
+                        normalizarTextoOpcional(
+                                request.unidadeMedida()
                         )
                 );
 
@@ -276,6 +286,16 @@ public class ContaFinanceiraService {
                     fornecedor,
                     normalizarTextoOpcional(
                             request.compradorNome()
+                    ),
+                    normalizarTextoOpcional(
+                            request.produtoNome()
+                    ),
+                    normalizarTextoOpcional(
+                            request.produtoClassificacao()
+                    ),
+                    request.quantidade(),
+                    normalizarTextoOpcional(
+                            request.unidadeMedida()
                     )
             );
         } catch (
@@ -464,7 +484,11 @@ public class ContaFinanceiraService {
                                     request.observacao()
                             ),
                             conta.getFornecedor(),
-                            conta.getCompradorNome()
+                            conta.getCompradorNome(),
+                            conta.getProdutoNome(),
+                            conta.getProdutoClassificacao(),
+                            conta.getQuantidade(),
+                            conta.getUnidadeMedida()
                     );
 
         Movimentacao movimentacaoSalva =
@@ -589,7 +613,11 @@ public class ContaFinanceiraService {
                             request.dataLiquidacao(),
                             observacaoMovimentacao,
                             conta.getFornecedor(),
-                            conta.getCompradorNome()
+                            conta.getCompradorNome(),
+                            conta.getProdutoNome(),
+                            conta.getProdutoClassificacao(),
+                            conta.getQuantidade(),
+                            conta.getUnidadeMedida()
                     );
 
             movimentacaoSalva =

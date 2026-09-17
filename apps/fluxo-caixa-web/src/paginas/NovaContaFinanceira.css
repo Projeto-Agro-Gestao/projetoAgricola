@@ -185,6 +185,18 @@
     resize: vertical;
 }
 
+.nova-conta-grade-menor {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr 0.8fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.nova-conta-grade-menor > div {
+    display: grid;
+    gap: 8px;
+}
+
 .nova-conta-campo input::placeholder,
 .nova-conta-campo textarea::placeholder {
     color:

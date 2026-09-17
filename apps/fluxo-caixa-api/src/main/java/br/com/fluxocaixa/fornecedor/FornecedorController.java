@@ -82,6 +82,16 @@ public class FornecedorController {
         );
     }
 
+    @GetMapping("/comparativo-produtos")
+    public ResponseEntity<List<ComparativoProdutoFornecedorResponse>>
+    compararProdutos(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                fornecedorService.compararProdutos(empresaId)
+        );
+    }
+
     @PutMapping("/{fornecedorId}")
     public ResponseEntity<FornecedorResponse> atualizar(
             @PathVariable Long empresaId,

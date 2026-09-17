@@ -76,7 +76,13 @@ public class MovimentacaoService {
                 fornecedor,
                 normalizarTextoOpcional(
                         request.compradorNome()
-                )
+                ),
+                normalizarTextoOpcional(request.produtoNome()),
+                normalizarTextoOpcional(
+                        request.produtoClassificacao()
+                ),
+                request.quantidade(),
+                normalizarTextoOpcional(request.unidadeMedida())
         );
 
         Movimentacao movimentacaoSalva =
@@ -225,7 +231,13 @@ public class MovimentacaoService {
                 fornecedor,
                 normalizarTextoOpcional(
                         request.compradorNome()
-                )
+                ),
+                normalizarTextoOpcional(request.produtoNome()),
+                normalizarTextoOpcional(
+                        request.produtoClassificacao()
+                ),
+                request.quantidade(),
+                normalizarTextoOpcional(request.unidadeMedida())
         );
 
         Movimentacao movimentacaoAtualizada =

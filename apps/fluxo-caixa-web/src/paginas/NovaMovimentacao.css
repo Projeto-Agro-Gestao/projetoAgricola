@@ -158,6 +158,17 @@
     resize: vertical;
 }
 
+.formulario-grade-menor {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr 0.8fr;
+    gap: 12px;
+}
+
+.formulario-grade-menor > div {
+    display: grid;
+    gap: 8px;
+}
+
 .formulario-campo input::placeholder,
 .formulario-campo textarea::placeholder {
     color: color-mix(

@@ -14,6 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Comparator;
 import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class FornecedorService {
@@ -139,6 +144,69 @@ public class FornecedorService {
                                 )
                                 .reversed()
                 )
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ComparativoProdutoFornecedorResponse> compararProdutos(
+            Long empresaId) {
+
+        verificarEmpresa(empresaId);
+
+        Map<String, ComparativoProduto> comparativos =
+                new LinkedHashMap<>();
+
+        movimentacaoRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
+                        empresaId
+                )
+                .forEach(
+                        movimentacao ->
+                                acumularComparativo(
+                                        comparativos,
+                                        movimentacao.getProdutoNome(),
+                                        movimentacao.getProdutoClassificacao(),
+                                        movimentacao.getUnidadeMedida(),
+                                        movimentacao.getFornecedorNome(),
+                                        movimentacao.getValor(),
+                                        movimentacao.getQuantidade(),
+                                        movimentacao.getValorUnitario()
+                                )
+                );
+
+        contaFinanceiraRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataVencimentoDescIdDesc(
+                        empresaId
+                )
+                .forEach(
+                        conta ->
+                                acumularComparativo(
+                                        comparativos,
+                                        conta.getProdutoNome(),
+                                        conta.getProdutoClassificacao(),
+                                        conta.getUnidadeMedida(),
+                                        conta.getFornecedorNome(),
+                                        conta.getValorTotal(),
+                                        conta.getQuantidade(),
+                                        conta.getValorUnitario()
+                                )
+                );
+
+        return comparativos
+                .values()
+                .stream()
+                .filter(ComparativoProduto::possuiPrecoUnitario)
+                .sorted(
+                        Comparator
+                                .comparing(
+                                        ComparativoProduto::produtoNome,
+                                        String.CASE_INSENSITIVE_ORDER
+                                )
+                                .thenComparing(
+                                        ComparativoProduto::mediaValorUnitario
+                                )
+                )
+                .map(ComparativoProduto::paraResponse)
                 .toList();
     }
 
@@ -298,6 +366,11 @@ public class FornecedorService {
                         ? movimentacao.getCategoriaOriginalNome()
                         : movimentacao.getCategoria().getNome(),
                 movimentacao.getCompradorNome(),
+                movimentacao.getProdutoNome(),
+                movimentacao.getProdutoClassificacao(),
+                movimentacao.getQuantidade(),
+                movimentacao.getUnidadeMedida(),
+                movimentacao.getValorUnitario(),
                 movimentacao.getTipo().getDescricao()
         );
     }
@@ -315,7 +388,62 @@ public class FornecedorService {
                         ? conta.getCategoriaOriginalNome()
                         : conta.getCategoria().getNome(),
                 conta.getCompradorNome(),
+                conta.getProdutoNome(),
+                conta.getProdutoClassificacao(),
+                conta.getQuantidade(),
+                conta.getUnidadeMedida(),
+                conta.getValorUnitario(),
                 conta.getSituacao().getDescricao()
+        );
+    }
+
+    private void acumularComparativo(
+            Map<String, ComparativoProduto> comparativos,
+            String produtoNome,
+            String produtoClassificacao,
+            String unidadeMedida,
+            String fornecedorNome,
+            BigDecimal valor,
+            BigDecimal quantidade,
+            BigDecimal valorUnitario) {
+
+        if (
+                produtoNome == null
+                        || produtoNome.isBlank()
+                        || fornecedorNome == null
+                        || fornecedorNome.isBlank()
+        ) {
+            return;
+        }
+
+        String unidadeNormalizada =
+                unidadeMedida == null || unidadeMedida.isBlank()
+                        ? "unidade"
+                        : unidadeMedida;
+
+        String chave =
+                produtoNome.toLowerCase()
+                        + "|"
+                        + unidadeNormalizada.toLowerCase()
+                        + "|"
+                        + fornecedorNome.toLowerCase();
+
+        ComparativoProduto comparativo =
+                comparativos.computeIfAbsent(
+                        chave,
+                        chaveIgnorada ->
+                                new ComparativoProduto(
+                                        produtoNome,
+                                        produtoClassificacao,
+                                        unidadeNormalizada,
+                                        fornecedorNome
+                                )
+                );
+
+        comparativo.adicionar(
+                valor,
+                quantidade,
+                valorUnitario
         );
     }
 
@@ -341,5 +469,107 @@ public class FornecedorService {
         return texto
                 .trim()
                 .replaceAll("\\s+", " ");
+    }
+
+    private static final class ComparativoProduto {
+
+        private final String produtoNome;
+        private final String produtoClassificacao;
+        private final String unidadeMedida;
+        private final String fornecedorNome;
+        private BigDecimal menorValorUnitario;
+        private BigDecimal maiorValorUnitario;
+        private BigDecimal somaValorUnitario = BigDecimal.ZERO;
+        private BigDecimal totalComprado = BigDecimal.ZERO;
+        private BigDecimal quantidadeTotal = BigDecimal.ZERO;
+        private long quantidadeRegistros;
+
+        private ComparativoProduto(
+                String produtoNome,
+                String produtoClassificacao,
+                String unidadeMedida,
+                String fornecedorNome) {
+
+            this.produtoNome = produtoNome;
+            this.produtoClassificacao = produtoClassificacao;
+            this.unidadeMedida = unidadeMedida;
+            this.fornecedorNome = fornecedorNome;
+        }
+
+        private void adicionar(
+                BigDecimal valor,
+                BigDecimal quantidade,
+                BigDecimal valorUnitario) {
+
+            if (valor != null) {
+                totalComprado =
+                        totalComprado.add(valor);
+            }
+
+            if (quantidade != null) {
+                quantidadeTotal =
+                        quantidadeTotal.add(quantidade);
+            }
+
+            if (valorUnitario == null) {
+                return;
+            }
+
+            menorValorUnitario =
+                    menorValorUnitario == null
+                            || valorUnitario.compareTo(
+                            menorValorUnitario
+                    ) < 0
+                            ? valorUnitario
+                            : menorValorUnitario;
+
+            maiorValorUnitario =
+                    maiorValorUnitario == null
+                            || valorUnitario.compareTo(
+                            maiorValorUnitario
+                    ) > 0
+                            ? valorUnitario
+                            : maiorValorUnitario;
+
+            somaValorUnitario =
+                    somaValorUnitario.add(valorUnitario);
+
+            quantidadeRegistros++;
+        }
+
+        private boolean possuiPrecoUnitario() {
+            return quantidadeRegistros > 0;
+        }
+
+        private String produtoNome() {
+            return produtoNome;
+        }
+
+        private BigDecimal mediaValorUnitario() {
+            if (quantidadeRegistros == 0) {
+                return BigDecimal.ZERO;
+            }
+
+            return somaValorUnitario.divide(
+                    BigDecimal.valueOf(quantidadeRegistros),
+                    4,
+                    RoundingMode.HALF_UP
+            );
+        }
+
+        private ComparativoProdutoFornecedorResponse paraResponse() {
+            return new ComparativoProdutoFornecedorResponse(
+                    produtoNome,
+                    produtoClassificacao,
+                    unidadeMedida,
+                    fornecedorNome,
+                    menorValorUnitario,
+                    maiorValorUnitario,
+                    mediaValorUnitario(),
+                    totalComprado,
+                    quantidadeTotal,
+                    quantidadeRegistros
+            );
+        }
     }
 }

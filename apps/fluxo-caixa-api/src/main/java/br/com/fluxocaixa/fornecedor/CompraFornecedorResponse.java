@@ -12,6 +12,11 @@ public record CompraFornecedorResponse(
         BigDecimal valor,
         String categoriaNome,
         String compradorNome,
+        String produtoNome,
+        String produtoClassificacao,
+        BigDecimal quantidade,
+        String unidadeMedida,
+        BigDecimal valorUnitario,
         String situacao
 
 ) {

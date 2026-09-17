@@ -206,4 +206,9 @@ public interface ContaFinanceiraRepository
             Long empresaId,
             Long fornecedorId
     );
+
+    List<ContaFinanceira>
+    findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataVencimentoDescIdDesc(
+            Long empresaId
+    );
 }

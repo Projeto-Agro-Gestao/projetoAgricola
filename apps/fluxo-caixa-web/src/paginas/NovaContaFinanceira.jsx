@@ -230,6 +230,20 @@ function NovaContaFinanceira() {
         setSucessoFornecedor,
     ] = useState('')
 
+    const [produtoNome, setProdutoNome] =
+        useState('')
+
+    const [
+        produtoClassificacao,
+        setProdutoClassificacao,
+    ] = useState('')
+
+    const [quantidade, setQuantidade] =
+        useState('')
+
+    const [unidadeMedida, setUnidadeMedida] =
+        useState('')
+
     const [salvando, setSalvando] =
         useState(false)
 
@@ -467,6 +481,10 @@ function NovaContaFinanceira() {
         setCriandoFornecedor(false)
         setNovoFornecedorNome('')
         setSucessoFornecedor('')
+        setProdutoNome('')
+        setProdutoClassificacao('')
+        setQuantidade('')
+        setUnidadeMedida('')
         setErro('')
     }
 
@@ -647,6 +665,26 @@ function NovaContaFinanceira() {
                 compradorNome:
                     tipo === 'PAGAR'
                         ? sessao.usuario.nome
+                        : null,
+
+                produtoNome:
+                    tipo === 'PAGAR'
+                        ? produtoNome.trim() || null
+                        : null,
+
+                produtoClassificacao:
+                    tipo === 'PAGAR'
+                        ? produtoClassificacao.trim() || null
+                        : null,
+
+                quantidade:
+                    tipo === 'PAGAR' && quantidade
+                        ? Number(quantidade)
+                        : null,
+
+                unidadeMedida:
+                    tipo === 'PAGAR'
+                        ? unidadeMedida.trim() || null
                         : null,
             }
 
@@ -1004,6 +1042,113 @@ function NovaContaFinanceira() {
                                         OK {sucessoFornecedor}
                                     </p>
                                 )}
+                            </div>
+                        )}
+
+                        {tipo === 'PAGAR' && (
+                            <div className="nova-conta-campo">
+                                <label htmlFor="produtoNome">
+                                    Mercadoria comprada
+                                </label>
+
+                                <input
+                                    disabled={salvando}
+                                    id="produtoNome"
+                                    maxLength="150"
+                                    onChange={(evento) =>
+                                        setProdutoNome(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    placeholder="Ex.: Semente de soja"
+                                    type="text"
+                                    value={produtoNome}
+                                />
+
+                                <div className="nova-conta-grade-menor">
+                                    <div>
+                                        <label htmlFor="produtoClassificacao">
+                                            Classificacao
+                                        </label>
+
+                                        <input
+                                            disabled={salvando}
+                                            id="produtoClassificacao"
+                                            list="classificacoesProdutoConta"
+                                            maxLength="100"
+                                            onChange={(evento) =>
+                                                setProdutoClassificacao(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            placeholder="Ex.: Sementes"
+                                            type="text"
+                                            value={produtoClassificacao}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="quantidadeProduto">
+                                            Quantidade
+                                        </label>
+
+                                        <input
+                                            disabled={salvando}
+                                            id="quantidadeProduto"
+                                            min="0.001"
+                                            onChange={(evento) =>
+                                                setQuantidade(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            placeholder="Ex.: 10"
+                                            step="0.001"
+                                            type="number"
+                                            value={quantidade}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="unidadeMedida">
+                                            Unidade
+                                        </label>
+
+                                        <input
+                                            disabled={salvando}
+                                            id="unidadeMedida"
+                                            list="unidadesProdutoConta"
+                                            maxLength="30"
+                                            onChange={(evento) =>
+                                                setUnidadeMedida(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            placeholder="Ex.: saco"
+                                            type="text"
+                                            value={unidadeMedida}
+                                        />
+                                    </div>
+                                </div>
+
+                                <datalist id="classificacoesProdutoConta">
+                                    <option value="Sementes" />
+                                    <option value="Adubo" />
+                                    <option value="Defensivo" />
+                                    <option value="Combustivel" />
+                                    <option value="Racao" />
+                                    <option value="Medicamento animal" />
+                                    <option value="Pecas e manutencao" />
+                                    <option value="Outros" />
+                                </datalist>
+
+                                <datalist id="unidadesProdutoConta">
+                                    <option value="unidade" />
+                                    <option value="kg" />
+                                    <option value="saco" />
+                                    <option value="litro" />
+                                    <option value="tonelada" />
+                                    <option value="caixa" />
+                                </datalist>
                             </div>
                         )}
 

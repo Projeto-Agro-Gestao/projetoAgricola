@@ -89,12 +89,19 @@ function formatarData(data) {
     }).format(new Date(`${data}T00:00:00`))
 }
 
+function formatarNumero(valor) {
+    return new Intl.NumberFormat('pt-BR', {
+        maximumFractionDigits: 3,
+    }).format(Number(valor ?? 0))
+}
+
 function Fornecedores() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
     const [fornecedores, setFornecedores] = useState([])
     const [lixeira, setLixeira] = useState([])
     const [compras, setCompras] = useState([])
+    const [comparativos, setComparativos] = useState([])
     const [fornecedorSelecionado, setFornecedorSelecionado] =
         useState(null)
     const [fornecedorEmEdicao, setFornecedorEmEdicao] =
@@ -119,6 +126,55 @@ function Fornecedores() {
                 0,
             ),
         [compras],
+    )
+
+    const produtosComparados = useMemo(
+        () => {
+            const grupos = new Map()
+
+            comparativos.forEach((item) => {
+                const chave =
+                    `${item.produtoNome}|${item.unidadeMedida}`
+
+                if (!grupos.has(chave)) {
+                    grupos.set(chave, [])
+                }
+
+                grupos.get(chave).push(item)
+            })
+
+            return Array.from(grupos.entries())
+                .map(([chave, itens]) => {
+                    const [produtoNome, unidadeMedida] =
+                        chave.split('|')
+
+                    const ordenados =
+                        [...itens].sort(
+                            (primeiro, segundo) =>
+                                Number(
+                                    primeiro.mediaValorUnitario,
+                                )
+                                - Number(
+                                    segundo.mediaValorUnitario,
+                                ),
+                        )
+
+                    return {
+                        produtoNome,
+                        unidadeMedida,
+                        itens: ordenados,
+                        melhor: ordenados[0],
+                    }
+                })
+                .sort(
+                    (primeiro, segundo) =>
+                        primeiro.produtoNome.localeCompare(
+                            segundo.produtoNome,
+                            'pt-BR',
+                        ),
+                )
+        },
+        [comparativos],
     )
 
     useEffect(() => {
@@ -171,10 +227,17 @@ function Fornecedores() {
             setCarregando(true)
             setErro('')
 
-            const [ativosResposta, lixeiraResposta] =
+            const [
+                ativosResposta,
+                lixeiraResposta,
+                comparativosResposta,
+            ] =
                 await Promise.all([
                     requisitar('/fornecedores'),
                     requisitar('/fornecedores/lixeira'),
+                    requisitar(
+                        '/fornecedores/comparativo-produtos',
+                    ),
                 ])
 
             if (!ativosResposta.ok) {
@@ -195,11 +258,27 @@ function Fornecedores() {
                 )
             }
 
+            if (!comparativosResposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        comparativosResposta,
+                        'Nao foi possivel carregar a comparacao de precos.',
+                    ),
+                )
+            }
+
             const ativos = await ativosResposta.json()
             const excluidos = await lixeiraResposta.json()
+            const dadosComparativos =
+                await comparativosResposta.json()
 
             setFornecedores(ativos)
             setLixeira(excluidos)
+            setComparativos(
+                Array.isArray(dadosComparativos)
+                    ? dadosComparativos
+                    : [],
+            )
 
             if (
                 fornecedorSelecionado
@@ -659,6 +738,107 @@ function Fornecedores() {
                         )}
                     </section>
 
+                    <section className="fornecedores-card fornecedores-comparativo">
+                        <div className="fornecedores-card-topo">
+                            <div>
+                                <small>Comparacao de precos</small>
+                                <h2>Produtos por fornecedor</h2>
+                            </div>
+
+                            <strong>
+                                {produtosComparados.length}
+                                {' '}
+                                produtos
+                            </strong>
+                        </div>
+
+                        {produtosComparados.length === 0 ? (
+                            <p className="fornecedores-vazio">
+                                Lance despesas com fornecedor,
+                                mercadoria, quantidade e unidade para
+                                comparar onde ficou mais barato.
+                            </p>
+                        ) : (
+                            <div className="fornecedores-comparativo-lista">
+                                {produtosComparados.map((grupo) => {
+                                    const maior =
+                                        Math.max(
+                                            ...grupo.itens.map(
+                                                (item) =>
+                                                    Number(
+                                                        item.mediaValorUnitario,
+                                                    ),
+                                            ),
+                                            1,
+                                        )
+
+                                    return (
+                                        <article
+                                            className="fornecedores-produto"
+                                            key={`${grupo.produtoNome}-${grupo.unidadeMedida}`}
+                                        >
+                                            <div className="fornecedores-produto-topo">
+                                                <div>
+                                                    <strong>
+                                                        {grupo.produtoNome}
+                                                    </strong>
+                                                    <span>
+                                                        Melhor preco:{' '}
+                                                        {grupo.melhor.fornecedorNome}
+                                                    </span>
+                                                </div>
+
+                                                <strong>
+                                                    {formatarDinheiro(
+                                                        grupo.melhor.mediaValorUnitario,
+                                                    )}
+                                                    /{grupo.unidadeMedida}
+                                                </strong>
+                                            </div>
+
+                                            <div className="fornecedores-barras">
+                                                {grupo.itens.map((item) => (
+                                                    <div
+                                                        className="fornecedores-barra-linha"
+                                                        key={`${item.produtoNome}-${item.fornecedorNome}`}
+                                                    >
+                                                        <span>
+                                                            {item.fornecedorNome}
+                                                        </span>
+
+                                                        <div>
+                                                            <i
+                                                                style={{
+                                                                    width:
+                                                                        `${Math.max(
+                                                                            8,
+                                                                            (
+                                                                                Number(
+                                                                                    item.mediaValorUnitario,
+                                                                                )
+                                                                                / maior
+                                                                            )
+                                                                            * 100,
+                                                                        )}%`,
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        <strong>
+                                                            {formatarDinheiro(
+                                                                item.mediaValorUnitario,
+                                                            )}
+                                                        </strong>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </article>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </section>
+
                     <section className="fornecedores-card fornecedores-compras">
                         <div className="fornecedores-card-topo">
                             <div>
@@ -695,6 +875,35 @@ function Fornecedores() {
                                                 {' - '}
                                                 {compra.categoriaNome}
                                             </span>
+
+                                            {compra.produtoNome && (
+                                                <span>
+                                                    Mercadoria:{' '}
+                                                    {compra.produtoNome}
+                                                    {compra.produtoClassificacao
+                                                        ? ` - ${compra.produtoClassificacao}`
+                                                        : ''}
+                                                </span>
+                                            )}
+
+                                            {compra.quantidade
+                                                && compra.unidadeMedida
+                                                && (
+                                                    <span>
+                                                        Quantidade:{' '}
+                                                        {formatarNumero(
+                                                            compra.quantidade,
+                                                        )}
+                                                        {' '}
+                                                        {compra.unidadeMedida}
+                                                        {compra.valorUnitario
+                                                            ? ` - ${formatarDinheiro(
+                                                                compra.valorUnitario,
+                                                            )}/${compra.unidadeMedida}`
+                                                            : ''}
+                                                    </span>
+                                                )}
+
                                             <small>
                                                 Comprador:{' '}
                                                 {compra.compradorNome

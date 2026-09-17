@@ -19,6 +19,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -85,6 +86,21 @@ public class Movimentacao {
     @Column(name = "comprador_nome", length = 150)
     private String compradorNome;
 
+    @Column(name = "produto_nome", length = 150)
+    private String produtoNome;
+
+    @Column(name = "produto_classificacao", length = 100)
+    private String produtoClassificacao;
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal quantidade;
+
+    @Column(name = "unidade_medida", length = 30)
+    private String unidadeMedida;
+
+    @Column(name = "valor_unitario", precision = 19, scale = 4)
+    private BigDecimal valorUnitario;
+
     protected Movimentacao() {
     }
 
@@ -105,6 +121,10 @@ public class Movimentacao {
                 dataMovimentacao,
                 observacao,
                 null,
+                null,
+                null,
+                null,
+                null,
                 null
         );
     }
@@ -118,7 +138,11 @@ public class Movimentacao {
             LocalDate dataMovimentacao,
             String observacao,
             Fornecedor fornecedor,
-            String compradorNome) {
+            String compradorNome,
+            String produtoNome,
+            String produtoClassificacao,
+            BigDecimal quantidade,
+            String unidadeMedida) {
 
         this.empresa = empresa;
         this.categoria = categoria;
@@ -132,6 +156,14 @@ public class Movimentacao {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
+        this.produtoNome = produtoNome;
+        this.produtoClassificacao = produtoClassificacao;
+        this.quantidade = quantidade;
+        this.unidadeMedida = unidadeMedida;
+        this.valorUnitario = calcularValorUnitario(
+                valor,
+                quantidade
+        );
     }
 
     public void moverParaLixeira() {
@@ -164,7 +196,11 @@ public class Movimentacao {
             LocalDate dataMovimentacao,
             String observacao,
             Fornecedor fornecedor,
-            String compradorNome) {
+            String compradorNome,
+            String produtoNome,
+            String produtoClassificacao,
+            BigDecimal quantidade,
+            String unidadeMedida) {
 
         this.categoria = categoria;
         this.descricao = descricao;
@@ -177,6 +213,14 @@ public class Movimentacao {
                 ? null
                 : fornecedor.getNome();
         this.compradorNome = compradorNome;
+        this.produtoNome = produtoNome;
+        this.produtoClassificacao = produtoClassificacao;
+        this.quantidade = quantidade;
+        this.unidadeMedida = unidadeMedida;
+        this.valorUnitario = calcularValorUnitario(
+                valor,
+                quantidade
+        );
     }
 
     public Long getId() {
@@ -247,5 +291,44 @@ public class Movimentacao {
 
     public String getCompradorNome() {
         return compradorNome;
+    }
+
+    public String getProdutoNome() {
+        return produtoNome;
+    }
+
+    public String getProdutoClassificacao() {
+        return produtoClassificacao;
+    }
+
+    public BigDecimal getQuantidade() {
+        return quantidade;
+    }
+
+    public String getUnidadeMedida() {
+        return unidadeMedida;
+    }
+
+    public BigDecimal getValorUnitario() {
+        return valorUnitario;
+    }
+
+    private BigDecimal calcularValorUnitario(
+            BigDecimal valor,
+            BigDecimal quantidade) {
+
+        if (
+                valor == null
+                        || quantidade == null
+                        || quantidade.compareTo(BigDecimal.ZERO) <= 0
+        ) {
+            return null;
+        }
+
+        return valor.divide(
+                quantidade,
+                4,
+                RoundingMode.HALF_UP
+        );
     }
 }
