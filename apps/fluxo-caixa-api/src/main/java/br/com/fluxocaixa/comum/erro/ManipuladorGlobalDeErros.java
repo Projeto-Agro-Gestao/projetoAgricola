@@ -9,6 +9,7 @@ import br.com.fluxocaixa.categoria.CategoriaNaoEncontradaException;
 import br.com.fluxocaixa.categoria.TransferenciaCategoriaInvalidaException;
 import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
+import br.com.fluxocaixa.fornecedor.FornecedorComComprasException;
 import br.com.fluxocaixa.movimentacao.MovimentacaoNaoEncontradaException;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacaoIncompativelException;
@@ -142,6 +143,21 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.CONFLICT,
                 "Categoria possui movimentações",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(FornecedorComComprasException.class)
+    public ResponseEntity<ErroResposta>
+    tratarFornecedorComCompras(
+            FornecedorComComprasException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.CONFLICT,
+                "Fornecedor possui compras",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()

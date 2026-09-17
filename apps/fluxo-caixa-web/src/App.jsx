@@ -11,6 +11,7 @@ import EditarMovimentacao from './paginas/EditarMovimentacao.jsx'
 import Categorias from './paginas/Categorias.jsx'
 import ContasFinanceiras from './paginas/ContasFinanceiras.jsx'
 import NovaContaFinanceira from './paginas/NovaContaFinanceira.jsx'
+import Fornecedores from './paginas/Fornecedores.jsx'
 import Login from './paginas/Login.jsx'
 import Cadastro from './paginas/Cadastro.jsx'
 import EsqueciSenha from './paginas/EsqueciSenha.jsx'
@@ -100,6 +101,11 @@ function App() {
             <Route
                 path="/dashboard/contas/nova"
                 element={<NovaContaFinanceira />}
+            />
+
+            <Route
+                path="/dashboard/fornecedores"
+                element={<Fornecedores />}
             />
         </Routes>
     )

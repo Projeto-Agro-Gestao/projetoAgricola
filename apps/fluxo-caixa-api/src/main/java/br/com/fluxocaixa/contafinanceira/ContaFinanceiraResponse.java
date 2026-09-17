@@ -40,6 +40,9 @@ public record ContaFinanceiraResponse(
         boolean exibirLembrete,
 
         String observacao,
+        Long fornecedorId,
+        String fornecedorNome,
+        String compradorNome,
 
         boolean excluida,
         LocalDateTime excluidaEm,
@@ -109,6 +112,11 @@ public record ContaFinanceiraResponse(
                 ),
 
                 conta.getObservacao(),
+                conta.getFornecedor() == null
+                        ? null
+                        : conta.getFornecedor().getId(),
+                conta.getFornecedorNome(),
+                conta.getCompradorNome(),
 
                 conta.isExcluida(),
                 conta.getExcluidaEm(),

@@ -710,6 +710,12 @@ function Dashboard() {
         )
     }
 
+    function abrirFornecedores() {
+        navigate(
+            '/dashboard/fornecedores',
+        )
+    }
+
     async function baixarRelatorio(tipo) {
         if (!sessao) {
             return
@@ -1612,6 +1618,17 @@ function Dashboard() {
                             >
                                 <span>⌁</span>
                                 Gerenciar categorias
+                            </button>
+
+                            <button
+                                className="dashboard-atalho"
+                                onClick={
+                                    abrirFornecedores
+                                }
+                                type="button"
+                            >
+                                <span>F</span>
+                                Gerenciar fornecedores
                             </button>
 
                             <button

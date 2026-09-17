@@ -16,6 +16,9 @@ public record MovimentacaoResponse(
         String explicacao,
         LocalDate dataMovimentacao,
         String observacao,
+        Long fornecedorId,
+        String fornecedorNome,
+        String compradorNome,
         boolean excluida,
         LocalDateTime excluidaEm,
         LocalDateTime criadoEm,
@@ -41,6 +44,11 @@ public record MovimentacaoResponse(
                 movimentacao.getTipo().getDescricao(),
                 movimentacao.getDataMovimentacao(),
                 movimentacao.getObservacao(),
+                movimentacao.getFornecedor() == null
+                        ? null
+                        : movimentacao.getFornecedor().getId(),
+                movimentacao.getFornecedorNome(),
+                movimentacao.getCompradorNome(),
                 movimentacao.isExcluida(),
                 movimentacao.getExcluidaEm(),
                 movimentacao.getCriadoEm(),

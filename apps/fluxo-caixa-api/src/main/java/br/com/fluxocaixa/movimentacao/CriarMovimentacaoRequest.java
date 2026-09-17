@@ -51,6 +51,15 @@ public record CriarMovimentacaoRequest(
                 message = "A observação deve possuir no máximo 500 caracteres"
         )
         String observacao
+        ,
+
+        Long fornecedorId,
+
+        @Size(
+                max = 150,
+                message = "O nome do comprador deve possuir no maximo 150 caracteres"
+        )
+        String compradorNome
 
 ) {
 }

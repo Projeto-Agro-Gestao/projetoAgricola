@@ -198,6 +198,41 @@ function NovaMovimentacao() {
         setSucessoCategoria,
     ] = useState('')
 
+    const [
+        fornecedores,
+        setFornecedores,
+    ] = useState([])
+
+    const [
+        fornecedorId,
+        setFornecedorId,
+    ] = useState('')
+
+    const [
+        carregandoFornecedores,
+        setCarregandoFornecedores,
+    ] = useState(false)
+
+    const [
+        criandoFornecedor,
+        setCriandoFornecedor,
+    ] = useState(false)
+
+    const [
+        novoFornecedorNome,
+        setNovoFornecedorNome,
+    ] = useState('')
+
+    const [
+        salvandoFornecedor,
+        setSalvandoFornecedor,
+    ] = useState(false)
+
+    const [
+        sucessoFornecedor,
+        setSucessoFornecedor,
+    ] = useState('')
+
     const [salvando, setSalvando] =
         useState(false)
 
@@ -303,6 +338,96 @@ function NovaMovimentacao() {
         tipo,
     ])
 
+    useEffect(() => {
+        if (!sessao || !empresaId) {
+            return undefined
+        }
+
+        if (tipo !== 'DESPESA') {
+            setFornecedorId('')
+            setCriandoFornecedor(false)
+            setNovoFornecedorNome('')
+            setSucessoFornecedor('')
+
+            return undefined
+        }
+
+        let componenteAtivo = true
+
+        async function carregarFornecedores() {
+            try {
+                setCarregandoFornecedores(true)
+
+                const resposta =
+                    await fetch(
+                        `${API_URL}/empresas/${empresaId}/fornecedores`,
+                        {
+                            headers: {
+                                Authorization:
+                                    `${sessao.tipoToken} ${sessao.token}`,
+                            },
+                        },
+                    )
+
+                if (
+                    resposta.status === 401
+                    || resposta.status === 403
+                ) {
+                    limparSessao()
+
+                    navigate('/login', {
+                        replace: true,
+                    })
+
+                    return
+                }
+
+                if (!resposta.ok) {
+                    throw new Error(
+                        await obterMensagemDeErro(
+                            resposta,
+                            'Nao foi possivel carregar os fornecedores.',
+                        ),
+                    )
+                }
+
+                const dados =
+                    await resposta.json()
+
+                if (componenteAtivo) {
+                    setFornecedores(
+                        Array.isArray(dados)
+                            ? dados
+                            : [],
+                    )
+                }
+            } catch (erroDaRequisicao) {
+                if (componenteAtivo) {
+                    setErro(
+                        erroDaRequisicao instanceof Error
+                            ? erroDaRequisicao.message
+                            : 'Nao foi possivel carregar os fornecedores.',
+                    )
+                }
+            } finally {
+                if (componenteAtivo) {
+                    setCarregandoFornecedores(false)
+                }
+            }
+        }
+
+        carregarFornecedores()
+
+        return () => {
+            componenteAtivo = false
+        }
+    }, [
+        empresaId,
+        navigate,
+        sessao,
+        tipo,
+    ])
+
     function alterarTipo(novoTipo) {
         if (novoTipo === tipo) {
             return
@@ -315,6 +440,10 @@ function NovaMovimentacao() {
         setCriandoCategoria(false)
         setNovaCategoriaNome('')
         setSucessoCategoria('')
+        setFornecedorId('')
+        setCriandoFornecedor(false)
+        setNovoFornecedorNome('')
+        setSucessoFornecedor('')
         setErro('')
     }
 
@@ -333,6 +462,128 @@ function NovaMovimentacao() {
         setCriandoCategoria(false)
         setNovaCategoriaNome('')
         setErro('')
+    }
+
+    function abrirNovoFornecedor() {
+        setCriandoFornecedor(true)
+        setNovoFornecedorNome('')
+        setSucessoFornecedor('')
+        setErro('')
+    }
+
+    function cancelarNovoFornecedor() {
+        if (salvandoFornecedor) {
+            return
+        }
+
+        setCriandoFornecedor(false)
+        setNovoFornecedorNome('')
+        setErro('')
+    }
+
+    async function criarFornecedor(evento) {
+        evento.preventDefault()
+
+        const nomeNormalizado =
+            novoFornecedorNome
+                .trim()
+                .replace(/\s+/g, ' ')
+
+        if (!nomeNormalizado) {
+            setErro('Informe o nome do fornecedor.')
+
+            return
+        }
+
+        if (!sessao || !empresaId) {
+            limparSessao()
+
+            navigate('/login', {
+                replace: true,
+            })
+
+            return
+        }
+
+        try {
+            setSalvandoFornecedor(true)
+            setErro('')
+            setSucessoFornecedor('')
+
+            const resposta =
+                await fetch(
+                    `${API_URL}/empresas/${empresaId}/fornecedores`,
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            Authorization:
+                                `${sessao.tipoToken} ${sessao.token}`,
+
+                            'Content-Type':
+                                'application/json; charset=utf-8',
+                        },
+
+                        body:
+                            JSON.stringify({
+                                nome: nomeNormalizado,
+                            }),
+                    },
+                )
+
+            if (
+                resposta.status === 401
+                || resposta.status === 403
+            ) {
+                limparSessao()
+
+                navigate('/login', {
+                    replace: true,
+                })
+
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel criar o fornecedor.',
+                    ),
+                )
+            }
+
+            const fornecedorCriado =
+                await resposta.json()
+
+            setFornecedores((listaAtual) =>
+                [...listaAtual, fornecedorCriado]
+                    .sort((primeiro, segundo) =>
+                        primeiro.nome.localeCompare(
+                            segundo.nome,
+                            'pt-BR',
+                        ),
+                    ),
+            )
+
+            setFornecedorId(
+                String(fornecedorCriado.id),
+            )
+
+            setCriandoFornecedor(false)
+            setNovoFornecedorNome('')
+            setSucessoFornecedor(
+                `Fornecedor "${fornecedorCriado.nome}" criado e selecionado.`,
+            )
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'Nao foi possivel criar o fornecedor.',
+            )
+        } finally {
+            setSalvandoFornecedor(false)
+        }
     }
 
     async function criarCategoria(evento) {
@@ -536,6 +787,16 @@ function NovaMovimentacao() {
             observacao:
                 observacao.trim()
                 || null,
+
+            fornecedorId:
+                tipo === 'DESPESA' && fornecedorId
+                    ? Number(fornecedorId)
+                    : null,
+
+            compradorNome:
+                tipo === 'DESPESA'
+                    ? sessao.usuario.nome
+                    : null,
         }
 
         try {
@@ -961,6 +1222,165 @@ function NovaMovimentacao() {
                             </p>
                         </div>
 
+                        {tipo === 'DESPESA' && (
+                            <div className="formulario-campo">
+                                <div className="categoria-cabecalho-campo">
+                                    <label htmlFor="fornecedor">
+                                        Onde comprou
+                                    </label>
+
+                                    {!criandoFornecedor && (
+                                        <button
+                                            className="categoria-criar-atalho"
+                                            disabled={
+                                                salvando
+                                                || salvandoFornecedor
+                                            }
+                                            onClick={
+                                                abrirNovoFornecedor
+                                            }
+                                            type="button"
+                                        >
+                                            Criar fornecedor
+                                        </button>
+                                    )}
+                                </div>
+
+                                <select
+                                    disabled={
+                                        carregandoFornecedores
+                                        || salvando
+                                    }
+                                    id="fornecedor"
+                                    onChange={(evento) => {
+                                        setFornecedorId(
+                                            evento.target.value,
+                                        )
+
+                                        setSucessoFornecedor('')
+                                    }}
+                                    value={fornecedorId}
+                                >
+                                    <option value="">
+                                        {carregandoFornecedores
+                                            ? 'Carregando fornecedores...'
+                                            : fornecedores.length === 0
+                                                ? 'Fornecedor opcional'
+                                                : 'Selecione um fornecedor'}
+                                    </option>
+
+                                    {fornecedores.map(
+                                        (fornecedor) => (
+                                            <option
+                                                key={fornecedor.id}
+                                                value={fornecedor.id}
+                                            >
+                                                {fornecedor.nome}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+
+                                {!carregandoFornecedores
+                                    && fornecedores.length > 0
+                                    && !criandoFornecedor
+                                    && (
+                                        <div className="categoria-convite-criacao">
+                                            <p className="categoria-ajuda-criacao">
+                                                <strong>
+                                                    Nao encontrou onde comprou?
+                                                </strong>
+
+                                                <span>
+                                                    Crie um fornecedor agora. So o nome e obrigatorio.
+                                                </span>
+                                            </p>
+
+                                            <button
+                                                className="categoria-criar-destaque"
+                                                disabled={
+                                                    salvando
+                                                    || salvandoFornecedor
+                                                }
+                                                onClick={
+                                                    abrirNovoFornecedor
+                                                }
+                                                type="button"
+                                            >
+                                                <span>+</span>
+
+                                                <strong>
+                                                    Novo fornecedor
+                                                </strong>
+                                            </button>
+                                        </div>
+                                    )}
+
+                                {criandoFornecedor && (
+                                    <div className="categoria-criacao-rapida">
+                                        <div>
+                                            <p>
+                                                Novo fornecedor
+                                            </p>
+
+                                            <span>
+                                                So o nome e obrigatorio. O comprador sera registrado automaticamente.
+                                            </span>
+                                        </div>
+
+                                        <input
+                                            disabled={salvandoFornecedor}
+                                            maxLength="150"
+                                            onChange={(evento) =>
+                                                setNovoFornecedorNome(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            placeholder="Ex.: Agropecuaria Central"
+                                            type="text"
+                                            value={novoFornecedorNome}
+                                        />
+
+                                        <div className="categoria-criacao-acoes">
+                                            <button
+                                                className="categoria-criacao-cancelar"
+                                                disabled={salvandoFornecedor}
+                                                onClick={
+                                                    cancelarNovoFornecedor
+                                                }
+                                                type="button"
+                                            >
+                                                Cancelar
+                                            </button>
+
+                                            <button
+                                                className="categoria-criacao-confirmar"
+                                                disabled={
+                                                    salvandoFornecedor
+                                                    || !novoFornecedorNome.trim()
+                                                }
+                                                onClick={criarFornecedor}
+                                                type="button"
+                                            >
+                                                {salvandoFornecedor
+                                                    ? 'Criando...'
+                                                    : 'Criar e selecionar'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {sucessoFornecedor && (
+                                    <p
+                                        className="categoria-criada-sucesso"
+                                        role="status"
+                                    >
+                                        OK {sucessoFornecedor}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         <div className="formulario-campo">
                             <label htmlFor="observacao">
                                 Observação
@@ -1002,6 +1422,7 @@ function NovaMovimentacao() {
                                     salvando
                                     || carregandoCategorias
                                     || salvandoCategoria
+                                    || salvandoFornecedor
                                 }
                                 type="submit"
                             >

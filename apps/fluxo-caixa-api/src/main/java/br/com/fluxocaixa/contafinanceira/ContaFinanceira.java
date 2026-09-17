@@ -2,6 +2,7 @@ package br.com.fluxocaixa.contafinanceira;
 
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.empresa.Empresa;
+import br.com.fluxocaixa.fornecedor.Fornecedor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -140,6 +141,22 @@ public class ContaFinanceira {
     private String categoriaOriginalNome;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
+
+    @Column(
+            name = "fornecedor_nome",
+            length = 150
+    )
+    private String fornecedorNome;
+
+    @Column(
+            name = "comprador_nome",
+            length = 150
+    )
+    private String compradorNome;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movimentacao_financeiro_id")
     private Movimentacao movimentacaoFinanceiro;
 
@@ -176,6 +193,35 @@ public class ContaFinanceira {
             LocalDate dataEmissao,
             LocalDate dataVencimento,
             String observacao) {
+        this(
+                empresa,
+                categoria,
+                descricao,
+                favorecido,
+                numeroDocumento,
+                tipo,
+                valorTotal,
+                dataEmissao,
+                dataVencimento,
+                observacao,
+                null,
+                null
+        );
+    }
+
+    public ContaFinanceira(
+            Empresa empresa,
+            Categoria categoria,
+            String descricao,
+            String favorecido,
+            String numeroDocumento,
+            TipoContaFinanceira tipo,
+            BigDecimal valorTotal,
+            LocalDate dataEmissao,
+            LocalDate dataVencimento,
+            String observacao,
+            Fornecedor fornecedor,
+            String compradorNome) {
 
         this.empresa = empresa;
         this.categoria = categoria;
@@ -187,6 +233,11 @@ public class ContaFinanceira {
         this.dataEmissao = dataEmissao;
         this.dataVencimento = dataVencimento;
         this.observacao = observacao;
+        this.fornecedor = fornecedor;
+        this.fornecedorNome = fornecedor == null
+                ? null
+                : fornecedor.getNome();
+        this.compradorNome = compradorNome;
         this.valorLiquidado = BigDecimal.ZERO;
 
         this.situacao =
@@ -278,6 +329,20 @@ public class ContaFinanceira {
         return categoriaOriginalNome;
     }
 
+    public Fornecedor getFornecedor() {
+        return fornecedor;
+    }
+
+    public String getFornecedorNome() {
+        return fornecedor == null
+                ? fornecedorNome
+                : fornecedor.getNome();
+    }
+
+    public String getCompradorNome() {
+        return compradorNome;
+    }
+
     public Movimentacao getMovimentacaoFinanceiro() {
         return movimentacaoFinanceiro;
     }
@@ -340,7 +405,9 @@ public class ContaFinanceira {
             BigDecimal valorTotal,
             LocalDate dataEmissao,
             LocalDate dataVencimento,
-            String observacao) {
+            String observacao,
+            Fornecedor fornecedor,
+            String compradorNome) {
 
         if (
                 valorTotal.compareTo(
@@ -361,6 +428,11 @@ public class ContaFinanceira {
         this.dataEmissao = dataEmissao;
         this.dataVencimento = dataVencimento;
         this.observacao = observacao;
+        this.fornecedor = fornecedor;
+        this.fornecedorNome = fornecedor == null
+                ? null
+                : fornecedor.getNome();
+        this.compradorNome = compradorNome;
 
         atualizarSituacaoAposAlteracao();
     }

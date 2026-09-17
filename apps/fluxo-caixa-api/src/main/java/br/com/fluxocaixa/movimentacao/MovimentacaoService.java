@@ -6,6 +6,8 @@ import br.com.fluxocaixa.categoria.CategoriaRepository;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.fornecedor.Fornecedor;
+import br.com.fluxocaixa.fornecedor.FornecedorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,18 @@ public class MovimentacaoService {
     private final MovimentacaoRepository movimentacaoRepository;
     private final EmpresaRepository empresaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final FornecedorService fornecedorService;
 
     public MovimentacaoService(
             MovimentacaoRepository movimentacaoRepository,
             EmpresaRepository empresaRepository,
-            CategoriaRepository categoriaRepository) {
+            CategoriaRepository categoriaRepository,
+            FornecedorService fornecedorService) {
 
         this.movimentacaoRepository = movimentacaoRepository;
         this.empresaRepository = empresaRepository;
         this.categoriaRepository = categoriaRepository;
+        this.fornecedorService = fornecedorService;
     }
 
     @Transactional
@@ -53,6 +58,13 @@ public class MovimentacaoService {
         String observacao =
                 normalizarTextoOpcional(request.observacao());
 
+        Fornecedor fornecedor =
+                buscarFornecedorSeInformado(
+                        empresaId,
+                        request.fornecedorId(),
+                        request.tipo()
+                );
+
         Movimentacao movimentacao = new Movimentacao(
                 empresa,
                 categoria,
@@ -60,7 +72,11 @@ public class MovimentacaoService {
                 request.valor(),
                 request.tipo(),
                 request.dataMovimentacao(),
-                observacao
+                observacao,
+                fornecedor,
+                normalizarTextoOpcional(
+                        request.compradorNome()
+                )
         );
 
         Movimentacao movimentacaoSalva =
@@ -192,13 +208,24 @@ public class MovimentacaoService {
         String observacao =
                 normalizarTextoOpcional(request.observacao());
 
+        Fornecedor fornecedor =
+                buscarFornecedorSeInformado(
+                        empresaId,
+                        request.fornecedorId(),
+                        request.tipo()
+                );
+
         movimentacao.atualizar(
                 categoria,
                 descricao,
                 request.valor(),
                 request.tipo(),
                 request.dataMovimentacao(),
-                observacao
+                observacao,
+                fornecedor,
+                normalizarTextoOpcional(
+                        request.compradorNome()
+                )
         );
 
         Movimentacao movimentacaoAtualizada =
@@ -404,6 +431,24 @@ public class MovimentacaoService {
         if (dataInicial.isAfter(dataFinal)) {
             throw new PeriodoInvalidoException();
         }
+    }
+
+    private Fornecedor buscarFornecedorSeInformado(
+            Long empresaId,
+            Long fornecedorId,
+            TipoMovimentacao tipo) {
+
+        if (
+                fornecedorId == null
+                || tipo != TipoMovimentacao.DESPESA
+        ) {
+            return null;
+        }
+
+        return fornecedorService.buscarFornecedorAtivo(
+                empresaId,
+                fornecedorId
+        );
     }
 
     private String normalizarTextoObrigatorio(String texto) {

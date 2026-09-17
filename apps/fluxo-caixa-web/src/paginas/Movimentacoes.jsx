@@ -38,6 +38,7 @@ function IconeLixeira() {
         </svg>
     )
 }
+
 function formatarData(data) {
     if (!data) {
         return ''
@@ -129,9 +130,9 @@ function categoriaEhOriginal(categoria, movimentacao) {
     return (
         categoria?.tipo === movimentacao?.tipo &&
         normalizarParaComparacao(categoria?.nome) ===
-            normalizarParaComparacao(
-                movimentacao?.categoriaNome,
-            )
+        normalizarParaComparacao(
+            movimentacao?.categoriaNome,
+        )
     )
 }
 
@@ -229,17 +230,17 @@ function Movimentacoes() {
         movimentacaoParaConverter
             ?.acaoCategoria === 'restaurar'
             ? categoriasConversao.find((categoria) =>
-                  categoriaEhOriginal(
-                      categoria,
-                      movimentacaoParaConverter,
-                  ),
-              )
+                categoriaEhOriginal(
+                    categoria,
+                    movimentacaoParaConverter,
+                ),
+            )
             : null
 
     const usandoCategoriaOriginal =
         Boolean(categoriaOriginalRestauracao) &&
         categoriaConversaoId ===
-            String(categoriaOriginalRestauracao.id) &&
+        String(categoriaOriginalRestauracao.id) &&
         !novaCategoriaNome.trim()
 
     function criarCabecalhos(possuiCorpo = false) {
@@ -674,12 +675,12 @@ function Movimentacoes() {
             const categoriaOriginal =
                 acao === 'restaurar'
                     ? categoriasAtivas.find(
-                          (categoria) =>
-                              categoriaEhOriginal(
-                                  categoria,
-                                  movimentacao,
-                              ),
-                      )
+                        (categoria) =>
+                            categoriaEhOriginal(
+                                categoria,
+                                movimentacao,
+                            ),
+                    )
                     : null
 
             const categoriaInicial =
@@ -1040,6 +1041,16 @@ function Movimentacoes() {
                                                     }
                                                 </small>
                                             )}
+
+                                            {movimentacao.fornecedorNome && (
+                                                <small>
+                                                    Fornecedor:{' '}
+                                                    {movimentacao.fornecedorNome}
+                                                    {movimentacao.compradorNome
+                                                        ? ` - Comprador: ${movimentacao.compradorNome}`
+                                                        : ''}
+                                                </small>
+                                            )}
                                         </td>
 
                                         <td>
@@ -1344,7 +1355,7 @@ function Movimentacoes() {
                             <p className="movimentacoes-etiqueta">
                                 {movimentacaoParaConverter.acaoCategoria ===
                                 'restaurar'
-                                    ? 'Restaurar movimentação'
+                                          ? 'Restaurar movimentação'
                                     : movimentacaoParaConverter.acaoCategoria ===
                                         'categoria'
                                       ? 'Trocar categoria'
@@ -1430,7 +1441,6 @@ function Movimentacoes() {
                                     )}
                                 </div>
                             )}
-
                             <label htmlFor="categoriaConversao">
                                 {movimentacaoParaConverter.acaoCategoria ===
                                 'restaurar'
@@ -1528,8 +1538,9 @@ function Movimentacoes() {
                                 >
                                     {convertendoId || restaurandoId
                                         ? 'Salvando...'
-                                        : movimentacaoParaConverter.acaoCategoria ===
-                                            'restaurar'
+                                        : movimentacaoParaConverter
+                                            .acaoCategoria ===
+                                          'restaurar'
                                           ? 'Restaurar movimentação'
                                           : 'Confirmar troca'}
                                 </button>

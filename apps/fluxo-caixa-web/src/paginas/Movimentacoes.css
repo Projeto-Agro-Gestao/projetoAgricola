@@ -231,6 +231,9 @@
 .movimentacoes-editar,
 .movimentacoes-trocar,
 .movimentacoes-excluir {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-height: 37px;
     padding: 0 13px;
     border-radius: 8px;
@@ -238,21 +241,23 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 800;
-    line-height: 1.2;
-    text-align: center;
     cursor: pointer;
     transition:
             background 0.2s ease,
             border-color 0.2s ease;
+    line-height: 1.25;
+    text-align: center;
 }
 
 .movimentacoes-editar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     border: 1px solid #cad8c5;
     color: #355a2c;
     text-decoration: none;
+}
+
+.movimentacoes-acoes-lixeira .movimentacoes-trocar,
+.movimentacoes-acoes-lixeira .movimentacoes-excluir {
+    min-width: 185px;
 }
 
 .movimentacoes-editar:hover {
@@ -294,16 +299,8 @@
 }
 
 .movimentacoes-trocar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     border: 1px solid #bfd7b8;
     color: #267a08;
-}
-
-.movimentacoes-acoes-lixeira .movimentacoes-trocar,
-.movimentacoes-acoes-lixeira .movimentacoes-excluir {
-    min-width: 185px;
 }
 
 .movimentacoes-trocar:hover:not(:disabled) {
@@ -312,9 +309,6 @@
 }
 
 .movimentacoes-excluir {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     border: 1px solid #efc8c3;
     color: #bd3a2f;
 }
@@ -409,7 +403,7 @@
     padding: 12px;
     border: 1px solid #d8e2d4;
     border-radius: 8px;
-    background: #f7fbf4;
+    background: #f8fcf5;
 }
 
 .movimentacoes-restauracao-opcoes strong {
@@ -417,22 +411,28 @@
     font-size: 0.8rem;
 }
 
+.movimentacoes-restauracao-opcoes p {
+    font-size: 0.82rem;
+}
+
 .movimentacoes-opcao-original {
-    min-height: 42px;
+    min-height: 40px;
+    padding: 0 13px;
     border: 1px solid #bfd7b8;
     border-radius: 8px;
     background: #ffffff;
     color: #267a08;
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 800;
     cursor: pointer;
+    text-align: left;
 }
 
 .movimentacoes-opcao-original.selecionada {
     border-color: #328d0c;
-    background: #e9f7df;
-    box-shadow: inset 0 0 0 1px #328d0c;
+    background: #e6f6e4;
+    box-shadow: 0 0 0 3px rgba(50, 141, 12, 0.1);
 }
 
 .movimentacoes-modal-form label {

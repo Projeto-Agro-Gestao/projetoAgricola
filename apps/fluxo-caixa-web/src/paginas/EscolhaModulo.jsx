@@ -109,6 +109,12 @@ function EscolhaModulo() {
         )
     }
 
+    function abrirFornecedores() {
+        navigate(
+            '/dashboard/fornecedores',
+        )
+    }
+
     function abrirAreaAdministrativa() {
         navigate('/admin')
     }
@@ -322,6 +328,53 @@ function EscolhaModulo() {
                                 Abrir contas
                                 <span aria-hidden="true">
                                     →
+                                </span>
+                            </strong>
+                        </button>
+
+                        <button
+                            className="escolha-modulo-card escolha-modulo-fornecedores"
+                            onClick={abrirFornecedores}
+                            type="button"
+                        >
+                            <span className="escolha-modulo-icone">
+                                F
+                            </span>
+
+                            <div className="escolha-modulo-card-texto">
+                                <small>
+                                    Compras e fornecedores
+                                </small>
+
+                                <h2>
+                                    Controle de fornecedores
+                                </h2>
+
+                                <p>
+                                    Cadastre onde comprou,
+                                    acompanhe valores e veja
+                                    quem registrou cada compra.
+                                </p>
+
+                                <ul>
+                                    <li>
+                                        Nome do fornecedor obrigatorio
+                                    </li>
+
+                                    <li>
+                                        Compras ligadas as despesas
+                                    </li>
+
+                                    <li>
+                                        Lixeira com restauracao
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <strong className="escolha-modulo-acao">
+                                Abrir fornecedores
+                                <span aria-hidden="true">
+                                    -&gt;
                                 </span>
                             </strong>
                         </button>

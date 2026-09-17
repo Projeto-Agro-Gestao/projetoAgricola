@@ -149,6 +149,13 @@
     font-weight: 750;
 }
 
+.nova-conta-campo-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .nova-conta-campo input,
 .nova-conta-campo select,
 .nova-conta-campo textarea {
@@ -218,6 +225,57 @@
     font-weight: 800;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.nova-conta-link-categoria:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.nova-conta-fornecedor-rapido {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid
+    color-mix(
+            in oklch,
+            var(--primary) 24%,
+            var(--border)
+    );
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius);
+    background:
+            color-mix(
+                    in oklch,
+                    var(--secondary) 38%,
+                    var(--card)
+            );
+}
+
+.nova-conta-fornecedor-rapido strong {
+    display: block;
+    font-size: 0.86rem;
+}
+
+.nova-conta-fornecedor-rapido span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.nova-conta-fornecedor-rapido > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.nova-conta-sucesso {
+    margin: 0;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 800;
 }
 
 .nova-conta-lembrete {

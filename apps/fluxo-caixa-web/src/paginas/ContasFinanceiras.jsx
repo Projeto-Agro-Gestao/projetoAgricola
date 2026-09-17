@@ -953,6 +953,10 @@ function ContasFinanceiras() {
         navigate('/dashboard/categorias')
     }
 
+    function abrirFornecedores() {
+        navigate('/dashboard/fornecedores')
+    }
+
     async function baixarRelatorio(tipoRelatorio) {
         if (!sessao) {
             return
@@ -1885,6 +1889,14 @@ function ContasFinanceiras() {
                         </button>
 
                         <button
+                            onClick={abrirFornecedores}
+                            type="button"
+                        >
+                            <span>F</span>
+                            Gerenciar fornecedores
+                        </button>
+
+                        <button
                             className="contas-atalho-lixeira"
                             onClick={() => {
                                 if (mostrandoLixeira) {
@@ -1899,7 +1911,6 @@ function ContasFinanceiras() {
                             <span>
                                 <IconeLixeira />
                             </span>
-                            <span>âŒ«</span>
                             {mostrandoLixeira
                                 ? 'Ver contas cadastradas'
                                 : 'Lixeira'}
@@ -2091,6 +2102,16 @@ function ContasFinanceiras() {
                                                 ? ` · ${conta.favorecido}`
                                                 : ''}
                                         </p>
+
+                                        {conta.fornecedorNome && (
+                                            <small>
+                                                Fornecedor:{' '}
+                                                {conta.fornecedorNome}
+                                                {conta.compradorNome
+                                                    ? ` - Comprador: ${conta.compradorNome}`
+                                                    : ''}
+                                            </small>
+                                        )}
 
                                         <small>
                                             Vencimento:{' '}

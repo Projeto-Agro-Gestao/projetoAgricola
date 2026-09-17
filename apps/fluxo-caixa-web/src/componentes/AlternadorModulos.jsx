@@ -18,6 +18,11 @@ function AlternadorModulos() {
             '/dashboard/contas',
         )
 
+    const fornecedoresAtivos =
+        location.pathname.startsWith(
+            '/dashboard/fornecedores',
+        )
+
     return (
         <nav
             aria-label="Alternar entre os módulos financeiros"
@@ -71,6 +76,31 @@ function AlternadorModulos() {
                 </span>
 
                 Contas a pagar e receber
+            </button>
+
+            <button
+                aria-current={
+                    fornecedoresAtivos
+                        ? 'page'
+                        : undefined
+                }
+                className={
+                    fornecedoresAtivos
+                        ? 'alternador-modulos-botao ativo'
+                        : 'alternador-modulos-botao'
+                }
+                onClick={() =>
+                    navigate(
+                        '/dashboard/fornecedores',
+                    )
+                }
+                type="button"
+            >
+                <span aria-hidden="true">
+                    F
+                </span>
+
+                Fornecedores
             </button>
         </nav>
     )

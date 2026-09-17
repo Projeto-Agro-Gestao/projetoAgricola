@@ -6,6 +6,8 @@ import br.com.fluxocaixa.categoria.CategoriaRepository;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.fornecedor.Fornecedor;
+import br.com.fluxocaixa.fornecedor.FornecedorService;
 import br.com.fluxocaixa.movimentacao.Movimentacao;
 import br.com.fluxocaixa.movimentacao.MovimentacaoRepository;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacao;
@@ -37,6 +39,8 @@ public class ContaFinanceiraService {
     private final MovimentacaoRepository
             movimentacaoRepository;
 
+    private final FornecedorService fornecedorService;
+
     public ContaFinanceiraService(
             ContaFinanceiraRepository
                     contaFinanceiraRepository,
@@ -45,7 +49,8 @@ public class ContaFinanceiraService {
             EmpresaRepository empresaRepository,
             CategoriaRepository categoriaRepository,
             MovimentacaoRepository
-                    movimentacaoRepository) {
+                    movimentacaoRepository,
+            FornecedorService fornecedorService) {
 
         this.contaFinanceiraRepository =
                 contaFinanceiraRepository;
@@ -61,6 +66,8 @@ public class ContaFinanceiraService {
 
         this.movimentacaoRepository =
                 movimentacaoRepository;
+
+        this.fornecedorService = fornecedorService;
     }
 
     @Transactional
@@ -107,6 +114,13 @@ public class ContaFinanceiraService {
                         request.observacao()
                 );
 
+        Fornecedor fornecedor =
+                buscarFornecedorSeInformado(
+                        empresaId,
+                        request.fornecedorId(),
+                        request.tipo()
+                );
+
         ContaFinanceira conta =
                 new ContaFinanceira(
                         empresa,
@@ -118,7 +132,11 @@ public class ContaFinanceiraService {
                         request.valorTotal(),
                         request.dataEmissao(),
                         request.dataVencimento(),
-                        observacao
+                        observacao,
+                        fornecedor,
+                        normalizarTextoOpcional(
+                                request.compradorNome()
+                        )
                 );
 
         configurarLembreteInicial(
@@ -215,6 +233,13 @@ public class ContaFinanceiraService {
                         request.categoriaId()
                 );
 
+        Fornecedor fornecedor =
+                buscarFornecedorSeInformado(
+                        empresaId,
+                        request.fornecedorId(),
+                        conta.getTipo()
+                );
+
         validarDatas(
                 request.dataEmissao(),
                 request.dataVencimento()
@@ -247,6 +272,10 @@ public class ContaFinanceiraService {
 
                     normalizarTextoOpcional(
                             request.observacao()
+                    ),
+                    fornecedor,
+                    normalizarTextoOpcional(
+                            request.compradorNome()
                     )
             );
         } catch (
@@ -422,19 +451,21 @@ public class ContaFinanceiraService {
                         tipoMovimentacao
                 );
 
-        Movimentacao movimentacao =
-                new Movimentacao(
-                        conta.getEmpresa(),
-                        categoria,
-                        criarDescricaoMovimentacao(conta),
-                        valorPendente,
-                        tipoMovimentacao,
-                        LocalDate.now(),
-                        criarObservacaoMovimentacao(
-                                conta,
-                                request.observacao()
-                        )
-                );
+            Movimentacao movimentacao =
+                    new Movimentacao(
+                            conta.getEmpresa(),
+                            categoria,
+                            criarDescricaoMovimentacao(conta),
+                            valorPendente,
+                            tipoMovimentacao,
+                            LocalDate.now(),
+                            criarObservacaoMovimentacao(
+                                    conta,
+                                    request.observacao()
+                            ),
+                            conta.getFornecedor(),
+                            conta.getCompradorNome()
+                    );
 
         Movimentacao movimentacaoSalva =
                 movimentacaoRepository.save(
@@ -556,7 +587,9 @@ public class ContaFinanceiraService {
                             request.valor(),
                             tipoMovimentacao,
                             request.dataLiquidacao(),
-                            observacaoMovimentacao
+                            observacaoMovimentacao,
+                            conta.getFornecedor(),
+                            conta.getCompradorNome()
                     );
 
             movimentacaoSalva =
@@ -1013,6 +1046,24 @@ public class ContaFinanceiraService {
         }
 
         return TipoMovimentacao.RECEITA;
+    }
+
+    private Fornecedor buscarFornecedorSeInformado(
+            Long empresaId,
+            Long fornecedorId,
+            TipoContaFinanceira tipo) {
+
+        if (
+                fornecedorId == null
+                || tipo != TipoContaFinanceira.PAGAR
+        ) {
+            return null;
+        }
+
+        return fornecedorService.buscarFornecedorAtivo(
+                empresaId,
+                fornecedorId
+        );
     }
 
     private void configurarLembreteInicial(

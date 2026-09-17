@@ -38,6 +38,11 @@ public interface MovimentacaoRepository
             Long categoriaId
     );
 
+    boolean existsByEmpresa_IdAndFornecedor_Id(
+            Long empresaId,
+            Long fornecedorId
+    );
+
     @Modifying(
             clearAutomatically = true,
             flushAutomatically = true
@@ -190,5 +195,11 @@ public interface MovimentacaoRepository
     List<Movimentacao> buscarLixeira(
             @Param("empresaId")
             Long empresaId
+    );
+
+    List<Movimentacao>
+    findAllByEmpresa_IdAndFornecedor_IdAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
+            Long empresaId,
+            Long fornecedorId
     );
 }

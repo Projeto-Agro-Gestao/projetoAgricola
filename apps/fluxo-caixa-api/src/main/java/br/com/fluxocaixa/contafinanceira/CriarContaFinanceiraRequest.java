@@ -100,6 +100,17 @@ public record CriarContaFinanceiraRequest(
                                 + "500 caracteres"
         )
         String observacao
+        ,
+
+        Long fornecedorId,
+
+        @Size(
+                max = 150,
+                message =
+                        "O nome do comprador deve ter no maximo "
+                                + "150 caracteres"
+        )
+        String compradorNome
 
 ) {
 }

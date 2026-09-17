@@ -195,4 +195,15 @@ public interface ContaFinanceiraRepository
             Long empresaId,
             Long categoriaId
     );
+
+    boolean existsByEmpresa_IdAndFornecedor_Id(
+            Long empresaId,
+            Long fornecedorId
+    );
+
+    List<ContaFinanceira>
+    findAllByEmpresa_IdAndFornecedor_IdAndExcluidaFalseOrderByDataVencimentoDescIdDesc(
+            Long empresaId,
+            Long fornecedorId
+    );
 }

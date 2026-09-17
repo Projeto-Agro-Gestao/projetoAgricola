@@ -2,6 +2,7 @@ package br.com.fluxocaixa.movimentacao;
 
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.empresa.Empresa;
+import br.com.fluxocaixa.fornecedor.Fornecedor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -74,6 +75,16 @@ public class Movimentacao {
     @Column(name = "categoria_original_nome", length = 100)
     private String categoriaOriginalNome;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
+
+    @Column(name = "fornecedor_nome", length = 150)
+    private String fornecedorNome;
+
+    @Column(name = "comprador_nome", length = 150)
+    private String compradorNome;
+
     protected Movimentacao() {
     }
 
@@ -85,6 +96,29 @@ public class Movimentacao {
             TipoMovimentacao tipo,
             LocalDate dataMovimentacao,
             String observacao) {
+        this(
+                empresa,
+                categoria,
+                descricao,
+                valor,
+                tipo,
+                dataMovimentacao,
+                observacao,
+                null,
+                null
+        );
+    }
+
+    public Movimentacao(
+            Empresa empresa,
+            Categoria categoria,
+            String descricao,
+            BigDecimal valor,
+            TipoMovimentacao tipo,
+            LocalDate dataMovimentacao,
+            String observacao,
+            Fornecedor fornecedor,
+            String compradorNome) {
 
         this.empresa = empresa;
         this.categoria = categoria;
@@ -93,6 +127,11 @@ public class Movimentacao {
         this.tipo = tipo;
         this.dataMovimentacao = dataMovimentacao;
         this.observacao = observacao;
+        this.fornecedor = fornecedor;
+        this.fornecedorNome = fornecedor == null
+                ? null
+                : fornecedor.getNome();
+        this.compradorNome = compradorNome;
     }
 
     public void moverParaLixeira() {
@@ -123,7 +162,9 @@ public class Movimentacao {
             BigDecimal valor,
             TipoMovimentacao tipo,
             LocalDate dataMovimentacao,
-            String observacao) {
+            String observacao,
+            Fornecedor fornecedor,
+            String compradorNome) {
 
         this.categoria = categoria;
         this.descricao = descricao;
@@ -131,6 +172,11 @@ public class Movimentacao {
         this.tipo = tipo;
         this.dataMovimentacao = dataMovimentacao;
         this.observacao = observacao;
+        this.fornecedor = fornecedor;
+        this.fornecedorNome = fornecedor == null
+                ? null
+                : fornecedor.getNome();
+        this.compradorNome = compradorNome;
     }
 
     public Long getId() {
@@ -187,5 +233,19 @@ public class Movimentacao {
 
     public String getCategoriaOriginalNome() {
         return categoriaOriginalNome;
+    }
+
+    public Fornecedor getFornecedor() {
+        return fornecedor;
+    }
+
+    public String getFornecedorNome() {
+        return fornecedor == null
+                ? fornecedorNome
+                : fornecedor.getNome();
+    }
+
+    public String getCompradorNome() {
+        return compradorNome;
     }
 }
