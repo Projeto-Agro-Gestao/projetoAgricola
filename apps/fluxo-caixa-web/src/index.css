@@ -109,3 +109,22 @@ svg {
 #root {
   min-height: 100vh;
 }
+
+.campo-obrigatorio::after,
+label:has(input[required])::after,
+label:has(select[required])::after,
+label:has(textarea[required])::after {
+  content: " *";
+  color: var(--destructive);
+  font-weight: 800;
+}
+
+form:has(input[required], select[required], textarea[required])::after {
+  content: "* Campo obrigatório";
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
