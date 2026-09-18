@@ -83,6 +83,12 @@
     grid-column: 1 / -1;
 }
 
+.fornecedores-atalhos-painel,
+.fornecedores-painel-precos,
+.fornecedores-categorias-resumo {
+    grid-column: 1 / -1;
+}
+
 .fornecedores-card-topo {
     display: flex;
     align-items: flex-start;
@@ -102,6 +108,182 @@
 .fornecedores-card-topo h2 {
     margin: 3px 0 0;
     font-size: 1.3rem;
+}
+
+.fornecedores-atalhos-painel,
+.fornecedores-painel-precos {
+    margin-bottom: 18px;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.4);
+    background: var(--card);
+    box-shadow: 0 22px 55px rgb(22 58 25 / 0.08);
+}
+
+.fornecedores-indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.fornecedores-indicadores article {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+}
+
+.fornecedores-indicadores span {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.fornecedores-indicadores small {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.fornecedores-indicadores strong {
+    overflow-wrap: anywhere;
+    font-size: 1.08rem;
+}
+
+.fornecedores-grafico-precos {
+    display: grid;
+    gap: 12px;
+}
+
+.fornecedores-grafico-precos article {
+    display: grid;
+    grid-template-columns: minmax(140px, 0.9fr) minmax(180px, 1.5fr) minmax(180px, auto);
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+}
+
+.fornecedores-grafico-precos article > div:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.fornecedores-grafico-precos span,
+.fornecedores-grafico-precos small {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+}
+
+.fornecedores-grafico-barra {
+    height: 16px;
+    overflow: hidden;
+    border-radius: 999px;
+    background:
+            color-mix(
+                    in oklch,
+                    var(--destructive) 12%,
+                    var(--secondary)
+            );
+}
+
+.fornecedores-grafico-barra i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+}
+
+.fornecedores-atalhos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.fornecedores-atalhos a,
+.fornecedores-atalhos button {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    gap: 12px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 850;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.fornecedores-atalhos span {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.fornecedores-cards-resumo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.fornecedores-resumo-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+}
+
+.fornecedores-resumo-card > span {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--secondary);
+    color: var(--primary);
+    font-weight: 900;
+}
+
+.fornecedores-resumo-card > div {
+    display: grid;
+    gap: 4px;
+}
+
+.fornecedores-resumo-card small,
+.fornecedores-resumo-card p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+}
+
+.fornecedores-resumo-card p {
+    grid-column: 1 / -1;
 }
 
 .fornecedores-card form {
@@ -420,6 +602,10 @@
 
     .fornecedores-linha-form,
     .fornecedores-grade-form,
+    .fornecedores-atalhos,
+    .fornecedores-indicadores,
+    .fornecedores-cards-resumo,
+    .fornecedores-grafico-precos article,
     .fornecedores-cotacao-item {
         grid-template-columns: 1fr;
     }

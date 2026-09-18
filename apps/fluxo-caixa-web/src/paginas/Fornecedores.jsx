@@ -184,6 +184,33 @@ function Fornecedores() {
         [produtos],
     )
 
+    const resumoCategoriasProduto = useMemo(
+        () =>
+            categoriasProduto.map((categoria) => {
+                const produtosDaCategoria = produtos.filter(
+                    (produto) =>
+                        produto.categoriaId === categoria.id
+                        || produto.categoriaNome === categoria.nome,
+                )
+
+                const cotacoesDaCategoria = cotacoes.filter(
+                    (cotacao) =>
+                        cotacao.categoriaProdutoNome === categoria.nome,
+                )
+
+                return {
+                    ...categoria,
+                    produtos: produtosDaCategoria.length,
+                    cotacoes: cotacoesDaCategoria.length,
+                }
+            }),
+        [
+            categoriasProduto,
+            cotacoes,
+            produtos,
+        ],
+    )
+
     const cotacoesPorProduto = useMemo(
         () => {
             const grupos = new Map()
@@ -227,6 +254,101 @@ function Fornecedores() {
             )
         },
         [cotacoes],
+    )
+
+    const analiseCotacoes = useMemo(
+        () => {
+            const produtosComparados = cotacoesPorProduto.filter(
+                (grupo) => grupo.itens.length > 1,
+            )
+
+            const economiaPotencial = produtosComparados.reduce(
+                (total, grupo) => {
+                    const melhor = Number(
+                        grupo.itens[0]?.valorPorKg
+                        ?? grupo.itens[0]?.valorPorUnidade
+                        ?? grupo.itens[0]?.valorPorLote
+                        ?? 0,
+                    )
+                    const pior = Number(
+                        grupo.itens[grupo.itens.length - 1]?.valorPorKg
+                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorUnidade
+                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorLote
+                        ?? 0,
+                    )
+
+                    return total + Math.max(0, pior - melhor)
+                },
+                0,
+            )
+
+            const fornecedorMaisBarato = new Map()
+
+            produtosComparados.forEach((grupo) => {
+                const nomeFornecedor =
+                    grupo.melhor?.fornecedorNome ?? 'Sem fornecedor'
+
+                fornecedorMaisBarato.set(
+                    nomeFornecedor,
+                    (fornecedorMaisBarato.get(nomeFornecedor) ?? 0) + 1,
+                )
+            })
+
+            const fornecedorDestaque = Array.from(
+                fornecedorMaisBarato.entries(),
+            ).sort(
+                (primeiro, segundo) => segundo[1] - primeiro[1],
+            )[0]
+
+            return {
+                totalCotacoes: cotacoes.length,
+                produtosComparados: produtosComparados.length,
+                economiaPotencial,
+                fornecedorDestaque: fornecedorDestaque?.[0] ?? '-',
+            }
+        },
+        [
+            cotacoes.length,
+            cotacoesPorProduto,
+        ],
+    )
+
+    const barrasComparacao = useMemo(
+        () =>
+            cotacoesPorProduto
+                .filter((grupo) => grupo.itens.length > 1)
+                .map((grupo) => {
+                    const melhorValor = Number(
+                        grupo.itens[0]?.valorPorKg
+                        ?? grupo.itens[0]?.valorPorUnidade
+                        ?? grupo.itens[0]?.valorPorLote
+                        ?? 0,
+                    )
+                    const piorValor = Number(
+                        grupo.itens[grupo.itens.length - 1]?.valorPorKg
+                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorUnidade
+                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorLote
+                        ?? 0,
+                    )
+
+                    return {
+                        produtoNome: grupo.produtoNome,
+                        melhorFornecedor: grupo.itens[0]?.fornecedorNome,
+                        melhorValor,
+                        piorValor,
+                        largura:
+                            piorValor > 0
+                                ? Math.max(
+                                    8,
+                                    Math.min(
+                                        100,
+                                        (melhorValor / piorValor) * 100,
+                                    ),
+                                )
+                                : 0,
+                    }
+                }),
+        [cotacoesPorProduto],
     )
 
     useEffect(() => {
@@ -748,8 +870,151 @@ function Fornecedores() {
                     </p>
                 )}
 
+                <section className="fornecedores-atalhos-painel">
+                    <div className="fornecedores-card-topo">
+                        <div>
+                            <small>Acesso rápido</small>
+                            <h2>Fornecedores, produtos e preços</h2>
+                        </div>
+                    </div>
+
+                    <div className="fornecedores-atalhos">
+                        <a href="#fornecedor-formulario">
+                            <span>+</span>
+                            Novo fornecedor
+                        </a>
+                        <a href="#fornecedores-cadastrados">
+                            <span>F</span>
+                            Ver fornecedores
+                        </a>
+                        <a href="#categorias-produtos">
+                            <span>≡</span>
+                            Categorias e produtos
+                        </a>
+                        <a href="#registrar-cotacao">
+                            <span>R$</span>
+                            Registrar preço
+                        </a>
+                        <a href="#comparar-precos">
+                            <span>%</span>
+                            Comparar preços
+                        </a>
+                        <a href="#compras-fornecedor">
+                            <span>▦</span>
+                            Compras
+                        </a>
+                        <button
+                            onClick={() => setMostrarLixeira(true)}
+                            type="button"
+                        >
+                            <span>♲</span>
+                            Lixeira
+                        </button>
+                        <button
+                            onClick={() => baixarRelatorio('excel')}
+                            type="button"
+                        >
+                            <span>▦</span>
+                            Excel
+                        </button>
+                        <button
+                            onClick={() => baixarRelatorio('pdf')}
+                            type="button"
+                        >
+                            <span>▤</span>
+                            PDF
+                        </button>
+                    </div>
+                </section>
+
+                <section className="fornecedores-painel-precos">
+                    <div className="fornecedores-card-topo">
+                        <div>
+                            <small>Leitura de compra</small>
+                            <h2>Comparativo para decidir melhor</h2>
+                        </div>
+                    </div>
+
+                    <div className="fornecedores-indicadores">
+                        <article>
+                            <span>C</span>
+                            <small>Cotações registradas</small>
+                            <strong>
+                                {analiseCotacoes.totalCotacoes}
+                            </strong>
+                        </article>
+                        <article>
+                            <span>P</span>
+                            <small>Produtos comparáveis</small>
+                            <strong>
+                                {analiseCotacoes.produtosComparados}
+                            </strong>
+                        </article>
+                        <article>
+                            <span>R$</span>
+                            <small>Diferença por unidade base</small>
+                            <strong>
+                                {formatarDinheiro(
+                                    analiseCotacoes.economiaPotencial,
+                                )}
+                            </strong>
+                        </article>
+                        <article>
+                            <span>F</span>
+                            <small>Fornecedor mais vantajoso</small>
+                            <strong>
+                                {analiseCotacoes.fornecedorDestaque}
+                            </strong>
+                        </article>
+                    </div>
+
+                    {barrasComparacao.length === 0 ? (
+                        <p className="fornecedores-vazio">
+                            Cadastre duas ou mais cotações do mesmo produto
+                            para formar o gráfico de comparação.
+                        </p>
+                    ) : (
+                        <div className="fornecedores-grafico-precos">
+                            {barrasComparacao.map((barra) => (
+                                <article key={barra.produtoNome}>
+                                    <div>
+                                        <strong>
+                                            {barra.produtoNome}
+                                        </strong>
+                                        <span>
+                                            Melhor:{' '}
+                                            {barra.melhorFornecedor}
+                                        </span>
+                                    </div>
+                                    <div className="fornecedores-grafico-barra">
+                                        <i
+                                            style={{
+                                                width:
+                                                    `${barra.largura}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <small>
+                                        Melhor{' '}
+                                        {formatarDinheiro(
+                                            barra.melhorValor,
+                                        )}{' '}
+                                        x maior{' '}
+                                        {formatarDinheiro(
+                                            barra.piorValor,
+                                        )}
+                                    </small>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
                 <main className="fornecedores-grade">
-                    <section className="fornecedores-card">
+                    <section
+                        className="fornecedores-card"
+                        id="fornecedor-formulario"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Fornecedores</small>
@@ -842,7 +1107,10 @@ function Fornecedores() {
                         </form>
                     </section>
 
-                    <section className="fornecedores-card fornecedores-lista">
+                    <section
+                        className="fornecedores-card fornecedores-lista"
+                        id="fornecedores-cadastrados"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Lista</small>
@@ -1006,7 +1274,10 @@ function Fornecedores() {
                         )}
                     </section>
 
-                    <section className="fornecedores-card">
+                    <section
+                        className="fornecedores-card"
+                        id="categorias-produtos"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Produtos</small>
@@ -1135,6 +1406,45 @@ function Fornecedores() {
                         </form>
                     </section>
 
+                    <section className="fornecedores-card fornecedores-categorias-resumo">
+                        <div className="fornecedores-card-topo">
+                            <div>
+                                <small>Categorias cadastradas</small>
+                                <h2>Produtos por categoria</h2>
+                            </div>
+                        </div>
+
+                        {resumoCategoriasProduto.length === 0 ? (
+                            <p className="fornecedores-vazio">
+                                Nenhuma categoria de produto cadastrada.
+                            </p>
+                        ) : (
+                            <div className="fornecedores-cards-resumo">
+                                {resumoCategoriasProduto.map((categoria) => (
+                                    <article
+                                        className="fornecedores-resumo-card"
+                                        key={categoria.id}
+                                    >
+                                        <span>C</span>
+                                        <div>
+                                            <strong>
+                                                {categoria.nome}
+                                            </strong>
+                                            <small>
+                                                {categoria.produtos}{' '}
+                                                produto(s)
+                                            </small>
+                                        </div>
+                                        <p>
+                                            {categoria.cotacoes}{' '}
+                                            cotação(ões)
+                                        </p>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+
                     <section className="fornecedores-card fornecedores-lista">
                         <div className="fornecedores-card-topo">
                             <div>
@@ -1183,7 +1493,10 @@ function Fornecedores() {
                         )}
                     </section>
 
-                    <section className="fornecedores-card fornecedores-cotacao">
+                    <section
+                        className="fornecedores-card fornecedores-cotacao"
+                        id="registrar-cotacao"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Cotação</small>
@@ -1416,7 +1729,10 @@ function Fornecedores() {
                         </form>
                     </section>
 
-                    <section className="fornecedores-card fornecedores-comparativo">
+                    <section
+                        className="fornecedores-card fornecedores-comparativo"
+                        id="comparar-precos"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Comparação</small>
@@ -1567,7 +1883,10 @@ function Fornecedores() {
                         )}
                     </section>
 
-                    <section className="fornecedores-card fornecedores-compras">
+                    <section
+                        className="fornecedores-card fornecedores-compras"
+                        id="compras-fornecedor"
+                    >
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Compras registradas</small>

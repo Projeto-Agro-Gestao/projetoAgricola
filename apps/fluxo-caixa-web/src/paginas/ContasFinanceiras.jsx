@@ -919,6 +919,42 @@ function ContasFinanceiras() {
             [contas],
         )
 
+    const resumoCategoriasContas =
+        useMemo(
+            () => {
+                const grupos = new Map()
+
+                contasAtivas.forEach((conta) => {
+                    const nome =
+                        conta.categoriaNome
+                        || 'Sem categoria'
+                    const chave = `${conta.tipo}-${nome}`
+
+                    if (!grupos.has(chave)) {
+                        grupos.set(chave, {
+                            nome,
+                            tipo: conta.tipo,
+                            quantidade: 0,
+                            valor: 0,
+                        })
+                    }
+
+                    const grupo = grupos.get(chave)
+
+                    grupo.quantidade += 1
+                    grupo.valor += Number(
+                        conta.valorPendente ?? 0,
+                    )
+                })
+
+                return Array.from(grupos.values()).sort(
+                    (primeira, segunda) =>
+                        segunda.valor - primeira.valor,
+                )
+            },
+            [contasAtivas],
+        )
+
     const contasVisiveis =
         mostrandoLixeira
             ? contasLixeira
@@ -1952,6 +1988,69 @@ function ContasFinanceiras() {
                                 : 'PDF da projeção'}
                         </button>
                     </div>
+                </section>
+
+                <section className="contas-categorias-painel">
+                    <div className="contas-lista-topo">
+                        <div>
+                            <p className="contas-etiqueta">
+                                Categorias cadastradas
+                            </p>
+
+                            <h2>
+                                Resumo por categoria
+                            </h2>
+                        </div>
+                    </div>
+
+                    {resumoCategoriasContas.length === 0 ? (
+                        <div className="contas-vazio">
+                            <strong>
+                                Nenhuma categoria com conta ativa
+                            </strong>
+                            <span>
+                                As categorias aparecerão aqui quando houver
+                                contas cadastradas.
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="contas-categorias-cards">
+                            {resumoCategoriasContas.map((categoria) => (
+                                <article
+                                    className={`contas-categoria-card ${
+                                        categoria.tipo === 'RECEBER'
+                                            ? 'receber'
+                                            : 'pagar'
+                                    }`}
+                                    key={`${categoria.tipo}-${categoria.nome}`}
+                                >
+                                    <span>
+                                        {categoria.tipo === 'RECEBER'
+                                            ? '+'
+                                            : '-'}
+                                    </span>
+                                    <div>
+                                        <strong>
+                                            {categoria.nome}
+                                        </strong>
+                                        <small>
+                                            {categoria.tipo === 'RECEBER'
+                                                ? 'Conta a receber'
+                                                : 'Conta a pagar'}
+                                        </small>
+                                    </div>
+                                    <p>
+                                        {categoria.quantidade} conta(s)
+                                    </p>
+                                    <strong>
+                                        {formatarDinheiro(
+                                            categoria.valor,
+                                        )}
+                                    </strong>
+                                </article>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 <section
