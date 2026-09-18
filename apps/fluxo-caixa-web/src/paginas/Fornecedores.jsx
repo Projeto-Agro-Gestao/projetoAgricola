@@ -103,6 +103,27 @@ function hojeIso() {
     return new Date().toISOString().slice(0, 10)
 }
 
+function obterValorComparavel(cotacao) {
+    return Number(
+        cotacao?.valorPorKg
+        ?? cotacao?.valorPorUnidade
+        ?? cotacao?.valorPorLote
+        ?? 0,
+    )
+}
+
+function obterUnidadeComparavel(cotacao) {
+    if (cotacao?.valorPorKg) {
+        return 'kg'
+    }
+
+    if (cotacao?.valorPorUnidade) {
+        return cotacao.unidadeMedida || 'unidade'
+    }
+
+    return 'lote'
+}
+
 function Fornecedores() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
@@ -110,6 +131,8 @@ function Fornecedores() {
     const [fornecedores, setFornecedores] = useState([])
     const [lixeira, setLixeira] = useState([])
     const [categoriasProduto, setCategoriasProduto] = useState([])
+    const [categoriasFinanceiras, setCategoriasFinanceiras] =
+        useState([])
     const [produtos, setProdutos] = useState([])
     const [cotacoes, setCotacoes] = useState([])
     const [comparativos, setComparativos] = useState([])
@@ -313,39 +336,35 @@ function Fornecedores() {
         ],
     )
 
-    const barrasComparacao = useMemo(
+    const graficoCotacoesDetalhado = useMemo(
         () =>
             cotacoesPorProduto
                 .filter((grupo) => grupo.itens.length > 1)
                 .map((grupo) => {
-                    const melhorValor = Number(
-                        grupo.itens[0]?.valorPorKg
-                        ?? grupo.itens[0]?.valorPorUnidade
-                        ?? grupo.itens[0]?.valorPorLote
-                        ?? 0,
-                    )
-                    const piorValor = Number(
-                        grupo.itens[grupo.itens.length - 1]?.valorPorKg
-                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorUnidade
-                        ?? grupo.itens[grupo.itens.length - 1]?.valorPorLote
-                        ?? 0,
+                    const maiorValor = Math.max(
+                        ...grupo.itens.map(obterValorComparavel),
                     )
 
                     return {
-                        produtoNome: grupo.produtoNome,
-                        melhorFornecedor: grupo.itens[0]?.fornecedorNome,
-                        melhorValor,
-                        piorValor,
-                        largura:
-                            piorValor > 0
-                                ? Math.max(
-                                    8,
-                                    Math.min(
-                                        100,
-                                        (melhorValor / piorValor) * 100,
-                                    ),
-                                )
-                                : 0,
+                        ...grupo,
+                        maiorValor,
+                        itens: grupo.itens.map((cotacao) => {
+                            const valor = obterValorComparavel(cotacao)
+
+                            return {
+                                ...cotacao,
+                                valorComparavel: valor,
+                                unidadeComparavel:
+                                    obterUnidadeComparavel(cotacao),
+                                largura:
+                                    maiorValor > 0
+                                        ? Math.max(
+                                            8,
+                                            (valor / maiorValor) * 100,
+                                        )
+                                        : 0,
+                            }
+                        }),
                     }
                 }),
         [cotacoesPorProduto],
@@ -408,6 +427,7 @@ function Fornecedores() {
                 requisitar('/fornecedores/produtos'),
                 requisitar('/fornecedores/cotacoes'),
                 requisitar('/fornecedores/comparativo-cotacoes'),
+                requisitar('/categorias?tipo=DESPESA'),
             ])
 
             const mensagens = [
@@ -417,6 +437,7 @@ function Fornecedores() {
                 'Não foi possível carregar produtos.',
                 'Não foi possível carregar cotações.',
                 'Não foi possível carregar comparativos.',
+                'Não foi possível carregar categorias financeiras.',
             ]
 
             for (let indice = 0; indice < respostas.length; indice++) {
@@ -437,6 +458,7 @@ function Fornecedores() {
                 produtosDados,
                 cotacoesDados,
                 comparativosDados,
+                categoriasFinanceirasDados,
             ] = await Promise.all(
                 respostas.map((resposta) => resposta.json()),
             )
@@ -447,6 +469,11 @@ function Fornecedores() {
             setProdutos(produtosDados)
             setCotacoes(cotacoesDados)
             setComparativos(comparativosDados)
+            setCategoriasFinanceiras(
+                categoriasFinanceirasDados.filter(
+                    (categoria) => categoria.ativo,
+                ),
+            )
         } catch (erroDaRequisicao) {
             setErro(
                 erroDaRequisicao instanceof Error
@@ -701,6 +728,16 @@ function Fornecedores() {
         evento.preventDefault()
 
         if (!migracao) {
+            return
+        }
+
+        if (
+            !migracaoForm.categoriaId
+            && !migracaoForm.novaCategoriaNome.trim()
+        ) {
+            setErro(
+                'Escolha uma categoria existente ou informe uma nova categoria.',
+            )
             return
         }
 
@@ -968,42 +1005,63 @@ function Fornecedores() {
                         </article>
                     </div>
 
-                    {barrasComparacao.length === 0 ? (
+                    {graficoCotacoesDetalhado.length === 0 ? (
                         <p className="fornecedores-vazio">
                             Cadastre duas ou mais cotações do mesmo produto
                             para formar o gráfico de comparação.
                         </p>
                     ) : (
                         <div className="fornecedores-grafico-precos">
-                            {barrasComparacao.map((barra) => (
-                                <article key={barra.produtoNome}>
-                                    <div>
-                                        <strong>
-                                            {barra.produtoNome}
-                                        </strong>
-                                        <span>
+                            {graficoCotacoesDetalhado.map((grupo) => (
+                                <article key={grupo.produtoNome}>
+                                    <header>
+                                        <div>
+                                            <strong>
+                                                {grupo.produtoNome}
+                                            </strong>
+                                            <span>
+                                                Produto igual comparado com
+                                                produto igual.
+                                            </span>
+                                        </div>
+                                        <small>
                                             Melhor:{' '}
-                                            {barra.melhorFornecedor}
-                                        </span>
+                                            {grupo.melhor?.fornecedorNome}
+                                        </small>
+                                    </header>
+
+                                    <div className="fornecedores-grafico-ranking">
+                                        {grupo.itens.map((cotacao) => (
+                                            <div
+                                                className={
+                                                    cotacao.id
+                                                        === grupo.melhor?.id
+                                                        ? 'melhor'
+                                                        : ''
+                                                }
+                                                key={cotacao.id}
+                                            >
+                                                <span>
+                                                    {cotacao.fornecedorNome}
+                                                </span>
+                                                <div className="fornecedores-grafico-barra">
+                                                    <i
+                                                        style={{
+                                                            width:
+                                                                `${cotacao.largura}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                                <strong>
+                                                    {formatarDinheiro(
+                                                        cotacao.valorComparavel,
+                                                    )}
+                                                    /
+                                                    {cotacao.unidadeComparavel}
+                                                </strong>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="fornecedores-grafico-barra">
-                                        <i
-                                            style={{
-                                                width:
-                                                    `${barra.largura}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <small>
-                                        Melhor{' '}
-                                        {formatarDinheiro(
-                                            barra.melhorValor,
-                                        )}{' '}
-                                        x maior{' '}
-                                        {formatarDinheiro(
-                                            barra.piorValor,
-                                        )}
-                                    </small>
                                 </article>
                             ))}
                         </div>
@@ -1947,7 +2005,7 @@ function Fornecedores() {
                         >
                             <h2>{confirmacao.titulo}</h2>
                             <p>{confirmacao.texto}</p>
-                            <div>
+                            <div className="fornecedores-modal-acoes">
                                 <button
                                     onClick={() =>
                                         setConfirmacao(null)
@@ -1988,20 +2046,53 @@ function Fornecedores() {
                                 financeiros ou previsão futura.
                             </p>
 
+                            <div className="fornecedores-modal-resumo">
+                                <strong>
+                                    {migracao.cotacao.produtoNome}
+                                </strong>
+                                <span>
+                                    {migracao.cotacao.fornecedorNome}
+                                    {' - '}
+                                    {formatarDinheiro(
+                                        migracao.cotacao.valorLiquido,
+                                    )}
+                                </span>
+                                <small>
+                                    Escolha abaixo o local específico onde
+                                    essa compra deve entrar.
+                                </small>
+                            </div>
+
                             <label>
                                 Categoria financeira existente
-                                <input
+                                <select
                                     onChange={(evento) =>
                                         setMigracaoForm({
                                             ...migracaoForm,
                                             categoriaId:
                                                 evento.target.value,
+                                            novaCategoriaNome:
+                                                evento.target.value
+                                                    ? ''
+                                                    : migracaoForm.novaCategoriaNome,
                                         })
                                     }
-                                    placeholder="ID da categoria, se souber"
-                                    type="number"
                                     value={migracaoForm.categoriaId}
-                                />
+                                >
+                                    <option value="">
+                                        Escolher categoria existente
+                                    </option>
+                                    {categoriasFinanceiras.map(
+                                        (categoria) => (
+                                            <option
+                                                key={categoria.id}
+                                                value={categoria.id}
+                                            >
+                                                {categoria.nome}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
                             </label>
 
                             <label>
@@ -2012,6 +2103,9 @@ function Fornecedores() {
                                             ...migracaoForm,
                                             novaCategoriaNome:
                                                 evento.target.value,
+                                            categoriaId: evento.target.value
+                                                ? ''
+                                                : migracaoForm.categoriaId,
                                         })
                                     }
                                     placeholder="Ex.: Sementes"
@@ -2083,7 +2177,7 @@ function Fornecedores() {
                                 />
                             </label>
 
-                            <div>
+                            <div className="fornecedores-modal-acoes">
                                 <button
                                     onClick={() => setMigracao(null)}
                                     type="button"
