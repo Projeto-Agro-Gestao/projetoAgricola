@@ -1,6 +1,7 @@
 package br.com.fluxocaixa.autenticacao;
 
 import br.com.fluxocaixa.assinatura.AssinaturaAcessoService;
+import br.com.fluxocaixa.usuario.PapelUsuario;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationResult;
@@ -63,6 +64,10 @@ public class AcessoEmpresaAuthorizationManager
                 return new AuthorizationDecision(false);
             }
 
+            if (isAdministrador(jwt)) {
+                return new AuthorizationDecision(true);
+            }
+
             if (rotaLiberadaParaPagamento(contexto)) {
                 return new AuthorizationDecision(true);
             }
@@ -99,6 +104,12 @@ public class AcessoEmpresaAuthorizationManager
         }
 
         return null;
+    }
+
+    private boolean isAdministrador(Jwt jwt) {
+
+        return PapelUsuario.ADMINISTRADOR.name()
+                .equals(jwt.getClaimAsString("papel"));
     }
 
     private boolean rotaLiberadaParaPagamento(

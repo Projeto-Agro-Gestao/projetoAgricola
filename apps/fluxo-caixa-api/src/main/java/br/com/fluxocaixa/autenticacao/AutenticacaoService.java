@@ -5,6 +5,7 @@ import br.com.fluxocaixa.admin.UsuarioAcesso;
 import br.com.fluxocaixa.admin.UsuarioAcessoRepository;
 import br.com.fluxocaixa.usuario.EntrarRequest;
 import br.com.fluxocaixa.usuario.EntrarResponse;
+import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import br.com.fluxocaixa.usuario.UsuarioResponse;
@@ -59,7 +60,8 @@ public class AutenticacaoService {
             throw new CredenciaisInvalidasException();
         }
 
-        if (!usuario.possuiAcessoValido(
+        if (usuario.getPapel() != PapelUsuario.ADMINISTRADOR
+                && !usuario.possuiAcessoValido(
                 java.time.LocalDate.now()
         )) {
             throw new AcessoUsuarioBloqueadoException();
