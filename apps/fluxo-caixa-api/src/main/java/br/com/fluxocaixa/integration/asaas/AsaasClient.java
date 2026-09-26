@@ -1,6 +1,8 @@
 package br.com.fluxocaixa.integration.asaas;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,9 @@ import java.time.Duration;
 
 @Component
 public class AsaasClient {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AsaasClient.class);
 
     private final AsaasProperties properties;
     private final ObjectMapper objectMapper;
@@ -140,11 +145,31 @@ public class AsaasClient {
                 );
             }
 
-            return objectMapper.readValue(
-                    response.body(),
-                    tipoResposta
-            );
+            try {
+                return objectMapper.readValue(
+                        response.body(),
+                        tipoResposta
+                );
+            } catch (IOException exception) {
+                LOGGER.warn(
+                        "Falha ao ler resposta do Asaas em {} com HTTP {}: {} - {}",
+                        request.uri().getPath(),
+                        response.statusCode(),
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage()
+                );
+                throw new AsaasException(
+                        "Nao foi possivel ler a resposta do Asaas.",
+                        exception
+                );
+            }
         } catch (IOException exception) {
+            LOGGER.warn(
+                    "Falha de comunicacao com Asaas em {}: {} - {}",
+                    request.uri().getPath(),
+                    exception.getClass().getSimpleName(),
+                    exception.getMessage()
+            );
             throw new AsaasException(
                     "Nao foi possivel ler a resposta do Asaas.",
                     exception

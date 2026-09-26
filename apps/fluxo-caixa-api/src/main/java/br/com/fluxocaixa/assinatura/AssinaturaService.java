@@ -29,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.UUID;
 
@@ -153,7 +156,7 @@ public class AssinaturaService {
         pagamento.registrarPix(
                 pix.encodedImage(),
                 pix.payload(),
-                pix.expirationDate()
+                converterExpiracaoPix(pix.expirationDate())
         );
 
         return AssinaturaPagamentoResponse.de(
@@ -414,7 +417,7 @@ public class AssinaturaService {
                                 assinatura.getAsaasCustomerId(),
                                 formaPagamento.name(),
                                 assinatura.getValorMensal(),
-                                vencimento,
+                                vencimento.toString(),
                                 DESCRICAO_ASSINATURA,
                                 externalReference
                         )
@@ -613,6 +616,27 @@ public class AssinaturaService {
         ) || "PRODUCTION".equalsIgnoreCase(
                 asaasProperties.environment()
         );
+    }
+
+    private LocalDateTime converterExpiracaoPix(String expirationDate) {
+        if (expirationDate == null || expirationDate.isBlank()) {
+            return null;
+        }
+
+        String valor = expirationDate.trim();
+
+        try {
+            return LocalDateTime.parse(valor);
+        } catch (DateTimeParseException primeiraFalha) {
+            try {
+                return OffsetDateTime.parse(valor).toLocalDateTime();
+            } catch (DateTimeParseException segundaFalha) {
+                return LocalDateTime.parse(
+                        valor,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                );
+            }
+        }
     }
 
     private void validarAdministrador() {

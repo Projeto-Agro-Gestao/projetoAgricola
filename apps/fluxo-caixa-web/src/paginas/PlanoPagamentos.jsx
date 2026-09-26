@@ -490,6 +490,9 @@ function PlanoPagamentos() {
                         <p>
                             Vencimento: {formatarData(pagamentoAtual.vencimento)}
                         </p>
+                        <p>
+                            Status: {pagamentoAtual.status}
+                        </p>
 
                         {pagamentoAtual.pixQrCodeBase64 && (
                             <>
@@ -497,16 +500,19 @@ function PlanoPagamentos() {
                                     alt="QR Code Pix"
                                     src={`data:image/png;base64,${pagamentoAtual.pixQrCodeBase64}`}
                                 />
+                                {pagamentoAtual.pixCopiaCola && (
+                                    <code>{pagamentoAtual.pixCopiaCola}</code>
+                                )}
                                 <button
                                     onClick={() =>
                                         copiar(
                                             pagamentoAtual.pixCopiaCola,
-                                            'Pix copia e cola copiado.',
+                                            'Código Pix copiado.',
                                         )
                                     }
                                     type="button"
                                 >
-                                    Copiar Pix
+                                    Copiar código Pix
                                 </button>
                             </>
                         )}
@@ -518,12 +524,12 @@ function PlanoPagamentos() {
                                     onClick={() =>
                                         copiar(
                                             pagamentoAtual.linhaDigitavel,
-                                            'Linha digitavel copiada.',
+                                            'Código do boleto copiado.',
                                         )
                                     }
                                     type="button"
                                 >
-                                    Copiar linha digitavel
+                                    Copiar código do boleto
                                 </button>
                             </>
                         )}
