@@ -1,17 +1,24 @@
 .admin-painel {
     min-height: 100vh;
-    background: #f6fbf2;
+    background:
+        linear-gradient(180deg, #eef8e8 0, #f7fbf3 260px),
+        #f7fbf3;
     color: #061407;
     padding: 32px clamp(16px, 4vw, 64px);
 }
 
 .admin-topo {
     align-items: flex-start;
+    background: #ffffff;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    box-shadow: 0 18px 48px rgb(38 82 32 / 0.08);
     display: flex;
     gap: 24px;
     justify-content: space-between;
     margin: 0 auto 24px;
     max-width: 1180px;
+    padding: 24px;
 }
 
 .admin-topo-acoes {
@@ -51,6 +58,18 @@
     font-weight: 800;
     min-height: 42px;
     padding: 0 16px;
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+}
+
+.admin-botao-secundario:hover,
+.admin-botao-primario:hover,
+.admin-botao-perigo:hover {
+    box-shadow: 0 10px 24px rgb(43 83 31 / 0.11);
+    transform: translateY(-1px);
 }
 
 .admin-botao-secundario {
@@ -103,6 +122,7 @@
 }
 
 .admin-resumo article {
+    box-shadow: 0 14px 32px rgb(45 86 36 / 0.06);
     padding: 16px;
 }
 
@@ -120,14 +140,43 @@
 }
 
 .admin-tabela-bloco {
+    box-shadow: 0 18px 50px rgb(45 86 36 / 0.07);
     overflow: hidden;
 }
 
 .admin-tabela-cabecalho {
     align-items: center;
     display: flex;
+    gap: 18px;
     justify-content: space-between;
     padding: 20px 22px;
+}
+
+.admin-secao-etiqueta {
+    color: #2f8300;
+    display: inline-flex;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.admin-tabela-ferramentas {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(260px, 1fr) minmax(160px, auto);
+    min-width: min(100%, 480px);
+}
+
+.admin-tabela-ferramentas input,
+.admin-tabela-ferramentas select {
+    background: #fdfefb;
+    border: 1px solid #c7d9bf;
+    border-radius: 8px;
+    color: #061407;
+    min-height: 44px;
+    padding: 0 12px;
 }
 
 .admin-tabela-cabecalho h2 {
@@ -164,10 +213,14 @@
 }
 
 .admin-tabela th {
-    background: #f8fcf5;
+    background: #eef7e9;
     color: #405241;
     font-size: 0.76rem;
     text-transform: uppercase;
+}
+
+.admin-tabela tbody tr:hover {
+    background: #fbfdf8;
 }
 
 .admin-tabela td > span {
@@ -357,5 +410,15 @@
 
     .admin-resumo {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-tabela-cabecalho,
+    .admin-tabela-ferramentas {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-tabela-cabecalho {
+        flex-direction: column;
     }
 }

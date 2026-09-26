@@ -99,6 +99,36 @@ function AdminAssinaturas() {
         )
     }, [dados, filtro])
 
+    const resumoAssinaturas = useMemo(() => {
+        return (dados?.clientes ?? []).reduce(
+            (total, cliente) => {
+                total.clientes += 1
+                if (cliente.statusAssinatura === 'ACTIVE') {
+                    total.ativos += 1
+                }
+                if (cliente.statusAssinatura === 'TRIAL') {
+                    total.emTeste += 1
+                }
+                if (
+                    ['OVERDUE', 'SUSPENDED', 'TRIAL_EXPIRED'].includes(
+                        cliente.statusAssinatura,
+                    )
+                ) {
+                    total.atencao += 1
+                }
+                total.receitaMensal += Number(cliente.valor ?? 0)
+                return total
+            },
+            {
+                clientes: 0,
+                ativos: 0,
+                emTeste: 0,
+                atencao: 0,
+                receitaMensal: 0,
+            },
+        )
+    }, [dados])
+
     async function carregar() {
         try {
             const resposta = await fetch(
@@ -206,6 +236,31 @@ function AdminAssinaturas() {
                 </p>
             </header>
 
+            <section className="admin-assinaturas-resumo">
+                <article>
+                    <span>Clientes</span>
+                    <strong>{resumoAssinaturas.clientes}</strong>
+                </article>
+                <article>
+                    <span>Ativos</span>
+                    <strong>{resumoAssinaturas.ativos}</strong>
+                </article>
+                <article>
+                    <span>Em teste</span>
+                    <strong>{resumoAssinaturas.emTeste}</strong>
+                </article>
+                <article>
+                    <span>Precisam de atenção</span>
+                    <strong>{resumoAssinaturas.atencao}</strong>
+                </article>
+                <article>
+                    <span>Receita prevista</span>
+                    <strong>
+                        {formatarDinheiro(resumoAssinaturas.receitaMensal)}
+                    </strong>
+                </article>
+            </section>
+
             {mensagem && (
                 <div className="admin-assinaturas-aviso" role="status">
                     {mensagem}
@@ -217,6 +272,15 @@ function AdminAssinaturas() {
                     className="admin-assinaturas-config"
                     onSubmit={salvarConfiguracao}
                 >
+                    <div className="admin-assinaturas-config-topo">
+                        <small>Configuração geral</small>
+                        <h2>Plano padrão</h2>
+                        <p>
+                            Defina preço, teste gratuito e regras de aviso sem
+                            alterar código.
+                        </p>
+                    </div>
+
                     <label>
                         Preco mensal *
                         <input
@@ -305,6 +369,7 @@ function AdminAssinaturas() {
             )}
 
             <section className="admin-assinaturas-filtros">
+                <strong>Filtrar clientes</strong>
                 {FILTROS.map((item) => (
                     <button
                         className={filtro === item.valor ? 'ativo' : ''}
@@ -325,17 +390,21 @@ function AdminAssinaturas() {
                                 <strong>{cliente.empresa}</strong>
                                 <span>{cliente.email ?? cliente.cliente}</span>
                             </div>
-                            <b>{cliente.statusAssinatura}</b>
+                            <b
+                                className={`admin-assinaturas-status status-${cliente.statusAssinatura?.toLowerCase()}`}
+                            >
+                                {cliente.statusAssinatura}
+                            </b>
                         </div>
 
                         <div className="admin-assinaturas-dados">
-                            <span>Plano: {cliente.plano}</span>
-                            <span>Valor: {formatarDinheiro(cliente.valor)}</span>
-                            <span>Teste: {formatarData(cliente.trialInicio)} ate {formatarData(cliente.trialFim)}</span>
-                            <span>Dias restantes: {cliente.diasRestantesTrial}</span>
-                            <span>Proximo vencimento: {formatarData(cliente.proximoVencimento)}</span>
-                            <span>Ultimo pagamento: {formatarData(cliente.ultimoPagamento)}</span>
-                            <span>Forma: {cliente.formaUltimoPagamento ?? '-'}</span>
+                            <span><small>Plano</small>{cliente.plano}</span>
+                            <span><small>Valor</small>{formatarDinheiro(cliente.valor)}</span>
+                            <span><small>Teste</small>{formatarData(cliente.trialInicio)} ate {formatarData(cliente.trialFim)}</span>
+                            <span><small>Dias restantes</small>{cliente.diasRestantesTrial}</span>
+                            <span><small>Próximo vencimento</small>{formatarData(cliente.proximoVencimento)}</span>
+                            <span><small>Último pagamento</small>{formatarData(cliente.ultimoPagamento)}</span>
+                            <span><small>Forma</small>{cliente.formaUltimoPagamento ?? '-'}</span>
                         </div>
 
                         <div className="admin-assinaturas-acoes">

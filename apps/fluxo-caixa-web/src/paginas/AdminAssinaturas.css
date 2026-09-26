@@ -1,6 +1,8 @@
 .admin-assinaturas {
     min-height: 100vh;
-    background: #f7fbf3;
+    background:
+        linear-gradient(180deg, #eef8e8 0, #f7fbf3 280px),
+        #f7fbf3;
     color: #071405;
     padding: 44px clamp(18px, 5vw, 84px);
 }
@@ -32,6 +34,44 @@
     color: #53634d;
 }
 
+.admin-assinaturas-topo,
+.admin-assinaturas-resumo,
+.admin-assinaturas-config,
+.admin-assinaturas-filtros,
+.admin-assinaturas-lista {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1180px;
+}
+
+.admin-assinaturas-resumo {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 24px;
+}
+
+.admin-assinaturas-resumo article {
+    background: #ffffff;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    box-shadow: 0 14px 32px rgb(45 86 36 / 0.06);
+    padding: 16px;
+}
+
+.admin-assinaturas-resumo span {
+    color: #4c5f4d;
+    display: block;
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.admin-assinaturas-resumo strong {
+    display: block;
+    font-size: clamp(1.25rem, 2vw, 1.8rem);
+    margin-top: 8px;
+}
+
 .admin-assinaturas-aviso,
 .admin-assinaturas-config,
 .admin-assinaturas-lista article,
@@ -51,9 +91,26 @@
 .admin-assinaturas-config {
     display: grid;
     gap: 14px;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin: 26px 0;
     padding: 18px;
+}
+
+.admin-assinaturas-config-topo {
+    border-right: 1px solid #dcebd5;
+    display: grid;
+    gap: 4px;
+    padding-right: 12px;
+}
+
+.admin-assinaturas-config-topo h2,
+.admin-assinaturas-config-topo p {
+    margin: 0;
+}
+
+.admin-assinaturas-config-topo p {
+    color: #53634d;
+    font-size: .9rem;
 }
 
 .admin-assinaturas-config label {
@@ -95,11 +152,17 @@
 }
 
 .admin-assinaturas-filtros {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
     padding: 14px;
+}
+
+.admin-assinaturas-filtros strong {
+    color: #304330;
+    margin-right: 4px;
 }
 
 .admin-assinaturas-filtros button.ativo {
@@ -113,6 +176,7 @@
 }
 
 .admin-assinaturas-lista article {
+    box-shadow: 0 16px 40px rgb(45 86 36 / 0.06);
     padding: 18px;
 }
 
@@ -133,11 +197,25 @@
     color: #53634d;
 }
 
-.admin-assinaturas-cliente b {
+.admin-assinaturas-status {
     background: #e6f4dd;
     border-radius: 999px;
     color: #2f7d00;
     padding: 8px 12px;
+}
+
+.admin-assinaturas-status.status-overdue,
+.admin-assinaturas-status.status-suspended,
+.admin-assinaturas-status.status-trial_expired,
+.admin-assinaturas-status.status-cancelled {
+    background: #ffe8e3;
+    color: #b42318;
+}
+
+.admin-assinaturas-status.status-pending,
+.admin-assinaturas-status.status-trial_expiring {
+    background: #fff1d6;
+    color: #8a4b00;
 }
 
 .admin-assinaturas-dados {
@@ -145,6 +223,24 @@
     gap: 8px;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin: 18px 0;
+}
+
+.admin-assinaturas-dados span {
+    background: #f8fcf5;
+    border: 1px solid #e3efdd;
+    border-radius: 8px;
+    color: #122512;
+    display: grid;
+    font-weight: 800;
+    gap: 4px;
+    padding: 10px 12px;
+}
+
+.admin-assinaturas-dados small {
+    color: #5b6e59;
+    font-size: .72rem;
+    font-weight: 850;
+    text-transform: uppercase;
 }
 
 .admin-assinaturas-acoes {
@@ -162,14 +258,22 @@
 
 @media (max-width: 900px) {
     .admin-assinaturas-config,
-    .admin-assinaturas-dados {
+    .admin-assinaturas-dados,
+    .admin-assinaturas-resumo {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-assinaturas-config-topo {
+        border-right: 0;
+        grid-column: 1 / -1;
+        padding-right: 0;
     }
 }
 
 @media (max-width: 640px) {
     .admin-assinaturas-config,
-    .admin-assinaturas-dados {
+    .admin-assinaturas-dados,
+    .admin-assinaturas-resumo {
         grid-template-columns: 1fr;
     }
 

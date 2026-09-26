@@ -20,6 +20,15 @@ const TIPOS_ACESSO = {
     PRAZO: 'Por prazo',
 }
 
+const FILTROS_USUARIOS = [
+    { valor: 'TODOS', rotulo: 'Todos' },
+    { valor: 'LIBERADOS', rotulo: 'Liberados' },
+    { valor: 'BLOQUEADOS', rotulo: 'Bloqueados' },
+    { valor: 'ATRASADOS', rotulo: 'Atrasados' },
+    { valor: 'SEM_PAGAR', rotulo: 'Sem pagar' },
+    { valor: 'SEM_USO', rotulo: 'Sem uso' },
+]
+
 function limparSessao() {
     localStorage.removeItem('agrogestao_token')
     localStorage.removeItem('agrogestao_tipo_token')
@@ -116,6 +125,8 @@ function AdminPainel() {
     const [carregando, setCarregando] = useState(true)
     const [salvandoId, setSalvandoId] = useState(null)
     const [diasAcesso, setDiasAcesso] = useState({})
+    const [buscaUsuarios, setBuscaUsuarios] = useState('')
+    const [filtroUsuarios, setFiltroUsuarios] = useState('TODOS')
     const [usuarioEmEdicao, setUsuarioEmEdicao] =
         useState(null)
     const [formularioEdicao, setFormularioEdicao] =
@@ -167,6 +178,36 @@ function AdminPainel() {
             },
         )
     }, [usuarios])
+
+    const usuariosFiltrados = useMemo(() => {
+        const termo = buscaUsuarios.trim().toLowerCase()
+
+        return usuarios.filter((usuario) => {
+            const atendeBusca = !termo || [
+                usuario.nome,
+                usuario.email,
+                usuario.telefone,
+                usuario.nomeEmpresa,
+            ].some((valor) =>
+                String(valor ?? '').toLowerCase().includes(termo),
+            )
+
+            const atendeFiltro =
+                filtroUsuarios === 'TODOS' ||
+                (filtroUsuarios === 'LIBERADOS' &&
+                    usuario.acessoLiberado) ||
+                (filtroUsuarios === 'BLOQUEADOS' &&
+                    !usuario.acessoLiberado) ||
+                (filtroUsuarios === 'ATRASADOS' &&
+                    usuario.statusPagamento === 'ATRASADO') ||
+                (filtroUsuarios === 'SEM_PAGAR' &&
+                    usuario.statusPagamento === 'TESTE') ||
+                (filtroUsuarios === 'SEM_USO' &&
+                    usuario.situacao === 'SEM_USO')
+
+            return atendeBusca && atendeFiltro
+        })
+    }, [buscaUsuarios, filtroUsuarios, usuarios])
 
     useEffect(() => {
         if (!sessao) {
@@ -527,11 +568,40 @@ function AdminPainel() {
             <section className="admin-tabela-bloco">
                 <div className="admin-tabela-cabecalho">
                     <div>
+                        <span className="admin-secao-etiqueta">
+                            Gestão de clientes
+                        </span>
                         <h2>Usuários cadastrados</h2>
                         <p>
                             {resumo.usosHoje} usos hoje ·{' '}
                             {resumo.usosTotais} usos totais
                         </p>
+                    </div>
+
+                    <div className="admin-tabela-ferramentas">
+                        <input
+                            aria-label="Buscar usuário"
+                            onChange={(evento) =>
+                                setBuscaUsuarios(evento.target.value)
+                            }
+                            placeholder="Buscar nome, e-mail ou propriedade"
+                            type="search"
+                            value={buscaUsuarios}
+                        />
+
+                        <select
+                            aria-label="Filtrar usuários"
+                            onChange={(evento) =>
+                                setFiltroUsuarios(evento.target.value)
+                            }
+                            value={filtroUsuarios}
+                        >
+                            {FILTROS_USUARIOS.map((item) => (
+                                <option key={item.valor} value={item.valor}>
+                                    {item.rotulo}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
@@ -554,7 +624,7 @@ function AdminPainel() {
                             </thead>
 
                             <tbody>
-                                {usuarios.map((usuario) => (
+                                {usuariosFiltrados.map((usuario) => (
                                     <tr key={usuario.id}>
                                         <td>
                                             <strong>
