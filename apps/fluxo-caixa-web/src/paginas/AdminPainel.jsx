@@ -440,6 +440,10 @@ function AdminPainel() {
         navigate('/dashboard')
     }
 
+    function abrirAssinaturas() {
+        navigate('/admin/assinaturas')
+    }
+
     return (
         <main className="admin-painel">
             <header className="admin-topo">
@@ -462,6 +466,14 @@ function AdminPainel() {
                         type="button"
                     >
                         Ir para o sistema
+                    </button>
+
+                    <button
+                        className="admin-botao-secundario"
+                        onClick={abrirAssinaturas}
+                        type="button"
+                    >
+                        Plano e pagamentos
                     </button>
 
                     <button

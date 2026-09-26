@@ -19,6 +19,8 @@ import RedefinirSenha from './paginas/RedefinirSenha.jsx'
 import AdminPainel from './paginas/AdminPainel.jsx'
 import Perfil from './paginas/Perfil.jsx'
 import AppMobile from './paginas/AppMobile.jsx'
+import PlanoPagamentos from './paginas/PlanoPagamentos.jsx'
+import AdminAssinaturas from './paginas/AdminAssinaturas.jsx'
 
 function App() {
     return (
@@ -54,6 +56,11 @@ function App() {
             />
 
             <Route
+                path="/admin/assinaturas"
+                element={<AdminAssinaturas />}
+            />
+
+            <Route
                 path="/dashboard"
                 element={<EscolhaModulo />}
             />
@@ -66,6 +73,11 @@ function App() {
             <Route
                 path="/dashboard/perfil"
                 element={<Perfil />}
+            />
+
+            <Route
+                path="/dashboard/plano"
+                element={<PlanoPagamentos />}
             />
 
             <Route

@@ -1,6 +1,7 @@
 package br.com.fluxocaixa.usuario;
 
 import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
+import br.com.fluxocaixa.assinatura.AssinaturaService;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,17 +21,20 @@ public class UsuarioService {
     private final EmpresaRepository empresaRepository;
     private final CategoriaSugeridaService categoriaSugeridaService;
     private final PasswordEncoder passwordEncoder;
+    private final AssinaturaService assinaturaService;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             EmpresaRepository empresaRepository,
             CategoriaSugeridaService categoriaSugeridaService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AssinaturaService assinaturaService) {
 
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
         this.categoriaSugeridaService = categoriaSugeridaService;
         this.passwordEncoder = passwordEncoder;
+        this.assinaturaService = assinaturaService;
     }
 
     @Transactional
@@ -71,6 +75,10 @@ public class UsuarioService {
                 empresaSalva,
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
+        );
+
+        assinaturaService.iniciarAssinaturaParaNovaEmpresa(
+                empresaSalva
         );
 
         String senhaProtegida =

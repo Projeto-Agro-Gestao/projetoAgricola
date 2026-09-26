@@ -51,6 +51,10 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(
+                                "/api/v1/webhooks/asaas"
+                        )
+                        .permitAll()
+                        .requestMatchers(
                                 "/api/v1/admin/**"
                         )
                         .authenticated()

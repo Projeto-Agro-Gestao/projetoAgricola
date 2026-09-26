@@ -1,0 +1,191 @@
+.plano-pagina {
+    min-height: 100vh;
+    background: #f7fbf3;
+    color: #071405;
+    padding: 48px clamp(20px, 6vw, 96px);
+}
+
+.plano-voltar {
+    border: 0;
+    background: transparent;
+    color: #2f7d00;
+    cursor: pointer;
+    font-weight: 800;
+    margin-bottom: 28px;
+}
+
+.plano-cabecalho span,
+.plano-card-topo span,
+.plano-grade article span {
+    color: #2f7d00;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.plano-cabecalho h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    line-height: 1;
+    margin: 8px 0 12px;
+}
+
+.plano-cabecalho p,
+.plano-grade p,
+.plano-banner span,
+.plano-vazio {
+    color: #52624b;
+}
+
+.plano-aviso,
+.plano-banner,
+.plano-card,
+.plano-grade article {
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid #cfe0c7;
+    border-radius: 8px;
+}
+
+.plano-aviso {
+    margin: 24px 0;
+    padding: 14px 18px;
+    color: #2f7d00;
+    font-weight: 800;
+}
+
+.plano-grade {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 28px 0;
+}
+
+.plano-grade article {
+    padding: 22px;
+}
+
+.plano-grade strong {
+    display: block;
+    font-size: 1.35rem;
+    margin-top: 12px;
+}
+
+.plano-banner {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 18px 22px;
+}
+
+.plano-card {
+    margin-top: 24px;
+    padding: 24px;
+}
+
+.plano-card-topo {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.plano-card h2 {
+    margin: 4px 0 0;
+}
+
+.plano-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.plano-acoes button,
+.plano-cobranca button,
+.plano-cobranca a {
+    align-items: center;
+    border: 1px solid #b9d2ad;
+    border-radius: 8px;
+    color: #2f7d00;
+    cursor: pointer;
+    display: inline-flex;
+    font-weight: 900;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    text-decoration: none;
+}
+
+.plano-acoes button:first-child {
+    background: #358a00;
+    border-color: #358a00;
+    color: white;
+}
+
+.plano-cobranca {
+    border-top: 1px solid #dbe8d5;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+.plano-cobranca img {
+    background: white;
+    border: 1px solid #dbe8d5;
+    border-radius: 8px;
+    display: block;
+    margin: 16px 0;
+    max-width: 260px;
+    padding: 12px;
+    width: 100%;
+}
+
+.plano-cobranca code {
+    background: #f2f8ee;
+    border: 1px solid #dbe8d5;
+    border-radius: 8px;
+    display: block;
+    margin: 14px 0;
+    overflow-wrap: anywhere;
+    padding: 14px;
+}
+
+.plano-tabela-area {
+    overflow-x: auto;
+}
+
+.plano-tabela {
+    border-collapse: collapse;
+    min-width: 720px;
+    width: 100%;
+}
+
+.plano-tabela th,
+.plano-tabela td {
+    border-bottom: 1px solid #e0eadb;
+    padding: 14px;
+    text-align: left;
+}
+
+.plano-tabela th {
+    color: #52624b;
+    font-size: .8rem;
+    text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+    .plano-grade {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .plano-grade {
+        grid-template-columns: 1fr;
+    }
+
+    .plano-banner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

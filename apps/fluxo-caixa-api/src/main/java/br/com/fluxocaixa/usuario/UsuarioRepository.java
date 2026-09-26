@@ -15,4 +15,8 @@ public interface UsuarioRepository
             Long usuarioId,
             Long empresaId
     );
+
+    Optional<Usuario> findFirstByEmpresa_IdOrderByIdAsc(
+            Long empresaId
+    );
 }

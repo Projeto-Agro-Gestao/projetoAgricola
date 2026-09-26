@@ -10,6 +10,7 @@ import br.com.fluxocaixa.categoria.TransferenciaCategoriaInvalidaException;
 import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.fornecedor.FornecedorComComprasException;
+import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.movimentacao.MovimentacaoNaoEncontradaException;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacaoIncompativelException;
@@ -369,6 +370,27 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.BAD_REQUEST,
                 "Dados invÃ¡lidos",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(AsaasException.class)
+    public ResponseEntity<ErroResposta>
+    tratarErroAsaas(
+            AsaasException exception,
+            HttpServletRequest request) {
+
+        log.warn(
+                "Falha de integracao Asaas em {}: {}",
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+
+        return criarResposta(
+                HttpStatus.BAD_GATEWAY,
+                "Pagamento indisponivel",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()

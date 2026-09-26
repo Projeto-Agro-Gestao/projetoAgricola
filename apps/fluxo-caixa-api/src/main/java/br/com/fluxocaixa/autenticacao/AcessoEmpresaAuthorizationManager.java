@@ -1,5 +1,6 @@
 package br.com.fluxocaixa.autenticacao;
 
+import br.com.fluxocaixa.assinatura.AssinaturaAcessoService;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationResult;
@@ -13,6 +14,14 @@ import java.util.function.Supplier;
 @Component
 public class AcessoEmpresaAuthorizationManager
         implements AuthorizationManager<RequestAuthorizationContext> {
+
+    private final AssinaturaAcessoService assinaturaAcessoService;
+
+    public AcessoEmpresaAuthorizationManager(
+            AssinaturaAcessoService assinaturaAcessoService) {
+
+        this.assinaturaAcessoService = assinaturaAcessoService;
+    }
 
     @Override
     public AuthorizationResult authorize(
@@ -50,8 +59,19 @@ public class AcessoEmpresaAuthorizationManager
                             empresaIdDoToken
                     );
 
+            if (!pertenceAMesmaEmpresa) {
+                return new AuthorizationDecision(false);
+            }
+
+            if (rotaLiberadaParaPagamento(contexto)) {
+                return new AuthorizationDecision(true);
+            }
+
             return new AuthorizationDecision(
-                    pertenceAMesmaEmpresa
+                    assinaturaAcessoService
+                            .podeAcessarAreaProtegida(
+                                    empresaIdSolicitada
+                            )
             );
         } catch (NumberFormatException exception) {
 
@@ -79,5 +99,15 @@ public class AcessoEmpresaAuthorizationManager
         }
 
         return null;
+    }
+
+    private boolean rotaLiberadaParaPagamento(
+            RequestAuthorizationContext contexto) {
+
+        String caminho =
+                contexto.getRequest().getRequestURI();
+
+        return caminho.contains("/assinatura")
+                || caminho.contains("/perfil");
     }
 }

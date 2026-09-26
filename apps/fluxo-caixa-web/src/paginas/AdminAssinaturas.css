@@ -1,0 +1,180 @@
+.admin-assinaturas {
+    min-height: 100vh;
+    background: #f7fbf3;
+    color: #071405;
+    padding: 44px clamp(18px, 5vw, 84px);
+}
+
+.admin-assinaturas-voltar {
+    background: transparent;
+    border: 0;
+    color: #2f7d00;
+    cursor: pointer;
+    font-weight: 900;
+    margin-bottom: 26px;
+}
+
+.admin-assinaturas-topo span,
+.admin-assinaturas-config small {
+    color: #2f7d00;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.admin-assinaturas-topo h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    margin: 8px 0;
+}
+
+.admin-assinaturas-topo p {
+    color: #53634d;
+}
+
+.admin-assinaturas-aviso,
+.admin-assinaturas-config,
+.admin-assinaturas-lista article,
+.admin-assinaturas-filtros {
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid #cfe0c7;
+    border-radius: 8px;
+}
+
+.admin-assinaturas-aviso {
+    color: #2f7d00;
+    font-weight: 800;
+    margin: 22px 0;
+    padding: 14px 18px;
+}
+
+.admin-assinaturas-config {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin: 26px 0;
+    padding: 18px;
+}
+
+.admin-assinaturas-config label {
+    display: grid;
+    font-weight: 800;
+    gap: 8px;
+}
+
+.admin-assinaturas-config input {
+    border: 1px solid #cfe0c7;
+    border-radius: 8px;
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.admin-assinaturas-check {
+    align-content: center;
+}
+
+.admin-assinaturas-check input {
+    min-height: auto;
+}
+
+.admin-assinaturas-config button,
+.admin-assinaturas-acoes button,
+.admin-assinaturas-filtros button {
+    border: 1px solid #b9d2ad;
+    border-radius: 8px;
+    color: #2f7d00;
+    cursor: pointer;
+    font-weight: 900;
+    min-height: 42px;
+    padding: 0 14px;
+}
+
+.admin-assinaturas-config button {
+    background: #358a00;
+    color: white;
+}
+
+.admin-assinaturas-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px;
+}
+
+.admin-assinaturas-filtros button.ativo {
+    background: #358a00;
+    color: white;
+}
+
+.admin-assinaturas-lista {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-assinaturas-lista article {
+    padding: 18px;
+}
+
+.admin-assinaturas-cliente {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-assinaturas-cliente div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-assinaturas-cliente span,
+.admin-assinaturas-dados {
+    color: #53634d;
+}
+
+.admin-assinaturas-cliente b {
+    background: #e6f4dd;
+    border-radius: 999px;
+    color: #2f7d00;
+    padding: 8px 12px;
+}
+
+.admin-assinaturas-dados {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 18px 0;
+}
+
+.admin-assinaturas-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-assinaturas-acoes input {
+    border: 1px solid #cfe0c7;
+    border-radius: 8px;
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+@media (max-width: 900px) {
+    .admin-assinaturas-config,
+    .admin-assinaturas-dados {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-assinaturas-config,
+    .admin-assinaturas-dados {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-assinaturas-cliente {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

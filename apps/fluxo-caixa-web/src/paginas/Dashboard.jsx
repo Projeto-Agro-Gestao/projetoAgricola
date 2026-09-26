@@ -716,6 +716,12 @@ function Dashboard() {
         )
     }
 
+    function abrirPlanoPagamentos() {
+        navigate(
+            '/dashboard/plano',
+        )
+    }
+
     async function baixarRelatorio(tipo) {
         if (!sessao) {
             return
@@ -1629,6 +1635,17 @@ function Dashboard() {
                             >
                                 <span>F</span>
                                 Gerenciar fornecedores
+                            </button>
+
+                            <button
+                                className="dashboard-atalho"
+                                onClick={
+                                    abrirPlanoPagamentos
+                                }
+                                type="button"
+                            >
+                                <span>R$</span>
+                                Plano e pagamentos
                             </button>
 
                             <button

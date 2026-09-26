@@ -123,6 +123,10 @@ function EscolhaModulo() {
         navigate('/dashboard/perfil')
     }
 
+    function abrirPlano() {
+        navigate('/dashboard/plano')
+    }
+
     function abrirAppSimples() {
         navigate('/app')
     }
@@ -180,6 +184,14 @@ function EscolhaModulo() {
                             type="button"
                         >
                             Meus dados
+                        </button>
+
+                        <button
+                            className="escolha-modulo-perfil"
+                            onClick={abrirPlano}
+                            type="button"
+                        >
+                            Plano e pagamentos
                         </button>
 
                         <button
