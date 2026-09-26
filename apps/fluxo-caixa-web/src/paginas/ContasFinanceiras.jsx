@@ -9,6 +9,7 @@ import {
 } from 'react-router'
 import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContasFinanceiras.css'
 
 const LARGURA_GRAFICO = 900
@@ -976,7 +977,10 @@ function ContasFinanceiras() {
         )
 
     function voltarAoDashboard() {
-        navigate('/dashboard')
+        voltarPaginaAnterior(
+            navigate,
+            '/dashboard',
+        )
     }
 
     function criarConta(tipoConta) {

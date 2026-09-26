@@ -4,6 +4,7 @@ import {
 } from 'react'
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './PlanoPagamentos.css'
 
 function limparSessao() {
@@ -283,7 +284,12 @@ function PlanoPagamentos() {
         <main className="plano-pagina">
             <button
                 className="plano-voltar"
-                onClick={() => navigate('/dashboard')}
+                onClick={() =>
+                    voltarPaginaAnterior(
+                        navigate,
+                        '/dashboard',
+                    )
+                }
                 type="button"
             >
                 Voltar ao painel

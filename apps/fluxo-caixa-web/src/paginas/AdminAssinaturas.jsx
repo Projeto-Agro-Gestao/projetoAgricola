@@ -5,6 +5,7 @@ import {
 } from 'react'
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './AdminAssinaturas.css'
 
 const FILTROS = [
@@ -185,7 +186,12 @@ function AdminAssinaturas() {
         <main className="admin-assinaturas">
             <button
                 className="admin-assinaturas-voltar"
-                onClick={() => navigate('/admin')}
+                onClick={() =>
+                    voltarPaginaAnterior(
+                        navigate,
+                        '/admin',
+                    )
+                }
                 type="button"
             >
                 Voltar ao admin

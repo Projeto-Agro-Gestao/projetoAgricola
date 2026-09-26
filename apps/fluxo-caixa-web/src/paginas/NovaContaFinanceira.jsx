@@ -8,6 +8,7 @@ import {
     useSearchParams,
 } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaContaFinanceira.css'
 
 function completarComZero(numero) {
@@ -748,7 +749,10 @@ function NovaContaFinanceira() {
     }
 
     function cancelar() {
-        navigate('/dashboard/contas')
+        voltarPaginaAnterior(
+            navigate,
+            '/dashboard/contas',
+        )
     }
 
     function abrirCategorias() {

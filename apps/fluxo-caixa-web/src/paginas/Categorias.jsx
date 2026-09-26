@@ -8,6 +8,7 @@ import {
     useNavigate,
 } from 'react-router'
 import { API_BASE_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './Categorias.css'
 
 const AREAS_CATEGORIA = [
@@ -766,9 +767,17 @@ function Categorias() {
     return (
         <main className="categorias-pagina">
             <header className="categorias-cabecalho">
-                <Link to="/dashboard">
+                <button
+                    onClick={() =>
+                        voltarPaginaAnterior(
+                            navigate,
+                            '/dashboard',
+                        )
+                    }
+                    type="button"
+                >
                     ← Voltar ao dashboard
-                </Link>
+                </button>
 
                 <p>AgroGestão</p>
                 <h1>Gerenciar categorias</h1>

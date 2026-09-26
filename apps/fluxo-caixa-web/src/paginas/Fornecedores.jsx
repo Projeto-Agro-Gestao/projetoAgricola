@@ -8,6 +8,7 @@ import {
 } from 'react-router'
 import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './Fornecedores.css'
 
 function limparSessao() {
@@ -877,7 +878,12 @@ function Fornecedores() {
             <div className="fornecedores-conteudo">
                 <header className="fornecedores-cabecalho">
                     <button
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() =>
+                            voltarPaginaAnterior(
+                                navigate,
+                                '/dashboard',
+                            )
+                        }
                         type="button"
                     >
                         Voltar ao painel

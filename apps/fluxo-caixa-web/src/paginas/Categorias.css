@@ -10,17 +10,24 @@
     margin-bottom: 28px;
 }
 
-.categorias-cabecalho > a {
+.categorias-cabecalho > a,
+.categorias-cabecalho > button {
     display: inline-block;
     margin-bottom: 20px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: var(--muted-foreground);
     font-size: 0.85rem;
     font-weight: 700;
+    font-family: inherit;
     text-decoration: none;
     transition: color 160ms ease;
+    cursor: pointer;
 }
 
-.categorias-cabecalho > a:hover {
+.categorias-cabecalho > a:hover,
+.categorias-cabecalho > button:hover {
     color: var(--primary);
 }
 

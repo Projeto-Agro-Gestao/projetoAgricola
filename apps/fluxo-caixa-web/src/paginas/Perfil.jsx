@@ -4,6 +4,7 @@ import {
 } from 'react'
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './Perfil.css'
 
 function limparSessao() {
@@ -219,7 +220,12 @@ function Perfil() {
 
                     <button
                         className="perfil-botao-secundario"
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() =>
+                            voltarPaginaAnterior(
+                                navigate,
+                                '/dashboard',
+                            )
+                        }
                         type="button"
                     >
                         Voltar

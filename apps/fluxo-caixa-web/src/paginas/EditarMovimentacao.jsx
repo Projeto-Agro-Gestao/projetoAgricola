@@ -8,6 +8,7 @@ import {
     useParams,
 } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaMovimentacao.css'
 
 function completarComZero(numero) {
@@ -475,9 +476,17 @@ function EditarMovimentacao() {
         <div className="movimentacao-pagina">
             <div className="movimentacao-conteudo">
                 <header className="movimentacao-cabecalho">
-                    <Link to="/dashboard/movimentacoes">
+                    <button
+                        onClick={() =>
+                            voltarPaginaAnterior(
+                                navigate,
+                                '/dashboard/movimentacoes',
+                            )
+                        }
+                        type="button"
+                    >
                         ← Voltar às movimentações
-                    </Link>
+                    </button>
 
                     <p>AgroGestão</p>
 
@@ -500,9 +509,17 @@ function EditarMovimentacao() {
                             </p>
 
                             <div className="formulario-acoes">
-                                <Link to="/dashboard/movimentacoes">
+                                <button
+                                    onClick={() =>
+                                        voltarPaginaAnterior(
+                                            navigate,
+                                            '/dashboard/movimentacoes',
+                                        )
+                                    }
+                                    type="button"
+                                >
                                     Voltar para movimentações
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     ) : (

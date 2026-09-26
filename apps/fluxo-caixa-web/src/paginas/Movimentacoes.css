@@ -24,10 +24,15 @@
 .movimentacoes-voltar {
     display: inline-flex;
     margin-bottom: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: #486542;
     font-size: 14px;
     font-weight: 700;
+    font-family: inherit;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .movimentacoes-voltar:hover {

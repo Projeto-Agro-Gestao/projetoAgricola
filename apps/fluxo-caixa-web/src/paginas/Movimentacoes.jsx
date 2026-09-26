@@ -8,6 +8,7 @@ import {
     useSearchParams,
 } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { voltarPaginaAnterior } from '../navegacao.js'
 import './Movimentacoes.css'
 
 function formatarDinheiro(valor) {
@@ -904,18 +905,22 @@ function Movimentacoes() {
         <main className="movimentacoes-pagina">
             <header className="movimentacoes-cabecalho">
                 <div>
-                    <Link
+                    <button
                         className="movimentacoes-voltar"
-                        to={
-                            categoriaId
-                                ? '/dashboard/categorias'
-                                : '/dashboard'
+                        onClick={() =>
+                            voltarPaginaAnterior(
+                                navigate,
+                                categoriaId
+                                    ? '/dashboard/categorias'
+                                    : '/dashboard',
+                            )
                         }
+                        type="button"
                     >
                         {categoriaId
                             ? '← Voltar às categorias'
                             : '← Voltar ao dashboard'}
-                    </Link>
+                    </button>
 
                     <p className="movimentacoes-etiqueta">
                         AGROGESTÃO

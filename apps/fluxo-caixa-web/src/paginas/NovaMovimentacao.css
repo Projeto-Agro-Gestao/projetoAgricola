@@ -24,17 +24,24 @@
     margin-bottom: 24px;
 }
 
-.movimentacao-cabecalho a {
+.movimentacao-cabecalho a,
+.movimentacao-cabecalho button {
     display: inline-flex;
     margin-bottom: 30px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     color: var(--muted-foreground);
     font-size: 0.88rem;
     font-weight: 700;
+    font-family: inherit;
     text-decoration: none;
     transition: color 160ms ease;
+    cursor: pointer;
 }
 
-.movimentacao-cabecalho a:hover {
+.movimentacao-cabecalho a:hover,
+.movimentacao-cabecalho button:hover {
     color: var(--primary);
 }
 
