@@ -141,7 +141,9 @@ public class AsaasClient {
                     || response.statusCode() >= 300) {
                 throw new AsaasException(
                         "Asaas retornou erro HTTP "
-                                + response.statusCode()
+                                + response.statusCode(),
+                        response.statusCode(),
+                        response.body()
                 );
             }
 

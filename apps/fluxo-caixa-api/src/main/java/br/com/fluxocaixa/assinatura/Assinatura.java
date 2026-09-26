@@ -54,6 +54,9 @@ public class Assinatura {
     @Column(name = "asaas_customer_id", length = 80)
     private String asaasCustomerId;
 
+    @Column(name = "asaas_customer_environment", length = 20)
+    private String asaasCustomerEnvironment;
+
     @Version
     @Column(nullable = false)
     private Long versao;
@@ -119,6 +122,10 @@ public class Assinatura {
         return asaasCustomerId;
     }
 
+    public String getAsaasCustomerEnvironment() {
+        return asaasCustomerEnvironment;
+    }
+
     public void atualizarStatusCalculado(
             AssinaturaStatus novoStatus) {
 
@@ -129,8 +136,17 @@ public class Assinatura {
         }
     }
 
-    public void definirAsaasCustomerId(String asaasCustomerId) {
+    public void definirAsaasCustomer(
+            String asaasCustomerId,
+            String asaasCustomerEnvironment) {
+
         this.asaasCustomerId = asaasCustomerId;
+        this.asaasCustomerEnvironment = asaasCustomerEnvironment;
+    }
+
+    public void limparAsaasCustomer() {
+        this.asaasCustomerId = null;
+        this.asaasCustomerEnvironment = null;
     }
 
     public void atualizarValor(BigDecimal valorMensal) {

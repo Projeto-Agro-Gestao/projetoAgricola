@@ -10,6 +10,7 @@ import br.com.fluxocaixa.integration.asaas.AsaasBoletoLinhaResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasClient;
 import br.com.fluxocaixa.integration.asaas.AsaasCustomerRequest;
 import br.com.fluxocaixa.integration.asaas.AsaasCustomerResponse;
+import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.integration.asaas.AsaasPaymentRequest;
 import br.com.fluxocaixa.integration.asaas.AsaasPaymentResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasPixQrCodeResponse;
@@ -391,11 +392,7 @@ public class AssinaturaService {
                         .getPrecoMensal()
         );
 
-        if (assinatura.getAsaasCustomerId() == null) {
-            assinatura.definirAsaasCustomerId(
-                    criarClienteAsaas(assinatura)
-            );
-        }
+        garantirClienteAsaasNoAmbienteAtual(assinatura);
 
         assinatura.pendente();
         return assinatura;
@@ -412,15 +409,11 @@ public class AssinaturaService {
         LocalDate vencimento = LocalDate.now().plusDays(3);
 
         AsaasPaymentResponse response =
-                asaasClient.criarPagamento(
-                        new AsaasPaymentRequest(
-                                assinatura.getAsaasCustomerId(),
-                                formaPagamento.name(),
-                                assinatura.getValorMensal(),
-                                vencimento.toString(),
-                                DESCRICAO_ASSINATURA,
-                                externalReference
-                        )
+                criarPagamentoAsaasComRecuperacaoDeCustomer(
+                        assinatura,
+                        formaPagamento,
+                        vencimento,
+                        externalReference
                 );
 
         return pagamentoRepository.save(
@@ -435,6 +428,72 @@ public class AssinaturaService {
                         response.invoiceUrl(),
                         response.bankSlipUrl()
                 )
+        );
+    }
+
+    private AsaasPaymentResponse criarPagamentoAsaasComRecuperacaoDeCustomer(
+            Assinatura assinatura,
+            FormaPagamentoAssinatura formaPagamento,
+            LocalDate vencimento,
+            String externalReference) {
+
+        try {
+            return criarPagamentoAsaas(
+                    assinatura,
+                    formaPagamento,
+                    vencimento,
+                    externalReference
+            );
+        } catch (AsaasException exception) {
+            if (!exception.contemCodigo("invalid_customer")) {
+                throw exception;
+            }
+
+            assinatura.limparAsaasCustomer();
+            garantirClienteAsaasNoAmbienteAtual(assinatura);
+
+            return criarPagamentoAsaas(
+                    assinatura,
+                    formaPagamento,
+                    vencimento,
+                    externalReference
+            );
+        }
+    }
+
+    private AsaasPaymentResponse criarPagamentoAsaas(
+            Assinatura assinatura,
+            FormaPagamentoAssinatura formaPagamento,
+            LocalDate vencimento,
+            String externalReference) {
+
+        return asaasClient.criarPagamento(
+                new AsaasPaymentRequest(
+                        assinatura.getAsaasCustomerId(),
+                        formaPagamento.name(),
+                        assinatura.getValorMensal(),
+                        vencimento.toString(),
+                        DESCRICAO_ASSINATURA,
+                        externalReference
+                )
+        );
+    }
+
+    private void garantirClienteAsaasNoAmbienteAtual(
+            Assinatura assinatura) {
+
+        String ambienteAtual = ambienteAsaasAtual();
+
+        if (assinatura.getAsaasCustomerId() != null
+                && ambienteAtual.equals(
+                assinatura.getAsaasCustomerEnvironment()
+        )) {
+            return;
+        }
+
+        assinatura.definirAsaasCustomer(
+                criarClienteAsaas(assinatura),
+                ambienteAtual
         );
     }
 
@@ -462,6 +521,21 @@ public class AssinaturaService {
                 );
 
         return response.id();
+    }
+
+    private String ambienteAsaasAtual() {
+        String ambiente = asaasProperties.environment();
+
+        if (ambiente == null || ambiente.isBlank()) {
+            return "SANDBOX";
+        }
+
+        if ("PRODUCTION".equalsIgnoreCase(ambiente)
+                || "PRODUCAO".equalsIgnoreCase(ambiente)) {
+            return "PRODUCTION";
+        }
+
+        return ambiente.trim().toUpperCase();
     }
 
     private Movimentacao criarMovimentacaoReceita(
