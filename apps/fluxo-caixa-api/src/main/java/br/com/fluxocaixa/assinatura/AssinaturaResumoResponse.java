@@ -16,6 +16,8 @@ public record AssinaturaResumoResponse(
         LocalDate proximoVencimento,
         LocalDate ultimoPagamentoEm,
         int diasAvisoTrial,
-        boolean trialHabilitado
+        boolean trialHabilitado,
+        String tipoDocumentoPagamento,
+        String documentoPagamento
 ) {
 }

@@ -162,6 +162,23 @@ public class AssinaturaService {
     }
 
     @Transactional
+    public AssinaturaDetalheResponse atualizarDocumentoPagamento(
+            Long empresaId,
+            AtualizarDocumentoPagamentoRequest request) {
+
+        Empresa empresa = empresaRepository.findById(empresaId)
+                .orElseThrow(() ->
+                        new EmpresaNaoEncontradaException(empresaId)
+                );
+
+        empresa.alterarDocumento(
+                validarDocumentoPagamento(request)
+        );
+
+        return detalhar(empresaId);
+    }
+
+    @Transactional
     public AssinaturaPagamentoResponse criarBoleto(Long empresaId) {
 
         Assinatura assinatura =
@@ -424,13 +441,9 @@ public class AssinaturaService {
         String documento = normalizarDocumento(empresa.getDocumento());
 
         if (documento == null) {
-            if (isProducao()) {
-                throw new IllegalArgumentException(
-                        "Cadastre CPF ou CNPJ da empresa antes de gerar cobranca."
-                );
-            }
-
-            documento = "00000000191";
+            throw new IllegalArgumentException(
+                    "Cadastre CPF ou CNPJ antes de gerar a cobranca."
+            );
         }
 
         AsaasCustomerResponse response =
@@ -562,6 +575,36 @@ public class AssinaturaService {
             return null;
         }
         return documento.replaceAll("[^0-9]", "");
+    }
+
+    private String validarDocumentoPagamento(
+            AtualizarDocumentoPagamentoRequest request) {
+
+        String tipo = request.tipoDocumento() == null
+                ? ""
+                : request.tipoDocumento().trim().toUpperCase();
+
+        String documento = normalizarDocumento(request.documento());
+
+        if (!"CPF".equals(tipo) && !"CNPJ".equals(tipo)) {
+            throw new IllegalArgumentException(
+                    "Escolha CPF ou CNPJ para pagamento."
+            );
+        }
+
+        if ("CPF".equals(tipo) && documento.length() != 11) {
+            throw new IllegalArgumentException(
+                    "CPF deve possuir 11 digitos."
+            );
+        }
+
+        if ("CNPJ".equals(tipo) && documento.length() != 14) {
+            throw new IllegalArgumentException(
+                    "CNPJ deve possuir 14 digitos."
+            );
+        }
+
+        return documento;
     }
 
     private boolean isProducao() {

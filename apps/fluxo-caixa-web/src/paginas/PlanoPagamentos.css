@@ -101,9 +101,55 @@
     gap: 12px;
 }
 
+.plano-documento {
+    align-items: end;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: auto minmax(220px, 1fr) auto;
+}
+
+.plano-documento-opcoes {
+    background: #f2f8ee;
+    border: 1px solid #dbe8d5;
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+}
+
+.plano-documento-opcoes label {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    font-weight: 900;
+    gap: 6px;
+    padding: 8px 10px;
+}
+
+.plano-documento-campo {
+    color: #071405;
+    display: grid;
+    font-weight: 900;
+    gap: 8px;
+}
+
+.plano-documento-campo input {
+    background: #fbfff8;
+    border: 1px solid #cfe0c7;
+    border-radius: 8px;
+    min-height: 48px;
+    padding: 0 14px;
+}
+
+.plano-documento-ajuda {
+    color: #52624b;
+    margin: 12px 0 0;
+}
+
 .plano-acoes button,
 .plano-cobranca button,
-.plano-cobranca a {
+.plano-cobranca a,
+.plano-documento button {
     align-items: center;
     border: 1px solid #b9d2ad;
     border-radius: 8px;
@@ -117,7 +163,19 @@
     text-decoration: none;
 }
 
+.plano-acoes button:disabled,
+.plano-documento button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
 .plano-acoes button:first-child {
+    background: #358a00;
+    border-color: #358a00;
+    color: white;
+}
+
+.plano-documento button {
     background: #358a00;
     border-color: #358a00;
     color: white;
@@ -176,6 +234,11 @@
 @media (max-width: 900px) {
     .plano-grade {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plano-documento {
+        align-items: stretch;
+        grid-template-columns: 1fr;
     }
 }
 

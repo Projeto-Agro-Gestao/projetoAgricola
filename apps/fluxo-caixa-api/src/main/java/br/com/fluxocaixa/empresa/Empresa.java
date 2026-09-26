@@ -114,6 +114,10 @@ public class Empresa {
         this.nome = nome;
     }
 
+    public void alterarDocumento(String documento) {
+        this.documento = documento;
+    }
+
     public void configurarAtividades(
             boolean agriculturaAtiva,
             boolean pecuariaAtiva) {

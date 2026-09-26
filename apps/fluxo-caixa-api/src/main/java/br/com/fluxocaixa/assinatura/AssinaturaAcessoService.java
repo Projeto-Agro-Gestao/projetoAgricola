@@ -149,7 +149,27 @@ public class AssinaturaAcessoService {
                 assinatura.getProximoVencimento(),
                 assinatura.getUltimoPagamentoEm(),
                 configuracao.getDiasAvisoTrial(),
-                configuracao.isTrialHabilitado()
+                configuracao.isTrialHabilitado(),
+                tipoDocumento(assinatura.getEmpresa().getDocumento()),
+                assinatura.getEmpresa().getDocumento()
         );
+    }
+
+    private String tipoDocumento(String documento) {
+        if (documento == null) {
+            return null;
+        }
+
+        String digitos = documento.replaceAll("[^0-9]", "");
+
+        if (digitos.length() == 11) {
+            return "CPF";
+        }
+
+        if (digitos.length() == 14) {
+            return "CNPJ";
+        }
+
+        return null;
     }
 }

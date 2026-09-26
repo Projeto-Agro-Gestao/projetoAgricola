@@ -1,9 +1,12 @@
 package br.com.fluxocaixa.assinatura;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +28,19 @@ public class AssinaturaController {
 
         return ResponseEntity.ok(
                 assinaturaService.detalhar(empresaId)
+        );
+    }
+
+    @PutMapping("/documento-pagamento")
+    public ResponseEntity<AssinaturaDetalheResponse> atualizarDocumentoPagamento(
+            @PathVariable Long empresaId,
+            @RequestBody @Valid AtualizarDocumentoPagamentoRequest request) {
+
+        return ResponseEntity.ok(
+                assinaturaService.atualizarDocumentoPagamento(
+                        empresaId,
+                        request
+                )
         );
     }
 

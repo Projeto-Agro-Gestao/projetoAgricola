@@ -78,6 +78,12 @@ function PlanoPagamentos() {
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [gerando, setGerando] = useState('')
+    const [salvandoDocumento, setSalvandoDocumento] = useState(false)
+    const [documentoPagamento, setDocumentoPagamento] =
+        useState({
+            tipoDocumento: 'CPF',
+            documento: '',
+        })
 
     const empresaId = sessao?.usuario?.empresaId
 
@@ -119,7 +125,14 @@ function PlanoPagamentos() {
                 )
             }
 
-            setDados(await resposta.json())
+            const novosDados = await resposta.json()
+            setDados(novosDados)
+            setDocumentoPagamento({
+                tipoDocumento:
+                    novosDados.resumo?.tipoDocumentoPagamento ?? 'CPF',
+                documento:
+                    novosDados.resumo?.documentoPagamento ?? '',
+            })
             setMensagem('')
         } catch (erro) {
             setMensagem(
@@ -134,6 +147,13 @@ function PlanoPagamentos() {
 
     async function gerarPagamento(tipo) {
         try {
+            if (!documentoValido()) {
+                setMensagem(
+                    'Informe CPF ou CNPJ nos dados para pagamento antes de gerar a cobranca.',
+                )
+                return
+            }
+
             setGerando(tipo)
             setMensagem('')
 
@@ -171,6 +191,71 @@ function PlanoPagamentos() {
             )
         } finally {
             setGerando('')
+        }
+    }
+
+    function documentoValido() {
+        const digitos = documentoPagamento.documento
+            .replace(/\D/g, '')
+
+        return documentoPagamento.tipoDocumento === 'CPF'
+            ? digitos.length === 11
+            : digitos.length === 14
+    }
+
+    async function salvarDocumentoPagamento(evento) {
+        evento.preventDefault()
+
+        try {
+            setSalvandoDocumento(true)
+            setMensagem('')
+
+            if (!documentoValido()) {
+                throw new Error(
+                    documentoPagamento.tipoDocumento === 'CPF'
+                        ? 'CPF deve possuir 11 digitos.'
+                        : 'CNPJ deve possuir 14 digitos.',
+                )
+            }
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/assinatura/documento-pagamento`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tipoDocumento:
+                            documentoPagamento.tipoDocumento,
+                        documento:
+                            documentoPagamento.documento,
+                    }),
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel salvar o documento.',
+                    ),
+                )
+            }
+
+            const novosDados = await resposta.json()
+            setDados(novosDados)
+            setMensagem('Dados para pagamento salvos.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel salvar o documento.',
+            )
+        } finally {
+            setSalvandoDocumento(false)
         }
     }
 
@@ -273,6 +358,96 @@ function PlanoPagamentos() {
             <section className="plano-card">
                 <div className="plano-card-topo">
                     <div>
+                        <span>Dados para pagamento</span>
+                        <h2>CPF ou CNPJ</h2>
+                    </div>
+                </div>
+
+                <form
+                    className="plano-documento"
+                    onSubmit={salvarDocumentoPagamento}
+                >
+                    <div className="plano-documento-opcoes">
+                        <label>
+                            <input
+                                checked={
+                                    documentoPagamento.tipoDocumento
+                                    === 'CPF'
+                                }
+                                name="tipoDocumentoPagamento"
+                                onChange={() =>
+                                    setDocumentoPagamento({
+                                        ...documentoPagamento,
+                                        tipoDocumento: 'CPF',
+                                    })
+                                }
+                                type="radio"
+                            />
+                            CPF
+                        </label>
+
+                        <label>
+                            <input
+                                checked={
+                                    documentoPagamento.tipoDocumento
+                                    === 'CNPJ'
+                                }
+                                name="tipoDocumentoPagamento"
+                                onChange={() =>
+                                    setDocumentoPagamento({
+                                        ...documentoPagamento,
+                                        tipoDocumento: 'CNPJ',
+                                    })
+                                }
+                                type="radio"
+                            />
+                            CNPJ
+                        </label>
+                    </div>
+
+                    <label className="plano-documento-campo">
+                        Numero do {documentoPagamento.tipoDocumento}
+                        <input
+                            inputMode="numeric"
+                            maxLength={
+                                documentoPagamento.tipoDocumento === 'CPF'
+                                    ? 14
+                                    : 18
+                            }
+                            onChange={(evento) =>
+                                setDocumentoPagamento({
+                                    ...documentoPagamento,
+                                    documento: evento.target.value,
+                                })
+                            }
+                            placeholder={
+                                documentoPagamento.tipoDocumento === 'CPF'
+                                    ? 'Digite 11 digitos'
+                                    : 'Digite 14 digitos'
+                            }
+                            value={documentoPagamento.documento}
+                        />
+                    </label>
+
+                    <button
+                        disabled={salvandoDocumento}
+                        type="submit"
+                    >
+                        {salvandoDocumento
+                            ? 'Salvando...'
+                            : 'Salvar dados para pagamento'}
+                    </button>
+                </form>
+
+                <p className="plano-documento-ajuda">
+                    Este CPF ou CNPJ sera usado apenas para gerar Pix
+                    ou boleto no Asaas.
+                </p>
+            </section>
+
+            <section className="plano-card">
+                <div className="plano-card-topo">
+                    <div>
                         <span>Formas de pagamento</span>
                         <h2>Pagar assinatura</h2>
                     </div>
@@ -280,7 +455,7 @@ function PlanoPagamentos() {
 
                 <div className="plano-acoes">
                     <button
-                        disabled={Boolean(gerando)}
+                        disabled={Boolean(gerando) || !documentoValido()}
                         onClick={() => gerarPagamento('pix')}
                         type="button"
                     >
@@ -290,7 +465,7 @@ function PlanoPagamentos() {
                     </button>
 
                     <button
-                        disabled={Boolean(gerando)}
+                        disabled={Boolean(gerando) || !documentoValido()}
                         onClick={() => gerarPagamento('boleto')}
                         type="button"
                     >
