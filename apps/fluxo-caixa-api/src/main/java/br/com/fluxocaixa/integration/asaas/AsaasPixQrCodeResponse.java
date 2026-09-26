@@ -1,10 +1,11 @@
 package br.com.fluxocaixa.integration.asaas;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record AsaasPixQrCodeResponse(
         String encodedImage,
         String payload,
-        LocalDateTime expirationDate
+        String expirationDate
 ) {
 }
