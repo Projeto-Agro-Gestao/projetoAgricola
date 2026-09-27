@@ -78,6 +78,42 @@ public class AsaasClient {
         );
     }
 
+    public AsaasFiscalInfoResponse buscarFiscalInfo() {
+
+        return enviarGet(
+                "/fiscalInfo",
+                AsaasFiscalInfoResponse.class
+        );
+    }
+
+    public AsaasInvoiceResponse criarNotaFiscal(
+            AsaasInvoiceRequest request) {
+
+        return enviarJson(
+                "/invoices",
+                request,
+                AsaasInvoiceResponse.class
+        );
+    }
+
+    public AsaasInvoiceResponse buscarNotaFiscal(
+            String invoiceId) {
+
+        return enviarGet(
+                "/invoices/" + codificar(invoiceId),
+                AsaasInvoiceResponse.class
+        );
+    }
+
+    public AsaasInvoiceResponse autorizarNotaFiscal(
+            String invoiceId) {
+
+        return enviarPostSemCorpo(
+                "/invoices/" + codificar(invoiceId) + "/authorize",
+                AsaasInvoiceResponse.class
+        );
+    }
+
     private <T> T enviarJson(
             String caminho,
             Object corpo,
@@ -121,6 +157,26 @@ public class AsaasClient {
                 ))
                 .header("access_token", properties.apiKey())
                 .GET()
+                .build();
+
+        return enviar(request, tipoResposta);
+    }
+
+    private <T> T enviarPostSemCorpo(
+            String caminho,
+            Class<T> tipoResposta) {
+
+        validarConfiguracao();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl() + caminho))
+                .timeout(Duration.ofSeconds(
+                        Math.max(properties.timeoutSeconds(), 3)
+                ))
+                .header(HttpHeaders.CONTENT_TYPE,
+                        MediaType.APPLICATION_JSON_VALUE)
+                .header("access_token", properties.apiKey())
+                .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
         return enviar(request, tipoResposta);

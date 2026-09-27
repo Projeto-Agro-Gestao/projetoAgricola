@@ -55,6 +55,7 @@ public class AssinaturaService {
     private final AsaasProperties asaasProperties;
     private final AssinaturaAcessoService acessoService;
     private final UsuarioRepository usuarioRepository;
+    private final NotaFiscalService notaFiscalService;
 
     public AssinaturaService(
             AssinaturaRepository assinaturaRepository,
@@ -66,7 +67,8 @@ public class AssinaturaService {
             AsaasClient asaasClient,
             AsaasProperties asaasProperties,
             AssinaturaAcessoService acessoService,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            NotaFiscalService notaFiscalService) {
 
         this.assinaturaRepository = assinaturaRepository;
         this.configuracaoRepository = configuracaoRepository;
@@ -78,6 +80,7 @@ public class AssinaturaService {
         this.asaasProperties = asaasProperties;
         this.acessoService = acessoService;
         this.usuarioRepository = usuarioRepository;
+        this.notaFiscalService = notaFiscalService;
     }
 
     @Transactional
@@ -133,7 +136,8 @@ public class AssinaturaService {
                         assinatura,
                         configuracao
                 ),
-                pagamentos
+                pagamentos,
+                notaFiscalService.listarPorEmpresa(empresaId)
         );
     }
 
@@ -268,6 +272,8 @@ public class AssinaturaService {
                     criarMovimentacaoReceita(pagamento)
             );
         }
+
+        notaFiscalService.emitirAutomaticamenteSeConfigurado(pagamento);
     }
 
     @Transactional
@@ -336,6 +342,51 @@ public class AssinaturaService {
                 request.diasAvisoVencimento() == null
                         ? configuracao.getDiasAvisoVencimento()
                         : request.diasAvisoVencimento()
+        );
+
+        configuracao.atualizarNfse(
+                request.nfseHabilitada() == null
+                        ? configuracao.isNfseHabilitada()
+                        : request.nfseHabilitada(),
+                request.nfseEmissaoAutomatica() == null
+                        ? configuracao.isNfseEmissaoAutomatica()
+                        : request.nfseEmissaoAutomatica(),
+                request.nfseMunicipalServiceId() == null
+                        ? configuracao.getNfseMunicipalServiceId()
+                        : request.nfseMunicipalServiceId(),
+                request.nfseMunicipalServiceCode() == null
+                        ? configuracao.getNfseMunicipalServiceCode()
+                        : request.nfseMunicipalServiceCode(),
+                request.nfseMunicipalServiceName() == null
+                        ? configuracao.getNfseMunicipalServiceName()
+                        : request.nfseMunicipalServiceName(),
+                request.nfseServiceDescriptionTemplate() == null
+                        ? configuracao.getNfseServiceDescriptionTemplate()
+                        : request.nfseServiceDescriptionTemplate(),
+                request.nfseDefaultObservations() == null
+                        ? configuracao.getNfseDefaultObservations()
+                        : request.nfseDefaultObservations(),
+                request.nfseIss() == null
+                        ? configuracao.getNfseIss()
+                        : request.nfseIss(),
+                request.nfseCofins() == null
+                        ? configuracao.getNfseCofins()
+                        : request.nfseCofins(),
+                request.nfseCsll() == null
+                        ? configuracao.getNfseCsll()
+                        : request.nfseCsll(),
+                request.nfseInss() == null
+                        ? configuracao.getNfseInss()
+                        : request.nfseInss(),
+                request.nfseIr() == null
+                        ? configuracao.getNfseIr()
+                        : request.nfseIr(),
+                request.nfsePis() == null
+                        ? configuracao.getNfsePis()
+                        : request.nfsePis(),
+                request.nfseRetainIss() == null
+                        ? configuracao.isNfseRetainIss()
+                        : request.nfseRetainIss()
         );
 
         return AssinaturaConfiguracaoResponse.de(configuracao);

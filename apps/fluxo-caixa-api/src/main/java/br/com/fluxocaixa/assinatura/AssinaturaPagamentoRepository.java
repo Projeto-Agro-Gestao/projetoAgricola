@@ -10,6 +10,10 @@ public interface AssinaturaPagamentoRepository
 
     Optional<AssinaturaPagamento> findByAsaasPaymentId(String asaasPaymentId);
 
+    Optional<AssinaturaPagamento> findByIdAndEmpresa_Id(
+            Long id,
+            Long empresaId);
+
     boolean existsByMovimentacaoIsNotNullAndAsaasPaymentId(String asaasPaymentId);
 
     List<AssinaturaPagamento>

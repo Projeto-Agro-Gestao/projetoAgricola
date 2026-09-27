@@ -11,7 +11,21 @@ public record AssinaturaConfiguracaoResponse(
         int intervaloAlertaMinutos,
         boolean pixHabilitado,
         boolean boletoHabilitado,
-        int diasAvisoVencimento
+        int diasAvisoVencimento,
+        boolean nfseHabilitada,
+        boolean nfseEmissaoAutomatica,
+        String nfseMunicipalServiceId,
+        String nfseMunicipalServiceCode,
+        String nfseMunicipalServiceName,
+        String nfseServiceDescriptionTemplate,
+        String nfseDefaultObservations,
+        BigDecimal nfseIss,
+        BigDecimal nfseCofins,
+        BigDecimal nfseCsll,
+        BigDecimal nfseInss,
+        BigDecimal nfseIr,
+        BigDecimal nfsePis,
+        boolean nfseRetainIss
 ) {
 
     public static AssinaturaConfiguracaoResponse de(
@@ -26,7 +40,21 @@ public record AssinaturaConfiguracaoResponse(
                 configuracao.getIntervaloAlertaMinutos(),
                 configuracao.isPixHabilitado(),
                 configuracao.isBoletoHabilitado(),
-                configuracao.getDiasAvisoVencimento()
+                configuracao.getDiasAvisoVencimento(),
+                configuracao.isNfseHabilitada(),
+                configuracao.isNfseEmissaoAutomatica(),
+                configuracao.getNfseMunicipalServiceId(),
+                configuracao.getNfseMunicipalServiceCode(),
+                configuracao.getNfseMunicipalServiceName(),
+                configuracao.getNfseServiceDescriptionTemplate(),
+                configuracao.getNfseDefaultObservations(),
+                configuracao.getNfseIss(),
+                configuracao.getNfseCofins(),
+                configuracao.getNfseCsll(),
+                configuracao.getNfseInss(),
+                configuracao.getNfseIr(),
+                configuracao.getNfsePis(),
+                configuracao.isNfseRetainIss()
         );
     }
 }

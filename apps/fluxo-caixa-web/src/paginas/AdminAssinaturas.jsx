@@ -422,6 +422,175 @@ function AdminAssinaturas() {
                         Boleto ativo
                     </label>
 
+                    <fieldset className="admin-assinaturas-config-fiscal">
+                        <legend>NFS-e pelo Asaas</legend>
+                        <p>
+                            Ative somente depois que a configuracao fiscal
+                            estiver pronta na conta Asaas de producao.
+                        </p>
+
+                        <label className="admin-assinaturas-check">
+                            <input
+                                checked={configuracao.nfseHabilitada ?? false}
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseHabilitada: evento.target.checked,
+                                    })
+                                }
+                                type="checkbox"
+                            />
+                            NFS-e ativa
+                        </label>
+
+                        <label className="admin-assinaturas-check">
+                            <input
+                                checked={
+                                    configuracao.nfseEmissaoAutomatica ?? false
+                                }
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseEmissaoAutomatica:
+                                            evento.target.checked,
+                                    })
+                                }
+                                type="checkbox"
+                            />
+                            Emitir automaticamente apos pagamento confirmado
+                        </label>
+
+                        <label>
+                            ID do servico municipal
+                            <input
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseMunicipalServiceId:
+                                            evento.target.value,
+                                    })
+                                }
+                                placeholder="Opcional quando usar codigo"
+                                type="text"
+                                value={
+                                    configuracao.nfseMunicipalServiceId ?? ''
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Codigo do servico municipal
+                            <input
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseMunicipalServiceCode:
+                                            evento.target.value,
+                                    })
+                                }
+                                placeholder="Ex.: 0107"
+                                type="text"
+                                value={
+                                    configuracao.nfseMunicipalServiceCode ?? ''
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Nome do servico municipal
+                            <input
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseMunicipalServiceName:
+                                            evento.target.value,
+                                    })
+                                }
+                                placeholder="Ex.: Licenciamento de software"
+                                type="text"
+                                value={
+                                    configuracao.nfseMunicipalServiceName ?? ''
+                                }
+                            />
+                        </label>
+
+                        <label className="admin-assinaturas-config-longo">
+                            Descricao fiscal da mensalidade
+                            <textarea
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseServiceDescriptionTemplate:
+                                            evento.target.value,
+                                    })
+                                }
+                                rows="3"
+                                value={
+                                    configuracao
+                                        .nfseServiceDescriptionTemplate ?? ''
+                                }
+                            />
+                        </label>
+
+                        <label className="admin-assinaturas-config-longo">
+                            Observacoes da nota
+                            <textarea
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseDefaultObservations:
+                                            evento.target.value,
+                                    })
+                                }
+                                rows="3"
+                                value={
+                                    configuracao.nfseDefaultObservations ?? ''
+                                }
+                            />
+                        </label>
+
+                        {[
+                            ['nfseIss', 'ISS'],
+                            ['nfseCofins', 'COFINS'],
+                            ['nfseCsll', 'CSLL'],
+                            ['nfseInss', 'INSS'],
+                            ['nfseIr', 'IR'],
+                            ['nfsePis', 'PIS'],
+                        ].map(([campo, rotulo]) => (
+                            <label key={campo}>
+                                {rotulo}
+                                <input
+                                    min="0"
+                                    onChange={(evento) =>
+                                        setConfiguracao({
+                                            ...configuracao,
+                                            [campo]: Number(
+                                                evento.target.value,
+                                            ),
+                                        })
+                                    }
+                                    step="0.01"
+                                    type="number"
+                                    value={configuracao[campo] ?? 0}
+                                />
+                            </label>
+                        ))}
+
+                        <label className="admin-assinaturas-check">
+                            <input
+                                checked={configuracao.nfseRetainIss ?? false}
+                                onChange={(evento) =>
+                                    setConfiguracao({
+                                        ...configuracao,
+                                        nfseRetainIss: evento.target.checked,
+                                    })
+                                }
+                                type="checkbox"
+                            />
+                            Reter ISS
+                        </label>
+                    </fieldset>
+
                     <button disabled={salvando} type="submit">
                         Salvar configuracao
                     </button>

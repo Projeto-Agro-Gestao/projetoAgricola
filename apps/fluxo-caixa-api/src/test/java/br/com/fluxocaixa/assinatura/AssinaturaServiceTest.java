@@ -56,6 +56,8 @@ class AssinaturaServiceTest {
             mock(AssinaturaAcessoService.class);
     private final UsuarioRepository usuarioRepository =
             mock(UsuarioRepository.class);
+    private final NotaFiscalService notaFiscalService =
+            mock(NotaFiscalService.class);
 
     @AfterEach
     void limparContextoSeguranca() {
@@ -261,7 +263,8 @@ class AssinaturaServiceTest {
                         10
                 ),
                 acessoService,
-                usuarioRepository
+                usuarioRepository,
+                notaFiscalService
         );
     }
 
