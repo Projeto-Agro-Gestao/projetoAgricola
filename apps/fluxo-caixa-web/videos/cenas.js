@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js'
-import { pausa, rolarAte } from './helpers/navegacao.js'
+import { pausa, rolarAte, rolarParaFim } from './helpers/navegacao.js'
 
 const PAISAGEM = { width: 1920, height: 1080 }
 const RETRATO = { width: 1080, height: 1920 }
@@ -10,19 +10,19 @@ const cenas = [
         viewport: PAISAGEM,
         async executar(page) {
             await page.goto('/', { waitUntil: 'networkidle' })
-            await pausa(page, 1400)
+            await pausa(page, 1000)
 
-            await rolarAte(page, '#atividades', 900)
-            await pausa(page, 1100)
+            await rolarAte(page, '#atividades')
+            await pausa(page, 500)
 
-            await rolarAte(page, '#recursos', 900)
-            await pausa(page, 1300)
+            await rolarAte(page, '#recursos')
+            await pausa(page, 600)
 
-            await rolarAte(page, '#financeiro', 900)
-            await pausa(page, 1300)
+            await rolarAte(page, '#financeiro')
+            await pausa(page, 600)
 
-            await rolarAte(page, '.publica-chamada', 900)
-            await pausa(page, 1700)
+            await rolarAte(page, '.publica-chamada')
+            await pausa(page, 900)
         },
     },
     {
@@ -58,12 +58,7 @@ const cenas = [
             })
             await pausa(page, 4500)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2600)
         },
     },
@@ -77,12 +72,7 @@ const cenas = [
             })
             await pausa(page, 4200)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2400)
         },
     },
@@ -94,12 +84,7 @@ const cenas = [
             await page.goto('/app', { waitUntil: 'networkidle' })
             await pausa(page, 4200)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2600)
         },
     },
@@ -113,12 +98,7 @@ const cenas = [
             })
             await pausa(page, 4200)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2400)
         },
     },
@@ -132,12 +112,7 @@ const cenas = [
             })
             await pausa(page, 4500)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2600)
         },
     },
@@ -151,12 +126,7 @@ const cenas = [
             })
             await pausa(page, 4500)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2400)
         },
     },
@@ -170,12 +140,7 @@ const cenas = [
             })
             await pausa(page, 4200)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2400)
         },
     },
@@ -189,12 +154,7 @@ const cenas = [
             })
             await pausa(page, 4200)
 
-            await page.evaluate(() =>
-                window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth',
-                }),
-            )
+            await rolarParaFim(page)
             await pausa(page, 2400)
         },
     },
