@@ -238,9 +238,11 @@ function processarCena(webm, musica) {
             `${filtros.join(';')};${mix}`,
             '-map', '0:v',
             '-map', '[a]',
+            '-map', '0:s?',
             '-c:v', 'copy',
             '-c:a', 'aac',
             '-b:a', '192k',
+            '-c:s', 'copy',
             '-t', String(duracaoVideo),
             comAudio,
         )
@@ -266,9 +268,16 @@ function main() {
         )
     }
 
+    const nomes = process.argv.slice(2)
+
     const webms = fs
         .readdirSync(brutos, { withFileTypes: true })
-        .filter((entrada) => entrada.isDirectory() && entrada.name !== '.temp')
+        .filter(
+            (entrada) =>
+                entrada.isDirectory() &&
+                entrada.name !== '.temp' &&
+                (nomes.length === 0 || nomes.includes(entrada.name)),
+        )
         .flatMap((entrada) => {
             const arquivo = path.join(
                 brutos,

@@ -9,25 +9,25 @@ fs.mkdirSync(saida, { recursive: true })
 
 const NARRACAO = {
     'landing-16x9':
-        'Conheça o AgroGestão, a plataforma de gestão financeira para o produtor rural. Registre receitas e despesas, organize suas categorias e acompanhe quanto entrou, quanto saiu e quanto sobrou na sua propriedade. Crie sua conta grátis.',
+        'Sua propriedade no controle, sem planilha. Com o AgroGestão você registra receitas e despesas, organiza as categorias e vê quanto entrou, quanto saiu e quanto sobrou. Crie sua conta grátis.',
     'login-16x9':
-        'Acesse sua conta com e-mail e senha. Com um toque, mostre ou oculte a senha e entre no painel da sua propriedade.',
+        'Entrar é rápido. E-mail, senha, e pronto: você já está no painel da sua propriedade.',
     'dashboard-16x9':
-        'No dashboard, veja o resumo do que entrou, do que saiu e do resultado. Acompanhe a margem de lucro, o ganho sobre o custo e o gráfico de fluxo de caixa por período.',
+        'Tudo em uma tela. Quanto entrou, quanto saiu, o resultado, a margem de lucro e o gráfico do seu fluxo de caixa.',
     'movimentacoes-16x9':
-        'Todas as movimentações ficam organizadas em um só lugar. Filtre por categoria e acompanhe o histórico completo.',
+        'Chega de caderno. Todas as movimentações organizadas, com filtro por categoria e histórico completo.',
     'nova-movimentacao-16x9':
-        'Cadastre uma receita ou despesa em poucos campos: valor, categoria e data.',
+        'Lançar é fácil: valor, categoria e data. Receita ou despesa em poucos toques.',
     'categorias-16x9':
-        'Personalize as categorias de receita e despesa. Crie, edite e ative conforme a sua atividade.',
+        'Categorias do seu jeito. Crie, edite e ative conforme a sua atividade.',
     'contas-16x9':
-        'Controle as contas a pagar e a receber, com previsão futura e lembretes de vencimento.',
+        'Nunca mais perca um vencimento. Controle o que você tem a pagar e a receber, com lembretes.',
     'fornecedores-16x9':
-        'Cadastre e acompanhe seus fornecedores, com histórico de compras e cotações.',
+        'Seus fornecedores em um só lugar, com histórico de compras e cotações.',
     'perfil-16x9':
-        'Mantenha os dados da propriedade atualizados e escolha as suas atividades.',
+        'Mantenha os dados da sua propriedade atualizados e escolha as suas atividades.',
     'app-mobile-9x16':
-        'Com o app simples, veja o movimento do dia e lance receitas e despesas em segundos, direto do celular.',
+        'Do celular, em segundos. Veja o movimento do dia e lance receitas e despesas onde você estiver.',
 }
 
 async function gerarOpenAI(texto, destino) {
