@@ -27,11 +27,27 @@
 
   --destructive: oklch(0.577 0.245 27.325);
 
+  --warning: oklch(0.72 0.15 80);
+  --warning-foreground: oklch(0.35 0.09 60);
+  --warning-soft: oklch(0.96 0.05 90);
+
+  --accent: oklch(0.55 0.12 70);
+  --accent-foreground: oklch(0.99 0 0);
+
   --border: oklch(0.9 0.02 135);
   --input: oklch(0.9 0.02 135);
   --ring: oklch(0.55 0.16 135);
 
   --radius: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -110,21 +126,198 @@ svg {
   min-height: 100vh;
 }
 
-.campo-obrigatorio::after,
-label:has(input[required])::after,
-label:has(select[required])::after,
-label:has(textarea[required])::after {
-  content: " *";
-  color: var(--destructive);
-  font-weight: 800;
+/*
+ * Movimento — receitas base
+ * Frequência alta => sem animação; ocasional => sutil; raro => expressivo.
+ */
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-form:has(input[required], select[required], textarea[required])::after {
-  content: "* Campo obrigatório";
+@keyframes surgirEscala {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aparecerFundo {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes brilhoEsqueleto {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.surgir {
+  animation: surgir var(--motion-slow) var(--ease-out) both;
+}
+
+.aparecer {
+  animation: aparecerFundo var(--motion-base) var(--ease-out) both;
+}
+
+.girando {
+  animation: girar 0.7s linear infinite;
+}
+
+.esqueleto {
   display: block;
-  width: 100%;
-  margin-top: 0.75rem;
+  border-radius: calc(var(--radius) * 0.7);
+  background: color-mix(
+          in oklch,
+          var(--muted-foreground) 16%,
+          transparent
+  );
+  animation: brilhoEsqueleto 1.1s ease-in-out infinite alternate;
+}
+
+.pagina-transicao {
+  min-height: 100vh;
+  animation: aparecerFundo var(--motion-base) var(--ease-out) both;
+}
+
+.revelar {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+          opacity var(--motion-slow) var(--ease-out),
+          transform var(--motion-slow) var(--ease-out);
+}
+
+.revelar-visivel {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revelar {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rota-carregando {
+  display: grid;
+  min-height: 60vh;
+  place-content: center;
+  place-items: center;
+  gap: 12px;
   color: var(--muted-foreground);
-  font-size: 0.85rem;
+}
+
+.rota-carregando-girando {
+  width: 26px;
+  height: 26px;
+  border: 2px solid
+  color-mix(in oklch, var(--primary) 25%, transparent);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+}
+
+.rota-carregando-texto {
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/*
+ * Modais — entrada suave (saída mais discreta que a entrada).
+ */
+
+.movimentacoes-modal-fundo,
+.categorias-modal-fundo,
+.contas-modal-fundo,
+.admin-modal-fundo {
+  animation: aparecerFundo var(--motion-base) var(--ease-out) both;
+}
+
+.movimentacoes-modal,
+.categorias-modal,
+.contas-modal,
+.admin-modal {
+  animation: surgirEscala var(--motion-slow) var(--ease-out) both;
+}
+
+@keyframes sumirFundo {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sumirEscala {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.movimentacoes-modal-fundo.modal-saindo,
+.categorias-modal-fundo.modal-saindo,
+.contas-modal-fundo.modal-saindo,
+.admin-modal-fundo.modal-saindo {
+  animation: sumirFundo var(--motion-base) var(--ease-in) both;
+}
+
+.movimentacoes-modal-fundo.modal-saindo > *,
+.categorias-modal-fundo.modal-saindo > *,
+.contas-modal-fundo.modal-saindo > *,
+.admin-modal-fundo.modal-saindo > * {
+  animation: sumirEscala var(--motion-base) var(--ease-in) both;
+}
+
+/*
+ * Botões — estado de progresso (spinner inline).
+ */
+
+.botao-girando {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
