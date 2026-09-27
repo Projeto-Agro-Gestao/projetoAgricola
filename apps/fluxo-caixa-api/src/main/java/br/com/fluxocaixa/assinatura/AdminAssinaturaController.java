@@ -88,4 +88,22 @@ public class AdminAssinaturaController {
                 )
         );
     }
+
+    @PatchMapping("/empresas/{empresaId}/desativar")
+    public ResponseEntity<AssinaturaResumoResponse> desativarCliente(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                assinaturaService.desativarCliente(empresaId)
+        );
+    }
+
+    @PatchMapping("/empresas/{empresaId}/restaurar")
+    public ResponseEntity<AssinaturaResumoResponse> restaurarCliente(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                assinaturaService.restaurarCliente(empresaId)
+        );
+    }
 }

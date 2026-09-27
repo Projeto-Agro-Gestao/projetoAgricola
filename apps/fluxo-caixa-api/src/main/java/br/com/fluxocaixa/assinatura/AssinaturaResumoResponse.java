@@ -15,8 +15,16 @@ public record AssinaturaResumoResponse(
         boolean acessoLiberado,
         LocalDate proximoVencimento,
         LocalDate ultimoPagamentoEm,
+        Integer diaVencimento,
+        LocalDate fimCarencia,
+        LocalDate dataBloqueio,
+        long diasRestantesCarencia,
         int diasAvisoTrial,
         boolean trialHabilitado,
+        int intervaloAlertaMinutos,
+        boolean pixHabilitado,
+        boolean boletoHabilitado,
+        int diasAvisoVencimento,
         String tipoDocumentoPagamento,
         String documentoPagamento
 ) {

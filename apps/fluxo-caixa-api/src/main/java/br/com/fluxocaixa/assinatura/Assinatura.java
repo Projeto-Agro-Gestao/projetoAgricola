@@ -48,6 +48,9 @@ public class Assinatura {
     @Column(name = "proximo_vencimento")
     private LocalDate proximoVencimento;
 
+    @Column(name = "dia_vencimento")
+    private Integer diaVencimento;
+
     @Column(name = "ultimo_pagamento_em")
     private LocalDate ultimoPagamentoEm;
 
@@ -114,6 +117,10 @@ public class Assinatura {
         return proximoVencimento;
     }
 
+    public Integer getDiaVencimento() {
+        return diaVencimento;
+    }
+
     public LocalDate getUltimoPagamentoEm() {
         return ultimoPagamentoEm;
     }
@@ -168,9 +175,29 @@ public class Assinatura {
     }
 
     public void ativar(LocalDate dataPagamento) {
+        ativar(dataPagamento, dataPagamento);
+    }
+
+    public void ativar(
+            LocalDate dataPagamento,
+            LocalDate vencimentoPago) {
+
         this.status = AssinaturaStatus.ACTIVE;
         this.ultimoPagamentoEm = dataPagamento;
-        this.proximoVencimento = dataPagamento.plusMonths(1);
+
+        LocalDate vencimentoBase = vencimentoPago == null
+                ? dataPagamento
+                : vencimentoPago;
+
+        if (this.diaVencimento == null) {
+            this.diaVencimento = vencimentoBase.getDayOfMonth();
+        }
+
+        this.proximoVencimento =
+                calcularProximoVencimentoDepoisDe(
+                        vencimentoBase,
+                        this.diaVencimento
+                );
     }
 
     public void pendente() {
@@ -189,5 +216,37 @@ public class Assinatura {
 
     public void definirStatusManual(AssinaturaStatus status) {
         this.status = status;
+    }
+
+    public void definirDiaVencimento(Integer diaVencimento) {
+        if (diaVencimento == null) {
+            this.diaVencimento = null;
+            return;
+        }
+
+        if (diaVencimento < 1 || diaVencimento > 31) {
+            throw new IllegalArgumentException(
+                    "Dia de vencimento deve estar entre 1 e 31"
+            );
+        }
+
+        this.diaVencimento = diaVencimento;
+    }
+
+    static LocalDate calcularProximoVencimentoDepoisDe(
+            LocalDate vencimentoAtual,
+            int diaVencimento) {
+
+        LocalDate proximoMes =
+                vencimentoAtual
+                        .plusMonths(1)
+                        .withDayOfMonth(1);
+
+        int ultimoDia =
+                proximoMes.lengthOfMonth();
+
+        return proximoMes.withDayOfMonth(
+                Math.min(diaVencimento, ultimoDia)
+        );
     }
 }

@@ -16,6 +16,8 @@ const FILTROS = [
     { valor: 'ACTIVE', rotulo: 'Ativos' },
     { valor: 'PENDING', rotulo: 'Pendentes' },
     { valor: 'OVERDUE', rotulo: 'Vencidos' },
+    { valor: 'GRACE_PERIOD', rotulo: 'Em carencia' },
+    { valor: 'BLOCKED', rotulo: 'Bloqueados' },
     { valor: 'SUSPENDED', rotulo: 'Bloqueados' },
     { valor: 'CANCELLED', rotulo: 'Cancelados' },
 ]
@@ -284,7 +286,7 @@ function AdminAssinaturas() {
                     <label>
                         Preco mensal *
                         <input
-                            min="0.01"
+                            min="0"
                             onChange={(evento) =>
                                 setConfiguracao({
                                     ...configuracao,
@@ -346,6 +348,38 @@ function AdminAssinaturas() {
                         />
                     </label>
 
+                    <label>
+                        Alerta a cada *
+                        <input
+                            min="1"
+                            onChange={(evento) =>
+                                setConfiguracao({
+                                    ...configuracao,
+                                    intervaloAlertaMinutos: Number(evento.target.value),
+                                })
+                            }
+                            required
+                            type="number"
+                            value={configuracao.intervaloAlertaMinutos ?? 3}
+                        />
+                    </label>
+
+                    <label>
+                        Aviso antes do vencimento *
+                        <input
+                            min="0"
+                            onChange={(evento) =>
+                                setConfiguracao({
+                                    ...configuracao,
+                                    diasAvisoVencimento: Number(evento.target.value),
+                                })
+                            }
+                            required
+                            type="number"
+                            value={configuracao.diasAvisoVencimento ?? 3}
+                        />
+                    </label>
+
                     <label className="admin-assinaturas-check">
                         <input
                             checked={configuracao.trialHabilitado}
@@ -358,6 +392,34 @@ function AdminAssinaturas() {
                             type="checkbox"
                         />
                         Teste gratuito ativo
+                    </label>
+
+                    <label className="admin-assinaturas-check">
+                        <input
+                            checked={configuracao.pixHabilitado ?? true}
+                            onChange={(evento) =>
+                                setConfiguracao({
+                                    ...configuracao,
+                                    pixHabilitado: evento.target.checked,
+                                })
+                            }
+                            type="checkbox"
+                        />
+                        Pix ativo
+                    </label>
+
+                    <label className="admin-assinaturas-check">
+                        <input
+                            checked={configuracao.boletoHabilitado ?? true}
+                            onChange={(evento) =>
+                                setConfiguracao({
+                                    ...configuracao,
+                                    boletoHabilitado: evento.target.checked,
+                                })
+                            }
+                            type="checkbox"
+                        />
+                        Boleto ativo
                     </label>
 
                     <button disabled={salvando} type="submit">
@@ -404,6 +466,10 @@ function AdminAssinaturas() {
                             <span><small>Dias restantes</small>{cliente.diasRestantesTrial}</span>
                             <span><small>Próximo vencimento</small>{formatarData(cliente.proximoVencimento)}</span>
                             <span><small>Último pagamento</small>{formatarData(cliente.ultimoPagamento)}</span>
+                            <span><small>Dia fixo</small>{cliente.diaVencimento ?? '-'}</span>
+                            <span><small>Fim da carencia</small>{formatarData(cliente.fimCarencia)}</span>
+                            <span><small>Bloqueio</small>{formatarData(cliente.dataBloqueio)}</span>
+                            <span><small>Acesso</small>{cliente.acessoLiberado ? 'Liberado' : 'Bloqueado'}</span>
                             <span><small>Forma</small>{cliente.formaUltimoPagamento ?? '-'}</span>
                         </div>
 
@@ -515,6 +581,38 @@ function AdminAssinaturas() {
                                 type="button"
                             >
                                 Suspender
+                            </button>
+
+                            <button
+                                disabled={salvando}
+                                onClick={() => {
+                                    if (window.confirm('Desativar este cliente? O historico sera preservado.')) {
+                                        acaoCliente(
+                                            cliente.empresaId,
+                                            'desativar',
+                                            null,
+                                            'Cliente desativado.',
+                                        )
+                                    }
+                                }}
+                                type="button"
+                            >
+                                Desativar cliente
+                            </button>
+
+                            <button
+                                disabled={salvando}
+                                onClick={() =>
+                                    acaoCliente(
+                                        cliente.empresaId,
+                                        'restaurar',
+                                        null,
+                                        'Cliente restaurado.',
+                                    )
+                                }
+                                type="button"
+                            >
+                                Restaurar cliente
                             </button>
                         </div>
                     </article>

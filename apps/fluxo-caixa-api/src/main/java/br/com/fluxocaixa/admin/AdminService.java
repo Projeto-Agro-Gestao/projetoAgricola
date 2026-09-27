@@ -260,10 +260,14 @@ public class AdminService {
 
         if (authentication == null
                 || !(authentication.getPrincipal() instanceof Jwt jwt)
-                || !PapelUsuario.ADMINISTRADOR.name()
-                .equals(jwt.getClaimAsString("papel"))) {
+                || !isAdministrador(jwt.getClaimAsString("papel"))) {
             throw new AcessoAdministrativoNegadoException();
         }
+    }
+
+    private boolean isAdministrador(String papel) {
+        return PapelUsuario.ADMINISTRADOR.name().equals(papel)
+                || PapelUsuario.SUPER_ADMIN.name().equals(papel);
     }
 
     private String normalizarEmail(String email) {

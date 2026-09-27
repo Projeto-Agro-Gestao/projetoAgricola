@@ -79,6 +79,27 @@
     padding: 18px 22px;
 }
 
+.plano-banner-gratis {
+    background: #eef9e8;
+    border-color: #9ccd87;
+}
+
+.plano-banner-pulsando {
+    animation: plano-pulso-atraso 2.8s ease-in-out infinite;
+    border-color: #e0a044;
+}
+
+@keyframes plano-pulso-atraso {
+    0%,
+    100% {
+        box-shadow: 0 16px 36px rgba(36, 71, 28, .08);
+    }
+
+    50% {
+        box-shadow: 0 16px 36px rgba(224, 160, 68, .28);
+    }
+}
+
 .plano-card {
     margin-top: 24px;
     padding: 24px;

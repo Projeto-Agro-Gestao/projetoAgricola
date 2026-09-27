@@ -7,7 +7,11 @@ public record AssinaturaConfiguracaoResponse(
         boolean trialHabilitado,
         int diasTrialPadrao,
         int diasAvisoTrial,
-        int diasCarencia
+        int diasCarencia,
+        int intervaloAlertaMinutos,
+        boolean pixHabilitado,
+        boolean boletoHabilitado,
+        int diasAvisoVencimento
 ) {
 
     public static AssinaturaConfiguracaoResponse de(
@@ -18,7 +22,11 @@ public record AssinaturaConfiguracaoResponse(
                 configuracao.isTrialHabilitado(),
                 configuracao.getDiasTrialPadrao(),
                 configuracao.getDiasAvisoTrial(),
-                configuracao.getDiasCarencia()
+                configuracao.getDiasCarencia(),
+                configuracao.getIntervaloAlertaMinutos(),
+                configuracao.isPixHabilitado(),
+                configuracao.isBoletoHabilitado(),
+                configuracao.getDiasAvisoVencimento()
         );
     }
 }

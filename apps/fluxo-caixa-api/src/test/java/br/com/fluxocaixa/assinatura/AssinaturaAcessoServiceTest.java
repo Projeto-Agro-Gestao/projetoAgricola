@@ -89,6 +89,83 @@ class AssinaturaAcessoServiceTest {
                 .isTrue();
     }
 
+    @Test
+    void assinaturaVencidaNoQuintoDiaDeCarenciaPermiteAcesso() {
+        Assinatura assinatura =
+                new Assinatura(
+                        new Empresa("Fazenda Teste", null),
+                        AssinaturaStatus.PENDING,
+                        BigDecimal.valueOf(89.90),
+                        null,
+                        null
+                );
+
+        assinatura.ativar(
+                LocalDate.of(2026, 9, 10),
+                LocalDate.of(2026, 9, 10)
+        );
+
+        AssinaturaConfiguracao configuracao = configuracao();
+
+        assertThat(service.calcularStatusAtual(
+                assinatura,
+                LocalDate.of(2026, 10, 15),
+                configuracao
+        )).isEqualTo(AssinaturaStatus.GRACE_PERIOD);
+    }
+
+    @Test
+    void assinaturaVencidaDepoisDaCarenciaBloqueiaAcesso() {
+        Assinatura assinatura =
+                new Assinatura(
+                        new Empresa("Fazenda Teste", null),
+                        AssinaturaStatus.PENDING,
+                        BigDecimal.valueOf(89.90),
+                        null,
+                        null
+                );
+
+        assinatura.ativar(
+                LocalDate.of(2026, 9, 10),
+                LocalDate.of(2026, 9, 10)
+        );
+
+        AssinaturaConfiguracao configuracao = configuracao();
+
+        assertThat(service.calcularStatusAtual(
+                assinatura,
+                LocalDate.of(2026, 10, 16),
+                configuracao
+        )).isEqualTo(AssinaturaStatus.BLOCKED);
+    }
+
+    @Test
+    void planoGratuitoConfiguradoLiberaAcessoSemCobranca() {
+        Assinatura assinatura =
+                new Assinatura(
+                        new Empresa("Fazenda Teste", null),
+                        AssinaturaStatus.PENDING,
+                        BigDecimal.ZERO,
+                        null,
+                        null
+                );
+
+        AssinaturaConfiguracao configuracao = configuracao();
+        configuracao.atualizar(
+                BigDecimal.ZERO,
+                true,
+                15,
+                7,
+                5
+        );
+
+        assertThat(service.calcularStatusAtual(
+                assinatura,
+                LocalDate.of(2026, 10, 16),
+                configuracao
+        )).isEqualTo(AssinaturaStatus.ACTIVE);
+    }
+
     private AssinaturaConfiguracao configuracao() {
         AssinaturaConfiguracao configuracao =
                 new AssinaturaConfiguracao();
@@ -97,7 +174,7 @@ class AssinaturaAcessoServiceTest {
                 true,
                 15,
                 7,
-                3
+                5
         );
         return configuracao;
     }
