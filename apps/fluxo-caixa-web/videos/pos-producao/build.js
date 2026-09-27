@@ -71,6 +71,20 @@ function ff(args) {
     )
 }
 
+function duracaoDe(caminho) {
+    const saida = execFileSync('ffprobe', [
+        '-v',
+        'error',
+        '-show_entries',
+        'format=duration',
+        '-of',
+        'default=noprint_wrappers=1:nokey=1',
+        caminho,
+    ])
+
+    return Number.parseFloat(saida.toString().trim())
+}
+
 function paraSrt(captions, deslocamento) {
     function formatar(segundos) {
         const total = segundos + deslocamento
@@ -185,19 +199,54 @@ function processarCena(webm, musica) {
         fs.copyFileSync(semLegenda, saida)
     }
 
-    if (musica) {
-        const comMusica = path.join(pastaTemp, 'com-musica.mp4')
+    const narracao = path.join(diretorio, 'audio', `${nome}.mp3`)
+    const temNarracao = fs.existsSync(narracao)
 
-        ff([
-            '-i', saida,
-            '-stream_loop', '-1', '-i', musica,
-            '-map', '0', '-map', '1:a',
-            '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-            '-shortest',
-            comMusica,
-        ])
+    if (temNarracao || musica) {
+        const comAudio = path.join(pastaTemp, 'com-audio.mp4')
+        const duracaoVideo = duracaoDe(saida)
+        const args = ['-i', saida]
+        const filtros = []
+        const entradas = []
+        let indice = 1
 
-        fs.copyFileSync(comMusica, saida)
+        if (temNarracao) {
+            args.push('-i', narracao)
+
+            const atraso = Math.round(DURACAO_INTRO * 1000)
+
+            filtros.push(
+                `[${indice}:a]adelay=${atraso}|${atraso}[nar]`,
+            )
+            entradas.push('[nar]')
+            indice += 1
+        }
+
+        if (musica) {
+            args.push('-stream_loop', '-1', '-i', musica)
+            filtros.push(`[${indice}:a]volume=0.16[mus]`)
+            entradas.push('[mus]')
+        }
+
+        const mix =
+            entradas.length > 1
+                ? `${entradas.join('')}amix=inputs=${entradas.length}:duration=longest:dropout_transition=0[a]`
+                : `${entradas[0]}anull[a]`
+
+        args.push(
+            '-filter_complex',
+            `${filtros.join(';')};${mix}`,
+            '-map', '0:v',
+            '-map', '[a]',
+            '-c:v', 'copy',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-t', String(duracaoVideo),
+            comAudio,
+        )
+
+        ff(args)
+        fs.copyFileSync(comAudio, saida)
     }
 
     console.log(`✔ ${saida}`)
