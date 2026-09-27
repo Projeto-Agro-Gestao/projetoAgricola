@@ -149,7 +149,7 @@ function PaginaInicial() {
                                 className="publica-botao"
                                 to="/cadastro"
                             >
-                                Criar conta grátis <span><IconeSetaDireita /></span>
+                                Criar conta <span><IconeSetaDireita /></span>
                             </Link>
 
                             <a
@@ -571,7 +571,7 @@ function PaginaInicial() {
                     </p>
 
                     <Link to="/cadastro">
-                        Criar conta grátis
+                        Criar conta
                     </Link>
                 </section>
             </main>
