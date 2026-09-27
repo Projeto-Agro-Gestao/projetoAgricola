@@ -8,10 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "videos": "node videos/gravar.js",
-    "videos:seed": "node videos/seed.js",
-    "videos:voice": "node videos/pos-producao/narracao.js",
-    "videos:build": "node videos/pos-producao/build.js"
+    "videos": "node --env-file-if-exists=videos/.env videos/gravar.js",
+    "videos:seed": "node --env-file-if-exists=videos/.env videos/seed.js",
+    "videos:voice": "node --env-file-if-exists=videos/.env videos/pos-producao/narracao.js",
+    "videos:build": "node --env-file-if-exists=videos/.env videos/pos-producao/build.js"
   },
   "dependencies": {
     "react": "^19.2.8",
