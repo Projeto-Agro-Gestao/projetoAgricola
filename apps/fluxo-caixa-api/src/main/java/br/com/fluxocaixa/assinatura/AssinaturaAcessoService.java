@@ -62,7 +62,8 @@ public class AssinaturaAcessoService {
 
         return status == AssinaturaStatus.ACTIVE
                 || status == AssinaturaStatus.TRIAL
-                || status == AssinaturaStatus.TRIAL_EXPIRING;
+                || status == AssinaturaStatus.TRIAL_EXPIRING
+                || status == AssinaturaStatus.GRACE_PERIOD;
     }
 
     AssinaturaStatus calcularStatusAtual(
@@ -70,11 +71,25 @@ public class AssinaturaAcessoService {
             LocalDate hoje,
             AssinaturaConfiguracao configuracao) {
 
-        if (assinatura.getStatus() == AssinaturaStatus.ACTIVE
-                || assinatura.getStatus() == AssinaturaStatus.SUSPENDED
+        if (configuracao.getPrecoMensal().signum() == 0) {
+            return AssinaturaStatus.ACTIVE;
+        }
+
+        if (assinatura.getStatus() == AssinaturaStatus.SUSPENDED
                 || assinatura.getStatus() == AssinaturaStatus.CANCELLED
                 || assinatura.getStatus() == AssinaturaStatus.PENDING) {
             return assinatura.getStatus();
+        }
+
+        if (assinatura.getStatus() == AssinaturaStatus.ACTIVE
+                || assinatura.getStatus() == AssinaturaStatus.OVERDUE
+                || assinatura.getStatus() == AssinaturaStatus.GRACE_PERIOD
+                || assinatura.getStatus() == AssinaturaStatus.BLOCKED) {
+            return calcularStatusPagamento(
+                    assinatura,
+                    hoje,
+                    configuracao
+            );
         }
 
         if (assinatura.getTrialFim() == null
@@ -93,6 +108,56 @@ public class AssinaturaAcessoService {
         }
 
         return AssinaturaStatus.TRIAL;
+    }
+
+    AssinaturaStatus calcularStatusPagamento(
+            Assinatura assinatura,
+            LocalDate hoje,
+            AssinaturaConfiguracao configuracao) {
+
+        if (assinatura.getProximoVencimento() == null
+                || !assinatura.getProximoVencimento().isBefore(hoje)) {
+            return AssinaturaStatus.ACTIVE;
+        }
+
+        LocalDate fimCarencia =
+                calcularFimCarencia(
+                        assinatura,
+                        configuracao
+                );
+
+        if (fimCarencia != null && !hoje.isAfter(fimCarencia)) {
+            return AssinaturaStatus.GRACE_PERIOD;
+        }
+
+        return AssinaturaStatus.BLOCKED;
+    }
+
+    LocalDate calcularFimCarencia(
+            Assinatura assinatura,
+            AssinaturaConfiguracao configuracao) {
+
+        if (assinatura.getProximoVencimento() == null) {
+            return null;
+        }
+
+        return assinatura.getProximoVencimento()
+                .plusDays(configuracao.getDiasCarencia());
+    }
+
+    LocalDate calcularDataBloqueio(
+            Assinatura assinatura,
+            AssinaturaConfiguracao configuracao) {
+
+        LocalDate fimCarencia =
+                calcularFimCarencia(
+                        assinatura,
+                        configuracao
+                );
+
+        return fimCarencia == null
+                ? null
+                : fimCarencia.plusDays(1);
     }
 
     void atualizarStatusTrial(
@@ -122,6 +187,13 @@ public class AssinaturaAcessoService {
             AssinaturaConfiguracao configuracao) {
 
         LocalDate hoje = LocalDate.now();
+        AssinaturaStatus statusAtual =
+                calcularStatusAtual(
+                        assinatura,
+                        hoje,
+                        configuracao
+                );
+
         long diasRestantes = assinatura.getTrialFim() == null
                 ? 0
                 : Math.max(
@@ -132,24 +204,54 @@ public class AssinaturaAcessoService {
                         )
                 );
 
+        LocalDate fimCarencia =
+                calcularFimCarencia(
+                        assinatura,
+                        configuracao
+                );
+
+        long diasRestantesCarencia =
+                fimCarencia == null
+                        || assinatura.getProximoVencimento() == null
+                        || !assinatura.getProximoVencimento()
+                        .isBefore(hoje)
+                        ? 0
+                        : Math.max(
+                                0,
+                                ChronoUnit.DAYS.between(
+                                        hoje,
+                                        fimCarencia
+                                ) + 1
+                        );
+
         return new AssinaturaResumoResponse(
                 assinatura.getId(),
                 assinatura.getEmpresa().getId(),
                 assinatura.getEmpresa().getNome(),
-                calcularStatusAtual(
-                        assinatura,
-                        hoje,
-                        configuracao
-                ),
+                statusAtual,
                 assinatura.getValorMensal(),
                 assinatura.getTrialInicio(),
                 assinatura.getTrialFim(),
                 diasRestantes,
-                podeAcessar(assinatura),
+                statusAtual == AssinaturaStatus.ACTIVE
+                        || statusAtual == AssinaturaStatus.TRIAL
+                        || statusAtual == AssinaturaStatus.TRIAL_EXPIRING
+                        || statusAtual == AssinaturaStatus.GRACE_PERIOD,
                 assinatura.getProximoVencimento(),
                 assinatura.getUltimoPagamentoEm(),
+                assinatura.getDiaVencimento(),
+                fimCarencia,
+                calcularDataBloqueio(
+                        assinatura,
+                        configuracao
+                ),
+                diasRestantesCarencia,
                 configuracao.getDiasAvisoTrial(),
                 configuracao.isTrialHabilitado(),
+                configuracao.getIntervaloAlertaMinutos(),
+                configuracao.isPixHabilitado(),
+                configuracao.isBoletoHabilitado(),
+                configuracao.getDiasAvisoVencimento(),
                 tipoDocumento(assinatura.getEmpresa().getDocumento()),
                 assinatura.getEmpresa().getDocumento()
         );

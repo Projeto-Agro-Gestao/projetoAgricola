@@ -229,7 +229,10 @@ public class AssinaturaService {
             pagamento.confirmar(dataPagamento);
         }
 
-        pagamento.getAssinatura().ativar(dataPagamento);
+        pagamento.getAssinatura().ativar(
+                dataPagamento,
+                pagamento.getVencimento()
+        );
 
         if (pagamento.getMovimentacao() == null
                 && !pagamentoRepository
@@ -295,7 +298,19 @@ public class AssinaturaService {
                 request.trialHabilitado(),
                 request.diasTrialPadrao(),
                 request.diasAvisoTrial(),
-                request.diasCarencia()
+                request.diasCarencia(),
+                request.intervaloAlertaMinutos() == null
+                        ? configuracao.getIntervaloAlertaMinutos()
+                        : request.intervaloAlertaMinutos(),
+                request.pixHabilitado() == null
+                        ? configuracao.isPixHabilitado()
+                        : request.pixHabilitado(),
+                request.boletoHabilitado() == null
+                        ? configuracao.isBoletoHabilitado()
+                        : request.boletoHabilitado(),
+                request.diasAvisoVencimento() == null
+                        ? configuracao.getDiasAvisoVencimento()
+                        : request.diasAvisoVencimento()
         );
 
         return AssinaturaConfiguracaoResponse.de(configuracao);
@@ -384,23 +399,127 @@ public class AssinaturaService {
         return acessoService.obterResumo(empresaId);
     }
 
+    @Transactional
+    public AssinaturaResumoResponse desativarCliente(Long empresaId) {
+
+        validarAdministrador();
+        garantirNaoEhEmpresaAdministrativa(empresaId);
+
+        Empresa empresa =
+                empresaRepository.findById(empresaId)
+                        .orElseThrow(() ->
+                                new EmpresaNaoEncontradaException(
+                                        empresaId
+                                )
+                        );
+
+        empresa.desativar();
+        usuarioRepository.findAllByEmpresa_Id(empresaId)
+                .forEach(Usuario::desativar);
+
+        buscarOuCriarAssinatura(empresaId).suspender();
+
+        return acessoService.obterResumo(empresaId);
+    }
+
+    @Transactional
+    public AssinaturaResumoResponse restaurarCliente(Long empresaId) {
+
+        validarAdministrador();
+        garantirNaoEhEmpresaAdministrativa(empresaId);
+
+        Empresa empresa =
+                empresaRepository.findById(empresaId)
+                        .orElseThrow(() ->
+                                new EmpresaNaoEncontradaException(
+                                        empresaId
+                                )
+                        );
+
+        empresa.ativar();
+        usuarioRepository.findAllByEmpresa_Id(empresaId)
+                .forEach(Usuario::ativar);
+
+        Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
+        if (assinatura.getStatus() == AssinaturaStatus.SUSPENDED) {
+            assinatura.definirStatusManual(AssinaturaStatus.PENDING);
+        }
+
+        return acessoService.obterResumo(empresaId);
+    }
+
+    private void garantirNaoEhEmpresaAdministrativa(Long empresaId) {
+
+        boolean possuiAdministrador =
+                usuarioRepository.findAllByEmpresa_Id(empresaId)
+                        .stream()
+                        .map(Usuario::getPapel)
+                        .anyMatch(papel ->
+                                papel == PapelUsuario.ADMINISTRADOR
+                                        || papel == PapelUsuario.SUPER_ADMIN
+                        );
+
+        if (possuiAdministrador) {
+            throw new IllegalArgumentException(
+                    "Perfis administrativos nao podem ser excluidos ou desativados por esta rotina."
+            );
+        }
+    }
+
     private Assinatura prepararAssinaturaParaCobranca(Long empresaId) {
 
         Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
-        assinatura.atualizarValor(
-                acessoService.buscarConfiguracao()
-                        .getPrecoMensal()
-        );
+        AssinaturaConfiguracao configuracao =
+                acessoService.buscarConfiguracao();
 
-        garantirClienteAsaasNoAmbienteAtual(assinatura);
+        assinatura.atualizarValor(configuracao.getPrecoMensal());
+
+        if (assinatura.getValorMensal().signum() == 0) {
+            assinatura.reativar();
+            throw new IllegalStateException(
+                    "O plano atual esta gratuito. Nenhuma cobranca precisa ser gerada."
+            );
+        }
+
+        garantirFormaPagamentoHabilitada(configuracao);
 
         assinatura.pendente();
         return assinatura;
     }
 
+    private void garantirFormaPagamentoHabilitada(
+            AssinaturaConfiguracao configuracao) {
+
+        if (!configuracao.isPixHabilitado()
+                && !configuracao.isBoletoHabilitado()) {
+            throw new IllegalStateException(
+                    "Nenhuma forma de pagamento esta habilitada."
+            );
+        }
+    }
+
     private AssinaturaPagamento criarCobranca(
             Assinatura assinatura,
             FormaPagamentoAssinatura formaPagamento) {
+
+        AssinaturaConfiguracao configuracao =
+                acessoService.buscarConfiguracao();
+
+        if (formaPagamento == FormaPagamentoAssinatura.PIX
+                && !configuracao.isPixHabilitado()) {
+            throw new IllegalStateException(
+                    "Pagamento por Pix esta desabilitado."
+            );
+        }
+
+        if (formaPagamento == FormaPagamentoAssinatura.BOLETO
+                && !configuracao.isBoletoHabilitado()) {
+            throw new IllegalStateException(
+                    "Pagamento por boleto esta desabilitado."
+            );
+        }
+
+        garantirClienteAsaasNoAmbienteAtual(assinatura);
 
         String externalReference =
                 "assinatura-" + assinatura.getId()
@@ -641,6 +760,20 @@ public class AssinaturaService {
                 ).diasRestantesTrial(),
                 assinatura.getProximoVencimento(),
                 assinatura.getUltimoPagamentoEm(),
+                assinatura.getDiaVencimento(),
+                acessoService.calcularFimCarencia(
+                        assinatura,
+                        configuracao
+                ),
+                acessoService.calcularDataBloqueio(
+                        assinatura,
+                        configuracao
+                ),
+                acessoService.montarResumo(
+                        assinatura,
+                        configuracao
+                ).diasRestantesCarencia(),
+                acessoService.podeAcessar(assinatura),
                 ultimoPagamento == null
                         ? null
                         : ultimoPagamento.getFormaPagamento().name()
@@ -721,11 +854,15 @@ public class AssinaturaService {
 
         if (authentication == null
                 || !(authentication.getPrincipal() instanceof Jwt jwt)
-                || !PapelUsuario.ADMINISTRADOR.name()
-                .equals(jwt.getClaimAsString("papel"))) {
+                || !isAdministrador(jwt.getClaimAsString("papel"))) {
             throw new IllegalArgumentException(
                     "Acesso administrativo negado"
             );
         }
+    }
+
+    private boolean isAdministrador(String papel) {
+        return PapelUsuario.ADMINISTRADOR.name().equals(papel)
+                || PapelUsuario.SUPER_ADMIN.name().equals(papel);
     }
 }

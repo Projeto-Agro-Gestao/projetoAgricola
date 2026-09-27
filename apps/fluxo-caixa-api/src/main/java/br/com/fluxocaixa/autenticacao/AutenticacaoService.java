@@ -60,7 +60,7 @@ public class AutenticacaoService {
             throw new CredenciaisInvalidasException();
         }
 
-        if (usuario.getPapel() != PapelUsuario.ADMINISTRADOR
+        if (!isAdministrador(usuario.getPapel())
                 && !usuario.possuiAcessoValido(
                 java.time.LocalDate.now()
         )) {
@@ -105,5 +105,10 @@ public class AutenticacaoService {
         return email
                 .trim()
                 .toLowerCase(Locale.ROOT);
+    }
+
+    private boolean isAdministrador(PapelUsuario papel) {
+        return papel == PapelUsuario.ADMINISTRADOR
+                || papel == PapelUsuario.SUPER_ADMIN;
     }
 }

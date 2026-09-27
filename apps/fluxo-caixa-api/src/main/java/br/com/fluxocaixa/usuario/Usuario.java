@@ -264,4 +264,12 @@ public class Usuario {
         this.dataVencimentoPagamento =
                 dataVencimentoPagamento;
     }
+
+    public void desativar() {
+        this.ativo = false;
+    }
+
+    public void ativar() {
+        this.ativo = true;
+    }
 }

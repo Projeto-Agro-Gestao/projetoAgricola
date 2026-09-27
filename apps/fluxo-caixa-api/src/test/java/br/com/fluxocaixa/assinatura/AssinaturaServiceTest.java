@@ -13,15 +13,23 @@ import br.com.fluxocaixa.integration.asaas.AsaasPaymentResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasPixQrCodeResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasProperties;
 import br.com.fluxocaixa.movimentacao.MovimentacaoRepository;
+import br.com.fluxocaixa.usuario.PapelUsuario;
+import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -48,6 +56,11 @@ class AssinaturaServiceTest {
             mock(AssinaturaAcessoService.class);
     private final UsuarioRepository usuarioRepository =
             mock(UsuarioRepository.class);
+
+    @AfterEach
+    void limparContextoSeguranca() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void criaNovoCustomerQuandoAmbienteNaoCorrespondeNoBoleto() {
@@ -126,6 +139,65 @@ class AssinaturaServiceTest {
                 .isEqualTo("PRODUCTION");
     }
 
+    @Test
+    void administradorNaoDesativaEmpresaComPerfilAdministrador() {
+        autenticarAdministrador();
+
+        Empresa empresa =
+                new Empresa(
+                        "Administracao",
+                        "00000000000"
+                );
+
+        Usuario administrador =
+                new Usuario(
+                        empresa,
+                        "Admin",
+                        "admin@teste.com",
+                        null,
+                        "hash",
+                        PapelUsuario.ADMINISTRADOR
+                );
+
+        when(usuarioRepository.findAllByEmpresa_Id(1L))
+                .thenReturn(List.of(administrador));
+
+        AssinaturaService service =
+                serviceComAmbiente("PRODUCTION");
+
+        assertThatThrownBy(() -> service.desativarCliente(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Perfis administrativos");
+    }
+
+    @Test
+    void planoGratuitoNaoEnviaCobrancaAoAsaas() {
+        Assinatura assinatura =
+                assinaturaComCustomer("cus_producao", "PRODUCTION");
+
+        AssinaturaConfiguracao configuracao =
+                new AssinaturaConfiguracao();
+        configuracao.atualizar(
+                BigDecimal.ZERO,
+                true,
+                15,
+                7,
+                5
+        );
+
+        when(assinaturaRepository.findByEmpresa_Id(1L))
+                .thenReturn(Optional.of(assinatura));
+        when(acessoService.buscarConfiguracao())
+                .thenReturn(configuracao);
+
+        AssinaturaService service =
+                serviceComAmbiente("PRODUCTION");
+
+        assertThatThrownBy(() -> service.criarPix(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("gratuito");
+    }
+
     private Assinatura assinaturaComCustomer(
             String customerId,
             String ambiente) {
@@ -189,6 +261,18 @@ class AssinaturaServiceTest {
                 acessoService,
                 usuarioRepository
         );
+    }
+
+    private void autenticarAdministrador() {
+        Jwt jwt =
+                Jwt.withTokenValue("token")
+                        .header("alg", "none")
+                        .claim("papel", "ADMINISTRADOR")
+                        .claim("empresaId", 1L)
+                        .build();
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(new JwtAuthenticationToken(jwt));
     }
 
     private AsaasCustomerResponse customer(String id) {

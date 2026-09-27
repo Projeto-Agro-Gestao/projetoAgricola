@@ -61,6 +61,8 @@ function statusLegivel(status) {
         PENDING: 'Pagamento pendente',
         ACTIVE: 'Assinatura ativa',
         OVERDUE: 'Pagamento vencido',
+        GRACE_PERIOD: 'Pagamento em atraso',
+        BLOCKED: 'Acesso bloqueado',
         SUSPENDED: 'Assinatura suspensa',
         CANCELLED: 'Assinatura cancelada',
     }[status] ?? status
@@ -148,6 +150,13 @@ function PlanoPagamentos() {
 
     async function gerarPagamento(tipo) {
         try {
+            if (Number(dados?.resumo?.valorMensal ?? 0) === 0) {
+                setMensagem(
+                    'Seu plano atual esta gratuito. Nenhuma cobranca precisa ser gerada.',
+                )
+                return
+            }
+
             if (!documentoValido()) {
                 setMensagem(
                     'Informe CPF ou CNPJ nos dados para pagamento antes de gerar a cobranca.',
@@ -279,6 +288,7 @@ function PlanoPagamentos() {
 
     const resumo = dados?.resumo
     const pagamentos = dados?.pagamentos ?? []
+    const planoGratuito = Number(resumo?.valorMensal ?? 0) === 0
 
     return (
         <main className="plano-pagina">
@@ -341,22 +351,56 @@ function PlanoPagamentos() {
                         <strong>
                             {formatarData(resumo.proximoVencimento)}
                         </strong>
-                        <p>Ultimo pagamento: {formatarData(resumo.ultimoPagamentoEm)}</p>
+                        <p>Dia fixo: {resumo.diaVencimento ?? '-'}</p>
+                    </article>
+
+                    <article>
+                        <span>Carencia</span>
+                        <strong>{formatarData(resumo.fimCarencia)}</strong>
+                        <p>Bloqueio: {formatarData(resumo.dataBloqueio)}</p>
+                    </article>
+
+                    <article>
+                        <span>Ultimo pagamento</span>
+                        <strong>{formatarData(resumo.ultimoPagamentoEm)}</strong>
+                        <p>{resumo.diasRestantesCarencia} dias de carencia</p>
                     </article>
                 </section>
             )}
 
             {resumo
-                && ['TRIAL_EXPIRING', 'TRIAL_EXPIRED', 'PENDING', 'OVERDUE', 'SUSPENDED'].includes(resumo.status) && (
-                <section className="plano-banner">
+                && ['TRIAL_EXPIRING', 'TRIAL_EXPIRED', 'PENDING', 'OVERDUE', 'GRACE_PERIOD', 'BLOCKED', 'SUSPENDED'].includes(resumo.status) && (
+                <section
+                    className={`plano-banner ${
+                        resumo.status === 'GRACE_PERIOD'
+                            ? 'plano-banner-pulsando'
+                            : ''
+                    }`}
+                >
                     <strong>
-                        {resumo.status === 'TRIAL_EXPIRED'
+                        {resumo.status === 'GRACE_PERIOD'
+                            ? 'Pagamento em atraso'
+                            : resumo.status === 'BLOCKED'
+                              ? 'Acesso bloqueado por falta de pagamento.'
+                              : resumo.status === 'TRIAL_EXPIRED'
                             ? 'Seu periodo gratuito terminou.'
                             : `Seu periodo gratuito termina em ${resumo.diasRestantesTrial} dias.`}
                     </strong>
                     <span>
-                        Gere uma cobranca por Pix ou boleto para liberar
-                        automaticamente o acesso apos a confirmacao.
+                        {resumo.status === 'GRACE_PERIOD'
+                            ? `Voce pode usar o AgroGestao ate ${formatarData(resumo.fimCarencia)}. O bloqueio ocorre em ${formatarData(resumo.dataBloqueio)}.`
+                            : 'Gere uma cobranca por Pix ou boleto para liberar automaticamente o acesso apos a confirmacao.'}
+                    </span>
+                </section>
+            )}
+
+            {planoGratuito && (
+                <section className="plano-banner plano-banner-gratis">
+                    <strong>Plano promocional gratuito ativo.</strong>
+                    <span>
+                        O valor mensal esta configurado como R$ 0,00 pelo
+                        administrador. Pix e boleto ficam disponiveis quando
+                        houver valor maior que zero.
                     </span>
                 </section>
             )}
@@ -461,7 +505,12 @@ function PlanoPagamentos() {
 
                 <div className="plano-acoes">
                     <button
-                        disabled={Boolean(gerando) || !documentoValido()}
+                        disabled={
+                            planoGratuito
+                            || !resumo?.pixHabilitado
+                            || Boolean(gerando)
+                            || !documentoValido()
+                        }
                         onClick={() => gerarPagamento('pix')}
                         type="button"
                     >
@@ -471,7 +520,12 @@ function PlanoPagamentos() {
                     </button>
 
                     <button
-                        disabled={Boolean(gerando) || !documentoValido()}
+                        disabled={
+                            planoGratuito
+                            || !resumo?.boletoHabilitado
+                            || Boolean(gerando)
+                            || !documentoValido()
+                        }
                         onClick={() => gerarPagamento('boleto')}
                         type="button"
                     >

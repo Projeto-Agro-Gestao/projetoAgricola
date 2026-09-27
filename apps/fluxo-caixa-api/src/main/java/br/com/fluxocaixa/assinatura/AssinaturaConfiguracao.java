@@ -35,6 +35,18 @@ public class AssinaturaConfiguracao {
     @Column(name = "dias_carencia", nullable = false)
     private int diasCarencia;
 
+    @Column(name = "intervalo_alerta_minutos", nullable = false)
+    private int intervaloAlertaMinutos = 3;
+
+    @Column(name = "pix_habilitado", nullable = false)
+    private boolean pixHabilitado = true;
+
+    @Column(name = "boleto_habilitado", nullable = false)
+    private boolean boletoHabilitado = true;
+
+    @Column(name = "dias_aviso_vencimento", nullable = false)
+    private int diasAvisoVencimento = 3;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
@@ -66,6 +78,22 @@ public class AssinaturaConfiguracao {
         return diasCarencia;
     }
 
+    public int getIntervaloAlertaMinutos() {
+        return intervaloAlertaMinutos;
+    }
+
+    public boolean isPixHabilitado() {
+        return pixHabilitado;
+    }
+
+    public boolean isBoletoHabilitado() {
+        return boletoHabilitado;
+    }
+
+    public int getDiasAvisoVencimento() {
+        return diasAvisoVencimento;
+    }
+
     public void atualizar(
             BigDecimal precoMensal,
             boolean trialHabilitado,
@@ -73,10 +101,38 @@ public class AssinaturaConfiguracao {
             int diasAvisoTrial,
             int diasCarencia) {
 
+        atualizar(
+                precoMensal,
+                trialHabilitado,
+                diasTrialPadrao,
+                diasAvisoTrial,
+                diasCarencia,
+                intervaloAlertaMinutos,
+                pixHabilitado,
+                boletoHabilitado,
+                diasAvisoVencimento
+        );
+    }
+
+    public void atualizar(
+            BigDecimal precoMensal,
+            boolean trialHabilitado,
+            int diasTrialPadrao,
+            int diasAvisoTrial,
+            int diasCarencia,
+            int intervaloAlertaMinutos,
+            boolean pixHabilitado,
+            boolean boletoHabilitado,
+            int diasAvisoVencimento) {
+
         this.precoMensal = precoMensal;
         this.trialHabilitado = trialHabilitado;
         this.diasTrialPadrao = diasTrialPadrao;
         this.diasAvisoTrial = diasAvisoTrial;
         this.diasCarencia = diasCarencia;
+        this.intervaloAlertaMinutos = intervaloAlertaMinutos;
+        this.pixHabilitado = pixHabilitado;
+        this.boletoHabilitado = boletoHabilitado;
+        this.diasAvisoVencimento = diasAvisoVencimento;
     }
 }

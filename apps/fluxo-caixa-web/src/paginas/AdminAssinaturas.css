@@ -205,6 +205,7 @@
 }
 
 .admin-assinaturas-status.status-overdue,
+.admin-assinaturas-status.status-blocked,
 .admin-assinaturas-status.status-suspended,
 .admin-assinaturas-status.status-trial_expired,
 .admin-assinaturas-status.status-cancelled {
@@ -213,6 +214,7 @@
 }
 
 .admin-assinaturas-status.status-pending,
+.admin-assinaturas-status.status-grace_period,
 .admin-assinaturas-status.status-trial_expiring {
     background: #fff1d6;
     color: #8a4b00;

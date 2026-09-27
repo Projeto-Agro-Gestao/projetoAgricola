@@ -17,6 +17,11 @@ public record AssinaturaAdminClienteResponse(
         long diasRestantesTrial,
         LocalDate proximoVencimento,
         LocalDate ultimoPagamento,
+        Integer diaVencimento,
+        LocalDate fimCarencia,
+        LocalDate dataBloqueio,
+        long diasRestantesCarencia,
+        boolean acessoLiberado,
         String formaUltimoPagamento
 ) {
 }

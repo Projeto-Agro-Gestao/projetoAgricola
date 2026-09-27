@@ -108,8 +108,11 @@ public class AcessoEmpresaAuthorizationManager
 
     private boolean isAdministrador(Jwt jwt) {
 
-        return PapelUsuario.ADMINISTRADOR.name()
-                .equals(jwt.getClaimAsString("papel"));
+        String papel =
+                jwt.getClaimAsString("papel");
+
+        return PapelUsuario.ADMINISTRADOR.name().equals(papel)
+                || PapelUsuario.SUPER_ADMIN.name().equals(papel);
     }
 
     private boolean rotaLiberadaParaPagamento(

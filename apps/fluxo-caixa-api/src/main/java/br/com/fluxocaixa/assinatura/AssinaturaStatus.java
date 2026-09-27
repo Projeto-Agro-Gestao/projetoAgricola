@@ -8,6 +8,8 @@ public enum AssinaturaStatus {
     PENDING,
     ACTIVE,
     OVERDUE,
+    GRACE_PERIOD,
+    BLOCKED,
     SUSPENDED,
     CANCELLED
 }
