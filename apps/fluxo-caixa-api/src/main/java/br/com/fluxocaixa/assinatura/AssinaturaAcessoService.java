@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.usuario.Usuario;
+import br.com.fluxocaixa.usuario.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +14,16 @@ public class AssinaturaAcessoService {
     private final AssinaturaRepository assinaturaRepository;
     private final AssinaturaConfiguracaoRepository
             configuracaoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public AssinaturaAcessoService(
             AssinaturaRepository assinaturaRepository,
-            AssinaturaConfiguracaoRepository configuracaoRepository) {
+            AssinaturaConfiguracaoRepository configuracaoRepository,
+            UsuarioRepository usuarioRepository) {
 
         this.assinaturaRepository = assinaturaRepository;
         this.configuracaoRepository = configuracaoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional(readOnly = true)
@@ -224,6 +229,13 @@ public class AssinaturaAcessoService {
                                 ) + 1
                         );
 
+        Usuario usuarioPrincipal =
+                usuarioRepository
+                        .findFirstByEmpresa_IdOrderByIdAsc(
+                                assinatura.getEmpresa().getId()
+                        )
+                        .orElse(null);
+
         return new AssinaturaResumoResponse(
                 assinatura.getId(),
                 assinatura.getEmpresa().getId(),
@@ -253,8 +265,35 @@ public class AssinaturaAcessoService {
                 configuracao.isBoletoHabilitado(),
                 configuracao.getDiasAvisoVencimento(),
                 tipoDocumento(assinatura.getEmpresa().getDocumento()),
-                assinatura.getEmpresa().getDocumento()
+                assinatura.getEmpresa().getDocumento(),
+                assinatura.getEmpresa().getCepCobranca(),
+                assinatura.getEmpresa().getRuaCobranca(),
+                assinatura.getEmpresa().getNumeroCobranca(),
+                assinatura.getEmpresa().getBairroCobranca(),
+                assinatura.getEmpresa().getCidadeCobranca(),
+                assinatura.getEmpresa().getEstadoCobranca(),
+                usuarioPrincipal == null
+                        ? null
+                        : usuarioPrincipal.getTelefone(),
+                usuarioPrincipal == null
+                        ? null
+                        : usuarioPrincipal.getEmail(),
+                dadosCobrancaCompletos(assinatura)
         );
+    }
+
+    boolean dadosCobrancaCompletos(Assinatura assinatura) {
+        return possuiValor(assinatura.getEmpresa().getDocumento())
+                && possuiValor(assinatura.getEmpresa().getCepCobranca())
+                && possuiValor(assinatura.getEmpresa().getRuaCobranca())
+                && possuiValor(assinatura.getEmpresa().getNumeroCobranca())
+                && possuiValor(assinatura.getEmpresa().getBairroCobranca())
+                && possuiValor(assinatura.getEmpresa().getCidadeCobranca())
+                && possuiValor(assinatura.getEmpresa().getEstadoCobranca());
+    }
+
+    private boolean possuiValor(String valor) {
+        return valor != null && !valor.isBlank();
     }
 
     private String tipoDocumento(String documento) {

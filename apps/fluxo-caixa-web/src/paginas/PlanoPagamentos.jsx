@@ -82,10 +82,18 @@ function PlanoPagamentos() {
     const [carregando, setCarregando] = useState(true)
     const [gerando, setGerando] = useState('')
     const [salvandoDocumento, setSalvandoDocumento] = useState(false)
-    const [documentoPagamento, setDocumentoPagamento] =
+    const [dadosCobranca, setDadosCobranca] =
         useState({
             tipoDocumento: 'CPF',
             documento: '',
+            cep: '',
+            rua: '',
+            numero: '',
+            bairro: '',
+            cidade: '',
+            estado: '',
+            telefone: '',
+            email: '',
         })
 
     const empresaId = sessao?.usuario?.empresaId
@@ -130,11 +138,19 @@ function PlanoPagamentos() {
 
             const novosDados = await resposta.json()
             setDados(novosDados)
-            setDocumentoPagamento({
+            setDadosCobranca({
                 tipoDocumento:
                     novosDados.resumo?.tipoDocumentoPagamento ?? 'CPF',
                 documento:
                     novosDados.resumo?.documentoPagamento ?? '',
+                cep: novosDados.resumo?.cepCobranca ?? '',
+                rua: novosDados.resumo?.ruaCobranca ?? '',
+                numero: novosDados.resumo?.numeroCobranca ?? '',
+                bairro: novosDados.resumo?.bairroCobranca ?? '',
+                cidade: novosDados.resumo?.cidadeCobranca ?? '',
+                estado: novosDados.resumo?.estadoCobranca ?? '',
+                telefone: novosDados.resumo?.telefoneCobranca ?? '',
+                email: novosDados.resumo?.emailCobranca ?? '',
             })
             setMensagem('')
         } catch (erro) {
@@ -157,9 +173,9 @@ function PlanoPagamentos() {
                 return
             }
 
-            if (!documentoValido()) {
+            if (!dadosCobrancaCompletos()) {
                 setMensagem(
-                    'Informe CPF ou CNPJ nos dados para pagamento antes de gerar a cobranca.',
+                    'Preencha os dados exigidos pelo orgao cobrador antes de gerar Pix ou boleto.',
                 )
                 return
             }
@@ -205,12 +221,22 @@ function PlanoPagamentos() {
     }
 
     function documentoValido() {
-        const digitos = documentoPagamento.documento
+        const digitos = dadosCobranca.documento
             .replace(/\D/g, '')
 
-        return documentoPagamento.tipoDocumento === 'CPF'
+        return dadosCobranca.tipoDocumento === 'CPF'
             ? digitos.length === 11
             : digitos.length === 14
+    }
+
+    function dadosCobrancaCompletos() {
+        return documentoValido()
+            && dadosCobranca.cep.replace(/\D/g, '').length >= 8
+            && dadosCobranca.rua.trim()
+            && dadosCobranca.numero.trim()
+            && dadosCobranca.bairro.trim()
+            && dadosCobranca.cidade.trim()
+            && dadosCobranca.estado.trim().length === 2
     }
 
     async function salvarDocumentoPagamento(evento) {
@@ -222,9 +248,15 @@ function PlanoPagamentos() {
 
             if (!documentoValido()) {
                 throw new Error(
-                    documentoPagamento.tipoDocumento === 'CPF'
+                    dadosCobranca.tipoDocumento === 'CPF'
                         ? 'CPF deve possuir 11 digitos.'
                         : 'CNPJ deve possuir 14 digitos.',
+                )
+            }
+
+            if (!dadosCobrancaCompletos()) {
+                throw new Error(
+                    'Preencha CPF ou CNPJ, CEP, rua, numero, bairro, cidade e estado. Esses dados sao exigidos pelo orgao cobrador.',
                 )
             }
 
@@ -239,9 +271,17 @@ function PlanoPagamentos() {
                     },
                     body: JSON.stringify({
                         tipoDocumento:
-                            documentoPagamento.tipoDocumento,
+                            dadosCobranca.tipoDocumento,
                         documento:
-                            documentoPagamento.documento,
+                            dadosCobranca.documento,
+                        cep: dadosCobranca.cep,
+                        rua: dadosCobranca.rua,
+                        numero: dadosCobranca.numero,
+                        bairro: dadosCobranca.bairro,
+                        cidade: dadosCobranca.cidade,
+                        estado: dadosCobranca.estado,
+                        telefone: dadosCobranca.telefone,
+                        email: dadosCobranca.email,
                     }),
                 },
             )
@@ -409,7 +449,7 @@ function PlanoPagamentos() {
                 <div className="plano-card-topo">
                     <div>
                         <span>Dados para pagamento</span>
-                        <h2>CPF ou CNPJ</h2>
+                        <h2>Dados exigidos pelo orgao cobrador</h2>
                     </div>
                 </div>
 
@@ -421,13 +461,13 @@ function PlanoPagamentos() {
                         <label>
                             <input
                                 checked={
-                                    documentoPagamento.tipoDocumento
+                                    dadosCobranca.tipoDocumento
                                     === 'CPF'
                                 }
                                 name="tipoDocumentoPagamento"
                                 onChange={() =>
-                                    setDocumentoPagamento({
-                                        ...documentoPagamento,
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
                                         tipoDocumento: 'CPF',
                                     })
                                 }
@@ -439,13 +479,13 @@ function PlanoPagamentos() {
                         <label>
                             <input
                                 checked={
-                                    documentoPagamento.tipoDocumento
+                                    dadosCobranca.tipoDocumento
                                     === 'CNPJ'
                                 }
                                 name="tipoDocumentoPagamento"
                                 onChange={() =>
-                                    setDocumentoPagamento({
-                                        ...documentoPagamento,
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
                                         tipoDocumento: 'CNPJ',
                                     })
                                 }
@@ -456,26 +496,118 @@ function PlanoPagamentos() {
                     </div>
 
                     <label className="plano-documento-campo">
-                        Numero do {documentoPagamento.tipoDocumento}
+                        Numero do {dadosCobranca.tipoDocumento}
                         <input
                             inputMode="numeric"
                             maxLength={
-                                documentoPagamento.tipoDocumento === 'CPF'
+                                dadosCobranca.tipoDocumento === 'CPF'
                                     ? 14
                                     : 18
                             }
                             onChange={(evento) =>
-                                setDocumentoPagamento({
-                                    ...documentoPagamento,
+                                setDadosCobranca({
+                                    ...dadosCobranca,
                                     documento: evento.target.value,
                                 })
                             }
                             placeholder={
-                                documentoPagamento.tipoDocumento === 'CPF'
+                                dadosCobranca.tipoDocumento === 'CPF'
                                     ? 'Digite 11 digitos'
                                     : 'Digite 14 digitos'
                             }
-                            value={documentoPagamento.documento}
+                            value={dadosCobranca.documento}
+                        />
+                    </label>
+
+                    <div className="plano-documento-grade">
+                        <label className="plano-documento-campo">
+                            CEP
+                            <input
+                                inputMode="numeric"
+                                maxLength={12}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        cep: evento.target.value,
+                                    })
+                                }
+                                placeholder="Ex.: 88000000"
+                                value={dadosCobranca.cep}
+                            />
+                        </label>
+
+                        <label className="plano-documento-campo">
+                            Estado
+                            <input
+                                maxLength={2}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        estado: evento.target.value
+                                            .toUpperCase(),
+                                    })
+                                }
+                                placeholder="SC"
+                                value={dadosCobranca.estado}
+                            />
+                        </label>
+                    </div>
+
+                    <label className="plano-documento-campo">
+                        Rua
+                        <input
+                            maxLength={150}
+                            onChange={(evento) =>
+                                setDadosCobranca({
+                                    ...dadosCobranca,
+                                    rua: evento.target.value,
+                                })
+                            }
+                            value={dadosCobranca.rua}
+                        />
+                    </label>
+
+                    <div className="plano-documento-grade">
+                        <label className="plano-documento-campo">
+                            Numero
+                            <input
+                                maxLength={20}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        numero: evento.target.value,
+                                    })
+                                }
+                                value={dadosCobranca.numero}
+                            />
+                        </label>
+
+                        <label className="plano-documento-campo">
+                            Bairro
+                            <input
+                                maxLength={100}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        bairro: evento.target.value,
+                                    })
+                                }
+                                value={dadosCobranca.bairro}
+                            />
+                        </label>
+                    </div>
+
+                    <label className="plano-documento-campo">
+                        Cidade
+                        <input
+                            maxLength={100}
+                            onChange={(evento) =>
+                                setDadosCobranca({
+                                    ...dadosCobranca,
+                                    cidade: evento.target.value,
+                                })
+                            }
+                            value={dadosCobranca.cidade}
                         />
                     </label>
 
@@ -490,8 +622,23 @@ function PlanoPagamentos() {
                 </form>
 
                 <p className="plano-documento-ajuda">
-                    Este CPF ou CNPJ sera usado apenas para gerar Pix
-                    ou boleto no Asaas.
+                    CPF ou CNPJ, CEP, rua, numero, bairro, cidade e
+                    estado sao exigencias do orgao cobrador para gerar
+                    Pix ou boleto. Telefone e e-mail sao usados quando
+                    estiverem disponiveis no cadastro.
+                </p>
+            </section>
+
+            <section className="plano-card">
+                <div className="plano-card-topo">
+                    <div>
+                        <span>Gerar Nota Fiscal</span>
+                        <h2>PDF da nota fiscal</h2>
+                    </div>
+                </div>
+                <p className="plano-vazio">
+                    A nota fiscal usara os mesmos dados de cobranca
+                    salvos acima quando a emissao estiver disponivel.
                 </p>
             </section>
 
@@ -509,7 +656,7 @@ function PlanoPagamentos() {
                             planoGratuito
                             || !resumo?.pixHabilitado
                             || Boolean(gerando)
-                            || !documentoValido()
+                            || !dadosCobrancaCompletos()
                         }
                         onClick={() => gerarPagamento('pix')}
                         type="button"
@@ -524,7 +671,7 @@ function PlanoPagamentos() {
                             planoGratuito
                             || !resumo?.boletoHabilitado
                             || Boolean(gerando)
-                            || !documentoValido()
+                            || !dadosCobrancaCompletos()
                         }
                         onClick={() => gerarPagamento('boleto')}
                         type="button"

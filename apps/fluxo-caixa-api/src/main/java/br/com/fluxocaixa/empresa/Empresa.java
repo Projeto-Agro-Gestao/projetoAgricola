@@ -25,6 +25,24 @@ public class Empresa {
     @Column(length = 20, unique = true)
     private String documento;
 
+    @Column(name = "cep_cobranca", length = 12)
+    private String cepCobranca;
+
+    @Column(name = "rua_cobranca", length = 150)
+    private String ruaCobranca;
+
+    @Column(name = "numero_cobranca", length = 20)
+    private String numeroCobranca;
+
+    @Column(name = "bairro_cobranca", length = 100)
+    private String bairroCobranca;
+
+    @Column(name = "cidade_cobranca", length = 100)
+    private String cidadeCobranca;
+
+    @Column(name = "estado_cobranca", length = 2)
+    private String estadoCobranca;
+
     @Column(nullable = false)
     private boolean ativo = true;
 
@@ -90,6 +108,30 @@ public class Empresa {
         return documento;
     }
 
+    public String getCepCobranca() {
+        return cepCobranca;
+    }
+
+    public String getRuaCobranca() {
+        return ruaCobranca;
+    }
+
+    public String getNumeroCobranca() {
+        return numeroCobranca;
+    }
+
+    public String getBairroCobranca() {
+        return bairroCobranca;
+    }
+
+    public String getCidadeCobranca() {
+        return cidadeCobranca;
+    }
+
+    public String getEstadoCobranca() {
+        return estadoCobranca;
+    }
+
     public boolean isAtivo() {
         return ativo;
     }
@@ -116,6 +158,24 @@ public class Empresa {
 
     public void alterarDocumento(String documento) {
         this.documento = documento;
+    }
+
+    public void alterarDadosCobranca(
+            String documento,
+            String cepCobranca,
+            String ruaCobranca,
+            String numeroCobranca,
+            String bairroCobranca,
+            String cidadeCobranca,
+            String estadoCobranca) {
+
+        this.documento = documento;
+        this.cepCobranca = cepCobranca;
+        this.ruaCobranca = ruaCobranca;
+        this.numeroCobranca = numeroCobranca;
+        this.bairroCobranca = bairroCobranca;
+        this.cidadeCobranca = cidadeCobranca;
+        this.estadoCobranca = estadoCobranca;
     }
 
     public void configurarAtividades(

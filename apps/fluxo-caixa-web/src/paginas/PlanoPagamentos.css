@@ -123,10 +123,9 @@
 }
 
 .plano-documento {
-    align-items: end;
     display: grid;
     gap: 14px;
-    grid-template-columns: auto minmax(220px, 1fr) auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .plano-documento-opcoes {
@@ -136,6 +135,15 @@
     display: flex;
     gap: 8px;
     padding: 8px;
+}
+
+.plano-documento-opcoes,
+.plano-documento-campo:first-of-type {
+    grid-column: span 1;
+}
+
+.plano-documento-grade {
+    display: contents;
 }
 
 .plano-documento-opcoes label {
@@ -200,6 +208,7 @@
     background: #358a00;
     border-color: #358a00;
     color: white;
+    grid-column: span 1;
 }
 
 .plano-cobranca {
@@ -259,7 +268,7 @@
 
     .plano-documento {
         align-items: stretch;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -271,5 +280,9 @@
     .plano-banner {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .plano-documento {
+        grid-template-columns: 1fr;
     }
 }

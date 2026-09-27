@@ -5,6 +5,10 @@ public record AsaasCustomerRequest(
         String cpfCnpj,
         String email,
         String phone,
+        String postalCode,
+        String address,
+        String addressNumber,
+        String province,
         String externalReference,
         boolean notificationDisabled
 ) {

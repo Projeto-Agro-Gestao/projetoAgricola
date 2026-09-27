@@ -26,6 +26,15 @@ public record AssinaturaResumoResponse(
         boolean boletoHabilitado,
         int diasAvisoVencimento,
         String tipoDocumentoPagamento,
-        String documentoPagamento
+        String documentoPagamento,
+        String cepCobranca,
+        String ruaCobranca,
+        String numeroCobranca,
+        String bairroCobranca,
+        String cidadeCobranca,
+        String estadoCobranca,
+        String telefoneCobranca,
+        String emailCobranca,
+        boolean dadosCobrancaCompletos
 ) {
 }

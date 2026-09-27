@@ -33,6 +33,27 @@ public record AtualizarPerfilRequest(
         )
         String telefone,
 
+        @Size(max = 20, message = "O documento deve possuir no maximo 20 caracteres")
+        String documentoPagamento,
+
+        @Size(max = 12, message = "O CEP deve possuir no maximo 12 caracteres")
+        String cepCobranca,
+
+        @Size(max = 150, message = "A rua deve possuir no maximo 150 caracteres")
+        String ruaCobranca,
+
+        @Size(max = 20, message = "O numero deve possuir no maximo 20 caracteres")
+        String numeroCobranca,
+
+        @Size(max = 100, message = "O bairro deve possuir no maximo 100 caracteres")
+        String bairroCobranca,
+
+        @Size(max = 100, message = "A cidade deve possuir no maximo 100 caracteres")
+        String cidadeCobranca,
+
+        @Size(max = 2, message = "O estado deve possuir a sigla com 2 letras")
+        String estadoCobranca,
+
         boolean agriculturaAtiva,
         boolean pecuariaAtiva
 
