@@ -198,7 +198,11 @@
     opacity: .55;
 }
 
-.plano-acoes button:first-child {
+.plano-acoes button {
+    background: #fbfff8;
+}
+
+.plano-acoes button.plano-forma-selecionada {
     background: #358a00;
     border-color: #358a00;
     color: white;
@@ -236,6 +240,17 @@
     margin: 14px 0;
     overflow-wrap: anywhere;
     padding: 14px;
+}
+
+.plano-copia-feedback {
+    background: #e8f7df;
+    border: 1px solid #b9dca8;
+    border-radius: 8px;
+    color: #2f7d00;
+    display: inline-flex;
+    font-weight: 900;
+    margin: 12px 0 0;
+    padding: 10px 14px;
 }
 
 .plano-tabela-area {

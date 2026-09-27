@@ -79,6 +79,8 @@ function PlanoPagamentos() {
     const [dados, setDados] = useState(null)
     const [pagamentoAtual, setPagamentoAtual] = useState(null)
     const [mensagem, setMensagem] = useState('')
+    const [avisoCopia, setAvisoCopia] = useState('')
+    const [formaSelecionada, setFormaSelecionada] = useState('')
     const [carregando, setCarregando] = useState(true)
     const [gerando, setGerando] = useState('')
     const [salvandoDocumento, setSalvandoDocumento] = useState(false)
@@ -166,6 +168,9 @@ function PlanoPagamentos() {
 
     async function gerarPagamento(tipo) {
         try {
+            setFormaSelecionada(tipo)
+            setAvisoCopia('')
+
             if (Number(dados?.resumo?.valorMensal ?? 0) === 0) {
                 setMensagem(
                     'Seu plano atual esta gratuito. Nenhuma cobranca precisa ser gerada.',
@@ -208,6 +213,11 @@ function PlanoPagamentos() {
 
             const pagamento = await resposta.json()
             setPagamentoAtual(pagamento)
+            setFormaSelecionada(
+                pagamento.formaPagamento === 'BOLETO'
+                    ? 'boleto'
+                    : 'pix',
+            )
             await carregar()
         } catch (erro) {
             setMensagem(
@@ -315,7 +325,8 @@ function PlanoPagamentos() {
         }
 
         await navigator.clipboard.writeText(texto)
-        setMensagem(aviso)
+        setAvisoCopia(aviso)
+        setMensagem('')
     }
 
     if (carregando) {
@@ -652,6 +663,11 @@ function PlanoPagamentos() {
 
                 <div className="plano-acoes">
                     <button
+                        className={
+                            formaSelecionada === 'pix'
+                                ? 'plano-forma-selecionada'
+                                : ''
+                        }
                         disabled={
                             planoGratuito
                             || !resumo?.pixHabilitado
@@ -667,6 +683,11 @@ function PlanoPagamentos() {
                     </button>
 
                     <button
+                        className={
+                            formaSelecionada === 'boleto'
+                                ? 'plano-forma-selecionada'
+                                : ''
+                        }
                         disabled={
                             planoGratuito
                             || !resumo?.boletoHabilitado
@@ -708,12 +729,12 @@ function PlanoPagamentos() {
                                     onClick={() =>
                                         copiar(
                                             pagamentoAtual.pixCopiaCola,
-                                            'Código Pix copiado.',
+                                            'Item copiado.',
                                         )
                                     }
                                     type="button"
                                 >
-                                    Copiar código Pix
+                                    Copiar codigo Pix
                                 </button>
                             </>
                         )}
@@ -725,14 +746,20 @@ function PlanoPagamentos() {
                                     onClick={() =>
                                         copiar(
                                             pagamentoAtual.linhaDigitavel,
-                                            'Código do boleto copiado.',
+                                            'Item copiado.',
                                         )
                                     }
                                     type="button"
                                 >
-                                    Copiar código do boleto
+                                    Copiar codigo do boleto
                                 </button>
                             </>
+                        )}
+
+                        {avisoCopia && (
+                            <p className="plano-copia-feedback">
+                                {avisoCopia}
+                            </p>
                         )}
 
                         {pagamentoAtual.boletoUrl && (
