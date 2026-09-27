@@ -234,6 +234,8 @@ class AssinaturaServiceTest {
                 .thenReturn(Optional.of(assinatura));
         when(acessoService.buscarConfiguracao())
                 .thenReturn(configuracao);
+        when(acessoService.dadosCobrancaCompletos(assinatura))
+                .thenReturn(true);
         when(pagamentoRepository.save(any(AssinaturaPagamento.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(pagamentoRepository.saveAndFlush(

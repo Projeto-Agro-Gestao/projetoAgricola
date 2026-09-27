@@ -125,6 +125,29 @@ public class UsuarioService {
 
         usuario.alterarDados(nome, telefone);
         usuario.getEmpresa().alterarNome(nomeEmpresa);
+        usuario.getEmpresa().alterarDadosCobranca(
+                normalizarDocumentoOpcional(
+                        request.documentoPagamento()
+                ),
+                normalizarDigitosOpcional(
+                        request.cepCobranca()
+                ),
+                normalizarTextoOpcional(
+                        request.ruaCobranca()
+                ),
+                normalizarTextoOpcional(
+                        request.numeroCobranca()
+                ),
+                normalizarTextoOpcional(
+                        request.bairroCobranca()
+                ),
+                normalizarTextoOpcional(
+                        request.cidadeCobranca()
+                ),
+                normalizarEstadoOpcional(
+                        request.estadoCobranca()
+                )
+        );
         usuario.getEmpresa().configurarAtividades(
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
@@ -183,5 +206,48 @@ public class UsuarioService {
         return texto
                 .trim()
                 .replaceAll("\\s+", " ");
+    }
+
+    private String normalizarDigitosOpcional(String texto) {
+
+        if (texto == null || texto.isBlank()) {
+            return null;
+        }
+
+        return texto.replaceAll("[^0-9]", "");
+    }
+
+    private String normalizarDocumentoOpcional(String documento) {
+
+        String digitos = normalizarDigitosOpcional(documento);
+
+        if (digitos == null) {
+            return null;
+        }
+
+        if (digitos.length() != 11 && digitos.length() != 14) {
+            throw new IllegalArgumentException(
+                    "Informe CPF com 11 digitos ou CNPJ com 14 digitos."
+            );
+        }
+
+        return digitos;
+    }
+
+    private String normalizarEstadoOpcional(String estado) {
+
+        if (estado == null || estado.isBlank()) {
+            return null;
+        }
+
+        String valor = estado.trim().toUpperCase(Locale.ROOT);
+
+        if (valor.length() != 2) {
+            throw new IllegalArgumentException(
+                    "Informe o estado com 2 letras, como SC, PR ou RS."
+            );
+        }
+
+        return valor;
     }
 }

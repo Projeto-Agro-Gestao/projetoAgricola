@@ -1,6 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
 import br.com.fluxocaixa.empresa.Empresa;
+import br.com.fluxocaixa.usuario.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -21,10 +22,14 @@ class AssinaturaAcessoServiceTest {
             configuracaoRepository =
             mock(AssinaturaConfiguracaoRepository.class);
 
+    private final UsuarioRepository usuarioRepository =
+            mock(UsuarioRepository.class);
+
     private final AssinaturaAcessoService service =
             new AssinaturaAcessoService(
                     assinaturaRepository,
-                    configuracaoRepository
+                    configuracaoRepository,
+                    usuarioRepository
             );
 
     @Test

@@ -7,6 +7,28 @@ public record AtualizarDocumentoPagamentoRequest(
         String tipoDocumento,
 
         @NotBlank(message = "Informe o numero do documento")
-        String documento
+        String documento,
+
+        @NotBlank(message = "Informe o CEP")
+        String cep,
+
+        @NotBlank(message = "Informe a rua")
+        String rua,
+
+        @NotBlank(message = "Informe o numero")
+        String numero,
+
+        @NotBlank(message = "Informe o bairro")
+        String bairro,
+
+        @NotBlank(message = "Informe a cidade")
+        String cidade,
+
+        @NotBlank(message = "Informe o estado")
+        String estado,
+
+        String telefone,
+
+        String email
 ) {
 }

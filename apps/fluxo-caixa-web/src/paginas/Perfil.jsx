@@ -59,6 +59,13 @@ function Perfil() {
         nome: '',
         email: '',
         telefone: '',
+        documentoPagamento: '',
+        cepCobranca: '',
+        ruaCobranca: '',
+        numeroCobranca: '',
+        bairroCobranca: '',
+        cidadeCobranca: '',
+        estadoCobranca: '',
         agriculturaAtiva: true,
         pecuariaAtiva: false,
     })
@@ -124,6 +131,18 @@ function Perfil() {
             nome: usuario.nome ?? '',
             email: usuario.email ?? '',
             telefone: usuario.telefone ?? '',
+            documentoPagamento:
+                usuario.documentoPagamento ?? '',
+            cepCobranca: usuario.cepCobranca ?? '',
+            ruaCobranca: usuario.ruaCobranca ?? '',
+            numeroCobranca:
+                usuario.numeroCobranca ?? '',
+            bairroCobranca:
+                usuario.bairroCobranca ?? '',
+            cidadeCobranca:
+                usuario.cidadeCobranca ?? '',
+            estadoCobranca:
+                usuario.estadoCobranca ?? '',
             agriculturaAtiva:
                 usuario.agriculturaAtiva ?? true,
             pecuariaAtiva:
@@ -169,6 +188,20 @@ function Perfil() {
                         nomeEmpresa: formulario.nomeEmpresa,
                         nome: formulario.nome,
                         telefone: formulario.telefone,
+                        documentoPagamento:
+                            formulario.documentoPagamento,
+                        cepCobranca:
+                            formulario.cepCobranca,
+                        ruaCobranca:
+                            formulario.ruaCobranca,
+                        numeroCobranca:
+                            formulario.numeroCobranca,
+                        bairroCobranca:
+                            formulario.bairroCobranca,
+                        cidadeCobranca:
+                            formulario.cidadeCobranca,
+                        estadoCobranca:
+                            formulario.estadoCobranca,
                         agriculturaAtiva:
                             formulario.agriculturaAtiva,
                         pecuariaAtiva:
@@ -338,6 +371,139 @@ function Perfil() {
                                 Pecuaria
                             </label>
                         </fieldset>
+
+                        <section className="perfil-bloco-cobranca">
+                            <div>
+                                <span>Dados para cobranca</span>
+                                <h2>Cobranca e nota fiscal</h2>
+                                <p>
+                                    Esses dados nao completam o
+                                    cadastro inicial. Eles ficam salvos
+                                    para quando voce gerar Pix, boleto
+                                    ou nota fiscal.
+                                </p>
+                            </div>
+
+                            <label>
+                                CPF ou CNPJ correto
+                                <input
+                                    maxLength={20}
+                                    onChange={(evento) =>
+                                        atualizarCampo(
+                                            'documentoPagamento',
+                                            evento.target.value,
+                                        )
+                                    }
+                                    placeholder="Somente numeros"
+                                    value={
+                                        formulario.documentoPagamento
+                                    }
+                                />
+                            </label>
+
+                            <div className="perfil-grade-cobranca">
+                                <label>
+                                    CEP
+                                    <input
+                                        maxLength={12}
+                                        onChange={(evento) =>
+                                            atualizarCampo(
+                                                'cepCobranca',
+                                                evento.target.value,
+                                            )
+                                        }
+                                        placeholder="Ex.: 88000000"
+                                        value={formulario.cepCobranca}
+                                    />
+                                </label>
+
+                                <label>
+                                    Estado
+                                    <input
+                                        maxLength={2}
+                                        onChange={(evento) =>
+                                            atualizarCampo(
+                                                'estadoCobranca',
+                                                evento.target.value
+                                                    .toUpperCase(),
+                                            )
+                                        }
+                                        placeholder="SC"
+                                        value={
+                                            formulario.estadoCobranca
+                                        }
+                                    />
+                                </label>
+                            </div>
+
+                            <label>
+                                Rua
+                                <input
+                                    maxLength={150}
+                                    onChange={(evento) =>
+                                        atualizarCampo(
+                                            'ruaCobranca',
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={formulario.ruaCobranca}
+                                />
+                            </label>
+
+                            <div className="perfil-grade-cobranca">
+                                <label>
+                                    Numero
+                                    <input
+                                        maxLength={20}
+                                        onChange={(evento) =>
+                                            atualizarCampo(
+                                                'numeroCobranca',
+                                                evento.target.value,
+                                            )
+                                        }
+                                        value={
+                                            formulario.numeroCobranca
+                                        }
+                                    />
+                                </label>
+
+                                <label>
+                                    Bairro
+                                    <input
+                                        maxLength={100}
+                                        onChange={(evento) =>
+                                            atualizarCampo(
+                                                'bairroCobranca',
+                                                evento.target.value,
+                                            )
+                                        }
+                                        value={
+                                            formulario.bairroCobranca
+                                        }
+                                    />
+                                </label>
+                            </div>
+
+                            <label>
+                                Cidade
+                                <input
+                                    maxLength={100}
+                                    onChange={(evento) =>
+                                        atualizarCampo(
+                                            'cidadeCobranca',
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={formulario.cidadeCobranca}
+                                />
+                            </label>
+
+                            <small>
+                                Telefone e e-mail serao usados a partir
+                                dos dados principais, quando estiverem
+                                disponiveis.
+                            </small>
+                        </section>
 
                         <div className="perfil-acoes">
                             <button

@@ -91,6 +91,41 @@
     padding: 14px;
 }
 
+.perfil-bloco-cobranca {
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+}
+
+.perfil-bloco-cobranca > div span {
+    color: #2f8300;
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.perfil-bloco-cobranca h2 {
+    font-size: 1.2rem;
+    margin: 0 0 4px;
+}
+
+.perfil-bloco-cobranca p {
+    color: #60705f;
+    font-weight: 650;
+    margin: 0;
+}
+
+.perfil-grade-cobranca {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
 .perfil-formulario fieldset label {
     align-items: center;
     display: flex;
@@ -148,6 +183,10 @@
 @media (max-width: 620px) {
     .perfil-topo {
         flex-direction: column;
+    }
+
+    .perfil-grade-cobranca {
+        grid-template-columns: 1fr;
     }
 
     .perfil-botao-secundario {

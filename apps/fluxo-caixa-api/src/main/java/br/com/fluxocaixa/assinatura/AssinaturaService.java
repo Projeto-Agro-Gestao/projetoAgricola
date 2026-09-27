@@ -175,8 +175,33 @@ public class AssinaturaService {
                         new EmpresaNaoEncontradaException(empresaId)
                 );
 
-        empresa.alterarDocumento(
-                validarDocumentoPagamento(request)
+        String documento = validarDocumentoPagamento(request);
+
+        empresa.alterarDadosCobranca(
+                documento,
+                normalizarDigitosObrigatorio(
+                        request.cep(),
+                        "Informe o CEP para pagamento."
+                ),
+                normalizarTextoObrigatorio(
+                        request.rua(),
+                        "Informe a rua para pagamento."
+                ),
+                normalizarTextoObrigatorio(
+                        request.numero(),
+                        "Informe o numero para pagamento."
+                ),
+                normalizarTextoObrigatorio(
+                        request.bairro(),
+                        "Informe o bairro para pagamento."
+                ),
+                normalizarTextoObrigatorio(
+                        request.cidade(),
+                        "Informe a cidade para pagamento."
+                ),
+                normalizarEstadoObrigatorio(
+                        request.estado()
+                )
         );
 
         return detalhar(empresaId);
@@ -481,6 +506,7 @@ public class AssinaturaService {
             );
         }
 
+        garantirDadosCobrancaCompletos(assinatura);
         garantirFormaPagamentoHabilitada(configuracao);
 
         assinatura.pendente();
@@ -620,6 +646,12 @@ public class AssinaturaService {
 
         Empresa empresa = assinatura.getEmpresa();
         String documento = normalizarDocumento(empresa.getDocumento());
+        Usuario usuarioPrincipal =
+                usuarioRepository
+                        .findFirstByEmpresa_IdOrderByIdAsc(
+                                empresa.getId()
+                        )
+                        .orElse(null);
 
         if (documento == null) {
             throw new IllegalArgumentException(
@@ -632,8 +664,16 @@ public class AssinaturaService {
                         new AsaasCustomerRequest(
                                 empresa.getNome(),
                                 documento,
-                                null,
-                                null,
+                                usuarioPrincipal == null
+                                        ? null
+                                        : usuarioPrincipal.getEmail(),
+                                usuarioPrincipal == null
+                                        ? null
+                                        : usuarioPrincipal.getTelefone(),
+                                empresa.getCepCobranca(),
+                                empresa.getRuaCobranca(),
+                                empresa.getNumeroCobranca(),
+                                empresa.getBairroCobranca(),
                                 "empresa-" + empresa.getId(),
                                 true
                         )
@@ -815,6 +855,60 @@ public class AssinaturaService {
         }
 
         return documento;
+    }
+
+    private void garantirDadosCobrancaCompletos(
+            Assinatura assinatura) {
+
+        if (!acessoService.dadosCobrancaCompletos(assinatura)) {
+            throw new IllegalArgumentException(
+                    "Preencha CPF ou CNPJ, CEP, rua, numero, bairro, cidade e estado antes de gerar Pix ou boleto. Esses dados sao exigidos pelo orgao cobrador."
+            );
+        }
+    }
+
+    private String normalizarDigitosObrigatorio(
+            String valor,
+            String mensagem) {
+
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException(mensagem);
+        }
+
+        String digitos = valor.replaceAll("[^0-9]", "");
+
+        if (digitos.isBlank()) {
+            throw new IllegalArgumentException(mensagem);
+        }
+
+        return digitos;
+    }
+
+    private String normalizarTextoObrigatorio(
+            String valor,
+            String mensagem) {
+
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException(mensagem);
+        }
+
+        return valor.trim().replaceAll("\\s+", " ");
+    }
+
+    private String normalizarEstadoObrigatorio(String estado) {
+
+        String valor = normalizarTextoObrigatorio(
+                estado,
+                "Informe o estado para pagamento."
+        ).toUpperCase();
+
+        if (valor.length() != 2) {
+            throw new IllegalArgumentException(
+                    "Informe o estado com 2 letras, como SC, PR ou RS."
+            );
+        }
+
+        return valor;
     }
 
     private boolean isProducao() {

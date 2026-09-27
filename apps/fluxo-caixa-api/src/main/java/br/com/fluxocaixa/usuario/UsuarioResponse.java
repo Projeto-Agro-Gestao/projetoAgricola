@@ -21,6 +21,13 @@ public record UsuarioResponse(
         LocalDate dataVencimentoPagamento,
         boolean agriculturaAtiva,
         boolean pecuariaAtiva,
+        String documentoPagamento,
+        String cepCobranca,
+        String ruaCobranca,
+        String numeroCobranca,
+        String bairroCobranca,
+        String cidadeCobranca,
+        String estadoCobranca,
         LocalDateTime ultimoLoginEm,
         LocalDateTime ultimoUsoEm,
         LocalDateTime criadoEm
@@ -48,6 +55,20 @@ public record UsuarioResponse(
                         .isAgriculturaAtiva(),
                 usuario.getEmpresa()
                         .isPecuariaAtiva(),
+                usuario.getEmpresa()
+                        .getDocumento(),
+                usuario.getEmpresa()
+                        .getCepCobranca(),
+                usuario.getEmpresa()
+                        .getRuaCobranca(),
+                usuario.getEmpresa()
+                        .getNumeroCobranca(),
+                usuario.getEmpresa()
+                        .getBairroCobranca(),
+                usuario.getEmpresa()
+                        .getCidadeCobranca(),
+                usuario.getEmpresa()
+                        .getEstadoCobranca(),
                 usuario.getUltimoLoginEm(),
                 usuario.getUltimoUsoEm(),
                 usuario.getCriadoEm()
