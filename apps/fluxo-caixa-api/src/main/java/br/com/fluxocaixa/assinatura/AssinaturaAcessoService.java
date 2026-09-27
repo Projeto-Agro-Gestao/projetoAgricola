@@ -229,7 +229,7 @@ public class AssinaturaAcessoService {
                 assinatura.getEmpresa().getId(),
                 assinatura.getEmpresa().getNome(),
                 statusAtual,
-                assinatura.getValorMensal(),
+                configuracao.getPrecoMensal(),
                 assinatura.getTrialInicio(),
                 assinatura.getTrialFim(),
                 diasRestantes,
