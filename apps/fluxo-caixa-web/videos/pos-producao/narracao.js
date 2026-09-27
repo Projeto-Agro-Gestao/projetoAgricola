@@ -108,18 +108,40 @@ async function gerarElevenLabs(texto, destino) {
     )
 }
 
+function textoDe(nome) {
+    if (NARRACAO[nome]) {
+        return NARRACAO[nome]
+    }
+
+    const alternativo = nome.endsWith('-9x16')
+        ? nome.replace('-9x16', '-16x9')
+        : nome.replace('-16x9', '-9x16')
+
+    return NARRACAO[alternativo]
+}
+
 async function main() {
     const provedor = (process.env.TTS_PROVIDER || 'openai').toLowerCase()
     const gerar =
         provedor === 'elevenlabs' ? gerarElevenLabs : gerarOpenAI
 
-    const nomes = process.argv.slice(2)
+    const pedidos = process.argv.slice(2)
 
-    const alvos = Object.entries(NARRACAO).filter(
-        ([nome]) => nomes.length === 0 || nomes.includes(nome),
-    )
+    const alvos = pedidos.length
+        ? pedidos
+        : Object.keys(NARRACAO).flatMap((chave) => [
+              chave,
+              chave.replace('-16x9', '-9x16'),
+          ])
 
-    for (const [nome, texto] of alvos) {
+    for (const nome of alvos) {
+        const texto = textoDe(nome)
+
+        if (!texto) {
+            console.warn(`Sem roteiro para "${nome}", pulando.`)
+            continue
+        }
+
         const destino = path.join(saida, `${nome}.mp3`)
 
         if (fs.existsSync(destino) && !process.env.TTS_FORCE) {

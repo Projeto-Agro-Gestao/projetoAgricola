@@ -179,7 +179,8 @@ function processarCena(webm, musica) {
 
     ff(['-f', 'concat', '-safe', '0', '-i', lista, '-c', 'copy', semLegenda])
 
-    const captions = LEGENDAS[nome]
+    const captions =
+        LEGENDAS[nome] ?? LEGENDAS[nome.replace('-9x16', '-16x9')]
     const saida = path.join(final, `${nome}.mp4`)
 
     if (captions) {

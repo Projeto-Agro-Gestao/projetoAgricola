@@ -4,10 +4,9 @@ import { pausa, rolarAte, rolarParaFim } from './helpers/navegacao.js'
 const PAISAGEM = { width: 1920, height: 1080 }
 const RETRATO = { width: 1080, height: 1920 }
 
-const cenas = [
+const roteiros = [
     {
-        nome: 'landing-16x9',
-        viewport: PAISAGEM,
+        nome: 'landing',
         async executar(page) {
             await page.goto('/', { waitUntil: 'networkidle' })
             await pausa(page, 1000)
@@ -26,8 +25,7 @@ const cenas = [
         },
     },
     {
-        nome: 'login-16x9',
-        viewport: PAISAGEM,
+        nome: 'login',
         async executar(page) {
             await page.goto('/login', { waitUntil: 'networkidle' })
             await pausa(page, 2200)
@@ -49,8 +47,7 @@ const cenas = [
         },
     },
     {
-        nome: 'dashboard-16x9',
-        viewport: PAISAGEM,
+        nome: 'dashboard',
         autenticado: true,
         async executar(page) {
             await page.goto('/dashboard/financeiro', {
@@ -63,8 +60,7 @@ const cenas = [
         },
     },
     {
-        nome: 'movimentacoes-16x9',
-        viewport: PAISAGEM,
+        nome: 'movimentacoes',
         autenticado: true,
         async executar(page) {
             await page.goto('/dashboard/movimentacoes', {
@@ -77,62 +73,7 @@ const cenas = [
         },
     },
     {
-        nome: 'app-mobile-9x16',
-        viewport: RETRATO,
-        autenticado: true,
-        async executar(page) {
-            await page.goto('/app', { waitUntil: 'networkidle' })
-            await pausa(page, 4200)
-
-            await rolarParaFim(page)
-            await pausa(page, 2600)
-        },
-    },
-    {
-        nome: 'categorias-16x9',
-        viewport: PAISAGEM,
-        autenticado: true,
-        async executar(page) {
-            await page.goto('/dashboard/categorias', {
-                waitUntil: 'networkidle',
-            })
-            await pausa(page, 4200)
-
-            await rolarParaFim(page)
-            await pausa(page, 2400)
-        },
-    },
-    {
-        nome: 'contas-16x9',
-        viewport: PAISAGEM,
-        autenticado: true,
-        async executar(page) {
-            await page.goto('/dashboard/contas', {
-                waitUntil: 'networkidle',
-            })
-            await pausa(page, 4500)
-
-            await rolarParaFim(page)
-            await pausa(page, 2600)
-        },
-    },
-    {
-        nome: 'fornecedores-16x9',
-        viewport: PAISAGEM,
-        autenticado: true,
-        async executar(page) {
-            await page.goto('/dashboard/fornecedores', {
-                waitUntil: 'networkidle',
-            })
-            await pausa(page, 4500)
-
-            await rolarParaFim(page)
-            await pausa(page, 2400)
-        },
-    },
-    {
-        nome: 'nova-movimentacao-16x9',
-        viewport: PAISAGEM,
+        nome: 'nova-movimentacao',
         autenticado: true,
         async executar(page) {
             await page.goto('/dashboard/movimentacoes/nova', {
@@ -145,8 +86,46 @@ const cenas = [
         },
     },
     {
-        nome: 'perfil-16x9',
-        viewport: PAISAGEM,
+        nome: 'categorias',
+        autenticado: true,
+        async executar(page) {
+            await page.goto('/dashboard/categorias', {
+                waitUntil: 'networkidle',
+            })
+            await pausa(page, 4200)
+
+            await rolarParaFim(page)
+            await pausa(page, 2400)
+        },
+    },
+    {
+        nome: 'contas',
+        autenticado: true,
+        async executar(page) {
+            await page.goto('/dashboard/contas', {
+                waitUntil: 'networkidle',
+            })
+            await pausa(page, 4500)
+
+            await rolarParaFim(page)
+            await pausa(page, 2600)
+        },
+    },
+    {
+        nome: 'fornecedores',
+        autenticado: true,
+        async executar(page) {
+            await page.goto('/dashboard/fornecedores', {
+                waitUntil: 'networkidle',
+            })
+            await pausa(page, 4500)
+
+            await rolarParaFim(page)
+            await pausa(page, 2400)
+        },
+    },
+    {
+        nome: 'perfil',
         autenticado: true,
         async executar(page) {
             await page.goto('/dashboard/perfil', {
@@ -158,6 +137,34 @@ const cenas = [
             await pausa(page, 2400)
         },
     },
+    {
+        nome: 'app-mobile',
+        autenticado: true,
+        apenasRetrato: true,
+        async executar(page) {
+            await page.goto('/app', { waitUntil: 'networkidle' })
+            await pausa(page, 4200)
+
+            await rolarParaFim(page)
+            await pausa(page, 2600)
+        },
+    },
 ]
+
+const cenas = roteiros.flatMap((roteiro) => {
+    const formatos = roteiro.apenasRetrato
+        ? [['9x16', RETRATO]]
+        : [
+              ['16x9', PAISAGEM],
+              ['9x16', RETRATO],
+          ]
+
+    return formatos.map(([sufixo, viewport]) => ({
+        nome: `${roteiro.nome}-${sufixo}`,
+        viewport,
+        autenticado: roteiro.autenticado,
+        executar: roteiro.executar,
+    }))
+})
 
 export default cenas
