@@ -49,3 +49,10 @@ O front acessa a API via `VITE_API_URL` (padrão `http://localhost:8080/api/v1`)
 ## Healthcheck
 
 - API: `GET http://localhost:8080/actuator/health`
+
+## NFS-e pelo Asaas
+
+A emissao de NFS-e usa a API do Asaas e depende de configuracao fiscal previa
+na propria conta Asaas, incluindo o servico municipal correto. O AgroGestao
+agenda/emite a nota vinculada ao pagamento confirmado, mas nao configura o
+Portal Nacional diretamente nem armazena chaves ou tokens fiscais no codigo.

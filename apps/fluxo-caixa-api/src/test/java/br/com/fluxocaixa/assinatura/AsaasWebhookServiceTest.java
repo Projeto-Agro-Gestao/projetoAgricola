@@ -18,11 +18,14 @@ class AsaasWebhookServiceTest {
 
     private final AssinaturaService assinaturaService =
             mock(AssinaturaService.class);
+    private final NotaFiscalService notaFiscalService =
+            mock(NotaFiscalService.class);
 
     private final AsaasWebhookService service =
             new AsaasWebhookService(
                     eventoRepository,
                     assinaturaService,
+                    notaFiscalService,
                     new AsaasProperties(
                             "",
                             "https://api-sandbox.asaas.com/v3",

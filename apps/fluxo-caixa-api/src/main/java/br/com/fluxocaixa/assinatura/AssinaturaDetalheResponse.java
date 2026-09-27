@@ -4,6 +4,7 @@ import java.util.List;
 
 public record AssinaturaDetalheResponse(
         AssinaturaResumoResponse resumo,
-        List<AssinaturaPagamentoResponse> pagamentos
+        List<AssinaturaPagamentoResponse> pagamentos,
+        List<NotaFiscalResponse> notasFiscais
 ) {
 }

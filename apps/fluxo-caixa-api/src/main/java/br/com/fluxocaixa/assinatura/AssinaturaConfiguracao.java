@@ -47,6 +47,50 @@ public class AssinaturaConfiguracao {
     @Column(name = "dias_aviso_vencimento", nullable = false)
     private int diasAvisoVencimento = 3;
 
+    @Column(name = "nfse_habilitada", nullable = false)
+    private boolean nfseHabilitada;
+
+    @Column(name = "nfse_emissao_automatica", nullable = false)
+    private boolean nfseEmissaoAutomatica;
+
+    @Column(name = "nfse_municipal_service_id", length = 80)
+    private String nfseMunicipalServiceId;
+
+    @Column(name = "nfse_municipal_service_code", length = 40)
+    private String nfseMunicipalServiceCode;
+
+    @Column(name = "nfse_municipal_service_name", length = 180)
+    private String nfseMunicipalServiceName;
+
+    @Column(name = "nfse_service_description_template", nullable = false, length = 500)
+    private String nfseServiceDescriptionTemplate =
+            "Licenca de uso do software AgroGestao referente a competencia {MM/AAAA}.";
+
+    @Column(name = "nfse_default_observations", nullable = false, length = 500)
+    private String nfseDefaultObservations =
+            "Mensalidade do AgroGestao.";
+
+    @Column(name = "nfse_iss", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfseIss = BigDecimal.ZERO;
+
+    @Column(name = "nfse_cofins", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfseCofins = BigDecimal.ZERO;
+
+    @Column(name = "nfse_csll", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfseCsll = BigDecimal.ZERO;
+
+    @Column(name = "nfse_inss", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfseInss = BigDecimal.ZERO;
+
+    @Column(name = "nfse_ir", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfseIr = BigDecimal.ZERO;
+
+    @Column(name = "nfse_pis", nullable = false, precision = 5, scale = 2)
+    private BigDecimal nfsePis = BigDecimal.ZERO;
+
+    @Column(name = "nfse_retain_iss", nullable = false)
+    private boolean nfseRetainIss;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
@@ -94,6 +138,62 @@ public class AssinaturaConfiguracao {
         return diasAvisoVencimento;
     }
 
+    public boolean isNfseHabilitada() {
+        return nfseHabilitada;
+    }
+
+    public boolean isNfseEmissaoAutomatica() {
+        return nfseEmissaoAutomatica;
+    }
+
+    public String getNfseMunicipalServiceId() {
+        return nfseMunicipalServiceId;
+    }
+
+    public String getNfseMunicipalServiceCode() {
+        return nfseMunicipalServiceCode;
+    }
+
+    public String getNfseMunicipalServiceName() {
+        return nfseMunicipalServiceName;
+    }
+
+    public String getNfseServiceDescriptionTemplate() {
+        return nfseServiceDescriptionTemplate;
+    }
+
+    public String getNfseDefaultObservations() {
+        return nfseDefaultObservations;
+    }
+
+    public BigDecimal getNfseIss() {
+        return nfseIss;
+    }
+
+    public BigDecimal getNfseCofins() {
+        return nfseCofins;
+    }
+
+    public BigDecimal getNfseCsll() {
+        return nfseCsll;
+    }
+
+    public BigDecimal getNfseInss() {
+        return nfseInss;
+    }
+
+    public BigDecimal getNfseIr() {
+        return nfseIr;
+    }
+
+    public BigDecimal getNfsePis() {
+        return nfsePis;
+    }
+
+    public boolean isNfseRetainIss() {
+        return nfseRetainIss;
+    }
+
     public void atualizar(
             BigDecimal precoMensal,
             boolean trialHabilitado,
@@ -134,5 +234,61 @@ public class AssinaturaConfiguracao {
         this.pixHabilitado = pixHabilitado;
         this.boletoHabilitado = boletoHabilitado;
         this.diasAvisoVencimento = diasAvisoVencimento;
+    }
+
+    public void atualizarNfse(
+            boolean nfseHabilitada,
+            boolean nfseEmissaoAutomatica,
+            String nfseMunicipalServiceId,
+            String nfseMunicipalServiceCode,
+            String nfseMunicipalServiceName,
+            String nfseServiceDescriptionTemplate,
+            String nfseDefaultObservations,
+            BigDecimal nfseIss,
+            BigDecimal nfseCofins,
+            BigDecimal nfseCsll,
+            BigDecimal nfseInss,
+            BigDecimal nfseIr,
+            BigDecimal nfsePis,
+            boolean nfseRetainIss) {
+
+        this.nfseHabilitada = nfseHabilitada;
+        this.nfseEmissaoAutomatica = nfseEmissaoAutomatica;
+        this.nfseMunicipalServiceId = limpar(nfseMunicipalServiceId);
+        this.nfseMunicipalServiceCode = limpar(nfseMunicipalServiceCode);
+        this.nfseMunicipalServiceName = limpar(nfseMunicipalServiceName);
+        this.nfseServiceDescriptionTemplate =
+                textoPadrao(
+                        nfseServiceDescriptionTemplate,
+                        this.nfseServiceDescriptionTemplate
+                );
+        this.nfseDefaultObservations =
+                textoPadrao(
+                        nfseDefaultObservations,
+                        this.nfseDefaultObservations
+                );
+        this.nfseIss = valorOuZero(nfseIss);
+        this.nfseCofins = valorOuZero(nfseCofins);
+        this.nfseCsll = valorOuZero(nfseCsll);
+        this.nfseInss = valorOuZero(nfseInss);
+        this.nfseIr = valorOuZero(nfseIr);
+        this.nfsePis = valorOuZero(nfsePis);
+        this.nfseRetainIss = nfseRetainIss;
+    }
+
+    private String limpar(String valor) {
+        return valor == null || valor.isBlank()
+                ? null
+                : valor.trim();
+    }
+
+    private String textoPadrao(String valor, String padrao) {
+        return valor == null || valor.isBlank()
+                ? padrao
+                : valor.trim();
+    }
+
+    private BigDecimal valorOuZero(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO : valor;
     }
 }

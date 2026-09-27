@@ -29,6 +29,40 @@ public record AtualizarAssinaturaConfiguracaoRequest(
         Boolean boletoHabilitado,
 
         @Min(0)
-        Integer diasAvisoVencimento
+        Integer diasAvisoVencimento,
+
+        Boolean nfseHabilitada,
+
+        Boolean nfseEmissaoAutomatica,
+
+        String nfseMunicipalServiceId,
+
+        String nfseMunicipalServiceCode,
+
+        String nfseMunicipalServiceName,
+
+        String nfseServiceDescriptionTemplate,
+
+        String nfseDefaultObservations,
+
+        @DecimalMin("0.00")
+        BigDecimal nfseIss,
+
+        @DecimalMin("0.00")
+        BigDecimal nfseCofins,
+
+        @DecimalMin("0.00")
+        BigDecimal nfseCsll,
+
+        @DecimalMin("0.00")
+        BigDecimal nfseInss,
+
+        @DecimalMin("0.00")
+        BigDecimal nfseIr,
+
+        @DecimalMin("0.00")
+        BigDecimal nfsePis,
+
+        Boolean nfseRetainIss
 ) {
 }

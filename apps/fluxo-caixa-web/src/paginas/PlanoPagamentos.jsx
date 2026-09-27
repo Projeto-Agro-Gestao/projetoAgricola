@@ -68,6 +68,19 @@ function statusLegivel(status) {
     }[status] ?? status
 }
 
+function statusNotaLegivel(status) {
+    return {
+        NOT_REQUESTED: 'Nao solicitada',
+        SCHEDULED: 'Agendada',
+        PROCESSING: 'Em processamento',
+        AUTHORIZED: 'Emitida',
+        ERROR: 'Erro',
+        CANCELLED: 'Cancelada',
+        CANCELLATION_PENDING: 'Cancelamento em andamento',
+        CANCELLATION_DENIED: 'Cancelamento negado',
+    }[status] ?? status
+}
+
 async function obterMensagemDeErro(resposta, padrao) {
     const dados = await resposta.json().catch(() => null)
     return dados?.mensagem ?? padrao
@@ -84,6 +97,7 @@ function PlanoPagamentos() {
     const [carregando, setCarregando] = useState(true)
     const [gerando, setGerando] = useState('')
     const [salvandoDocumento, setSalvandoDocumento] = useState(false)
+    const [emitindoNota, setEmitindoNota] = useState(false)
     const [dadosCobranca, setDadosCobranca] =
         useState({
             tipoDocumento: 'CPF',
@@ -329,6 +343,52 @@ function PlanoPagamentos() {
         setMensagem('')
     }
 
+    async function emitirNotaFiscal(pagamentoId) {
+        try {
+            setEmitindoNota(true)
+            setMensagem('')
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/assinatura/pagamentos/${pagamentoId}/nota-fiscal`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                    },
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel emitir a nota fiscal.',
+                    ),
+                )
+            }
+
+            const nota = await resposta.json()
+            setDados((estado) => ({
+                ...estado,
+                notasFiscais: [
+                    nota,
+                    ...(estado?.notasFiscais ?? [])
+                        .filter((item) => item.id !== nota.id),
+                ],
+            }))
+            setMensagem('Nota fiscal solicitada.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel emitir a nota fiscal.',
+            )
+        } finally {
+            setEmitindoNota(false)
+        }
+    }
+
     if (carregando) {
         return (
             <main className="plano-pagina">
@@ -339,6 +399,17 @@ function PlanoPagamentos() {
 
     const resumo = dados?.resumo
     const pagamentos = dados?.pagamentos ?? []
+    const notasFiscais = dados?.notasFiscais ?? []
+    const notaPorPagamento = new Map(
+        notasFiscais.map((nota) => [nota.pagamentoId, nota]),
+    )
+    const pagamentosConfirmados = pagamentos.filter((pagamento) =>
+        ['CONFIRMED', 'RECEIVED'].includes(pagamento.status),
+    )
+    const pagamentoElegivelNota = pagamentosConfirmados[0] ?? null
+    const notaAtual = pagamentoElegivelNota
+        ? notaPorPagamento.get(pagamentoElegivelNota.id)
+        : null
     const planoGratuito = Number(resumo?.valorMensal ?? 0) === 0
 
     return (
@@ -647,10 +718,107 @@ function PlanoPagamentos() {
                         <h2>PDF da nota fiscal</h2>
                     </div>
                 </div>
-                <p className="plano-vazio">
-                    A nota fiscal usara os mesmos dados de cobranca
-                    salvos acima quando a emissao estiver disponivel.
-                </p>
+
+                {!pagamentoElegivelNota && (
+                    <p className="plano-vazio">
+                        Nota fiscal disponivel apos a confirmacao do
+                        pagamento.
+                    </p>
+                )}
+
+                {pagamentoElegivelNota && !notaAtual && (
+                    <div className="plano-nota">
+                        <p>
+                            Pagamento confirmado em{' '}
+                            {formatarData(pagamentoElegivelNota.pagoEm)}.
+                            A NFS-e sera emitida com os dados de cobranca
+                            salvos nesta pagina.
+                        </p>
+                        <button
+                            disabled={emitindoNota}
+                            onClick={() =>
+                                emitirNotaFiscal(
+                                    pagamentoElegivelNota.id,
+                                )
+                            }
+                            type="button"
+                        >
+                            {emitindoNota
+                                ? 'Emitindo...'
+                                : 'Emitir nota fiscal'}
+                        </button>
+                    </div>
+                )}
+
+                {notaAtual && (
+                    <div className="plano-nota">
+                        <p>
+                            Status:{' '}
+                            <strong>
+                                {statusNotaLegivel(notaAtual.status)}
+                            </strong>
+                        </p>
+
+                        {['SCHEDULED', 'PROCESSING'].includes(
+                            notaAtual.status,
+                        ) && (
+                            <p className="plano-vazio">
+                                Nota fiscal em processamento. Assim que o
+                                Asaas autorizar, o PDF aparecera aqui.
+                            </p>
+                        )}
+
+                        {notaAtual.status === 'ERROR' && (
+                            <p className="plano-vazio">
+                                Nao foi possivel emitir sua nota fiscal.
+                                Nossa equipe foi notificada.
+                            </p>
+                        )}
+
+                        {notaAtual.status === 'AUTHORIZED' && (
+                            <>
+                                <p>
+                                    Numero: {notaAtual.numeroNota ?? '-'}
+                                </p>
+                                <p>
+                                    Data:{' '}
+                                    {formatarData(
+                                        notaAtual.dataAutorizacao,
+                                    )}
+                                </p>
+                                <div className="plano-nota-acoes">
+                                    {notaAtual.pdfUrl && (
+                                        <a
+                                            href={notaAtual.pdfUrl}
+                                            rel="noreferrer"
+                                            target="_blank"
+                                        >
+                                            Visualizar nota fiscal
+                                        </a>
+                                    )}
+                                    {notaAtual.pdfUrl && (
+                                        <a
+                                            href={notaAtual.pdfUrl}
+                                            rel="noreferrer"
+                                            target="_blank"
+                                        >
+                                            Baixar PDF
+                                        </a>
+                                    )}
+                                    {notaAtual.xmlUrl && (
+                                        <a
+                                            href={notaAtual.xmlUrl}
+                                            rel="noreferrer"
+                                            target="_blank"
+                                        >
+                                            Baixar XML
+                                        </a>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
             </section>
 
             <section className="plano-card">
@@ -797,18 +965,49 @@ function PlanoPagamentos() {
                                     <th>Valor</th>
                                     <th>Forma</th>
                                     <th>Status</th>
+                                    <th>Nota fiscal</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {pagamentos.map((pagamento) => (
-                                    <tr key={pagamento.id}>
-                                        <td>{formatarData(pagamento.vencimento)}</td>
-                                        <td>{pagamento.descricao}</td>
-                                        <td>{formatarDinheiro(pagamento.valor)}</td>
-                                        <td>{pagamento.formaPagamento}</td>
-                                        <td>{pagamento.status}</td>
-                                    </tr>
-                                ))}
+                                {pagamentos.map((pagamento) => {
+                                    const nota =
+                                        notaPorPagamento.get(
+                                            pagamento.id,
+                                        )
+
+                                    return (
+                                        <tr key={pagamento.id}>
+                                            <td>{formatarData(pagamento.vencimento)}</td>
+                                            <td>{pagamento.descricao}</td>
+                                            <td>{formatarDinheiro(pagamento.valor)}</td>
+                                            <td>{pagamento.formaPagamento}</td>
+                                            <td>{pagamento.status}</td>
+                                            <td>
+                                                {nota ? (
+                                                    <>
+                                                        {statusNotaLegivel(
+                                                            nota.status,
+                                                        )}
+                                                        {nota.pdfUrl && (
+                                                            <>
+                                                                {' '}
+                                                                <a
+                                                                    href={nota.pdfUrl}
+                                                                    rel="noreferrer"
+                                                                    target="_blank"
+                                                                >
+                                                                    PDF
+                                                                </a>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    'Disponivel apos pagamento'
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>

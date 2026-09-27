@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AssinaturaController {
 
     private final AssinaturaService assinaturaService;
+    private final NotaFiscalService notaFiscalService;
 
     public AssinaturaController(
-            AssinaturaService assinaturaService) {
+            AssinaturaService assinaturaService,
+            NotaFiscalService notaFiscalService) {
 
         this.assinaturaService = assinaturaService;
+        this.notaFiscalService = notaFiscalService;
     }
 
     @GetMapping
@@ -59,6 +62,38 @@ public class AssinaturaController {
 
         return ResponseEntity.ok(
                 assinaturaService.criarBoleto(empresaId)
+        );
+    }
+
+    @GetMapping("/notas-fiscais")
+    public ResponseEntity<java.util.List<NotaFiscalResponse>> listarNotas(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                notaFiscalService.listarPorEmpresa(empresaId)
+        );
+    }
+
+    @PostMapping("/pagamentos/{pagamentoId}/nota-fiscal")
+    public ResponseEntity<NotaFiscalResponse> emitirNotaFiscal(
+            @PathVariable Long empresaId,
+            @PathVariable Long pagamentoId) {
+
+        return ResponseEntity.ok(
+                notaFiscalService.emitir(empresaId, pagamentoId)
+        );
+    }
+
+    @GetMapping("/notas-fiscais/{notaFiscalId}")
+    public ResponseEntity<NotaFiscalResponse> consultarNotaFiscal(
+            @PathVariable Long empresaId,
+            @PathVariable Long notaFiscalId) {
+
+        return ResponseEntity.ok(
+                notaFiscalService.consultarStatus(
+                        empresaId,
+                        notaFiscalId
+                )
         );
     }
 }

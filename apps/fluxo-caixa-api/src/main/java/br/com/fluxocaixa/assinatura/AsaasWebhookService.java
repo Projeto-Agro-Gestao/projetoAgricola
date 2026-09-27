@@ -13,17 +13,20 @@ public class AsaasWebhookService {
 
     private final AsaasWebhookEventoRepository eventoRepository;
     private final AssinaturaService assinaturaService;
+    private final NotaFiscalService notaFiscalService;
     private final AsaasProperties properties;
     private final ObjectMapper objectMapper;
 
     public AsaasWebhookService(
             AsaasWebhookEventoRepository eventoRepository,
             AssinaturaService assinaturaService,
+            NotaFiscalService notaFiscalService,
             AsaasProperties properties,
             ObjectMapper objectMapper) {
 
         this.eventoRepository = eventoRepository;
         this.assinaturaService = assinaturaService;
+        this.notaFiscalService = notaFiscalService;
         this.properties = properties;
         this.objectMapper = objectMapper;
     }
@@ -39,11 +42,14 @@ public class AsaasWebhookService {
             JsonNode raiz = objectMapper.readTree(payload);
             String evento = raiz.path("event").asText("");
             JsonNode payment = raiz.path("payment");
+            JsonNode invoice = raiz.path("invoice");
             String paymentId = payment.path("id").asText("");
+            String invoiceId = invoice.path("id").asText("");
             String chaveEvento = montarChaveEvento(
                     raiz,
                     evento,
-                    paymentId
+                    paymentId,
+                    invoiceId
             );
 
             if (eventoRepository.existsByChaveEvento(chaveEvento)) {
@@ -55,10 +61,18 @@ public class AsaasWebhookService {
                             new AsaasWebhookEvento(
                                     chaveEvento,
                                     evento,
-                                    paymentId,
+                                    paymentId.isBlank()
+                                            ? invoiceId
+                                            : paymentId,
                                     payload
                             )
                     );
+
+            if (evento.startsWith("INVOICE_")) {
+                notaFiscalService.processarWebhook(evento, invoice);
+                registro.processado();
+                return;
+            }
 
             if (paymentId.isBlank()) {
                 registro.ignorado();
@@ -133,12 +147,21 @@ public class AsaasWebhookService {
     private String montarChaveEvento(
             JsonNode raiz,
             String evento,
-            String paymentId) {
+            String paymentId,
+            String invoiceId) {
 
         String id = raiz.path("id").asText("");
 
         if (!id.isBlank()) {
             return id;
+        }
+
+        if (evento.startsWith("INVOICE_")) {
+            String status = raiz.path("invoice")
+                    .path("status")
+                    .asText("");
+
+            return evento + ":" + invoiceId + ":" + status;
         }
 
         String status = raiz.path("payment")
