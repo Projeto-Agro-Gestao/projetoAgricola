@@ -20,7 +20,7 @@ const LEGENDAS = {
         [4.2, 8.2, 'Registre receitas e despesas da sua propriedade'],
         [8.2, 12.5, 'Categorias adaptadas para agricultura e pecuária'],
         [12.5, 17, 'Acompanhe quanto entrou, quanto saiu e quanto sobrou'],
-        [17, 19, 'Crie sua conta grátis'],
+        [17, 19, 'Comece agora no AgroGestão'],
     ],
     'login-16x9': [
         [0.4, 4, 'Acesse com seu e-mail e senha'],

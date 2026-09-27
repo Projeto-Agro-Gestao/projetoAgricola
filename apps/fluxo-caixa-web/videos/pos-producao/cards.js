@@ -23,7 +23,7 @@ function montarHtml(tipo, largura, altura) {
     const subtitulo =
         tipo === 'intro'
             ? 'Receitas, despesas e resultado em um só lugar'
-            : 'Crie sua conta grátis'
+            : 'Conheça o AgroGestão'
 
     return `<!doctype html>
 <html lang="pt-BR">

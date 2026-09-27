@@ -10,19 +10,19 @@ const cenas = [
         viewport: PAISAGEM,
         async executar(page) {
             await page.goto('/', { waitUntil: 'networkidle' })
-            await pausa(page, 2600)
+            await pausa(page, 1400)
 
-            await rolarAte(page, '#atividades')
-            await pausa(page, 1800)
+            await rolarAte(page, '#atividades', 900)
+            await pausa(page, 1100)
 
-            await rolarAte(page, '#recursos')
-            await pausa(page, 2200)
+            await rolarAte(page, '#recursos', 900)
+            await pausa(page, 1300)
 
-            await rolarAte(page, '#financeiro')
-            await pausa(page, 2200)
+            await rolarAte(page, '#financeiro', 900)
+            await pausa(page, 1300)
 
-            await rolarAte(page, '.publica-chamada')
-            await pausa(page, 2600)
+            await rolarAte(page, '.publica-chamada', 900)
+            await pausa(page, 1700)
         },
     },
     {

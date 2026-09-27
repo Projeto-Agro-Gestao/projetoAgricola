@@ -9,7 +9,7 @@ fs.mkdirSync(saida, { recursive: true })
 
 const NARRACAO = {
     'landing-16x9':
-        'Sua propriedade no controle, sem planilha. Com o AgroGestão você registra receitas e despesas, organiza as categorias e vê quanto entrou, quanto saiu e quanto sobrou. Crie sua conta grátis.',
+        'Sua propriedade no controle, sem planilha. Com o AgroGestão você registra receitas e despesas, organiza as categorias e vê quanto entrou, quanto saiu e quanto sobrou. Comece agora no AgroGestão.',
     'login-16x9':
         'Entrar é rápido. E-mail, senha, e pronto: você já está no painel da sua propriedade.',
     'dashboard-16x9':
