@@ -1,13 +1,16 @@
 import {
     lazy,
     Suspense,
+    useEffect,
 } from 'react'
 import {
+    useLocation,
     Route,
     Routes,
 } from 'react-router'
 import PaginaInicial from './PaginaInicial.jsx'
 import CarregandoRota from './componentes/CarregandoRota.jsx'
+import { registrarRotaAtual } from './navegacao.js'
 
 const EscolhaModulo = lazy(() => import('./paginas/EscolhaModulo.jsx'))
 const Dashboard = lazy(() => import('./paginas/Dashboard.jsx'))
@@ -33,6 +36,12 @@ const ProdutorColaborativo = lazy(() =>
 const ContadorCarteira = lazy(() => import('./paginas/ContadorCarteira.jsx'))
 
 function App() {
+    const location = useLocation()
+
+    useEffect(() => {
+        registrarRotaAtual(location)
+    }, [location])
+
     return (
         <Suspense fallback={<CarregandoRota />}>
             <Routes>

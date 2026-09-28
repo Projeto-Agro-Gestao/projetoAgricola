@@ -22,6 +22,13 @@
     margin-bottom: 24px;
 }
 
+.contador-carteira-navegacao {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
 .contador-carteira-cabecalho button {
     justify-self: start;
     padding: 0;
@@ -31,6 +38,10 @@
     font: inherit;
     font-weight: 850;
     cursor: pointer;
+}
+
+.contador-carteira-navegacao .alternador-modulos-botao {
+    padding: 8px 13px;
 }
 
 .contador-carteira-cabecalho p,
@@ -250,6 +261,11 @@
 @media (max-width: 620px) {
     .contador-carteira-pagina {
         padding: 22px 12px 50px;
+    }
+
+    .contador-carteira-navegacao {
+        display: grid;
+        gap: 12px;
     }
 
     .contador-carteira-grade,

@@ -4,6 +4,7 @@ import {
     useState,
 } from 'react'
 import { useNavigate } from 'react-router'
+import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ProdutorColaborativo.css'
@@ -333,12 +334,16 @@ function ProdutorColaborativo() {
         <div className="produtor-colaborativo-pagina">
             <div className="produtor-colaborativo-conteudo">
                 <header className="produtor-colaborativo-cabecalho">
-                    <button
-                        type="button"
-                        onClick={() => voltarPaginaAnterior(navigate)}
-                    >
-                        Voltar ao painel
-                    </button>
+                    <div className="produtor-colaborativo-navegacao">
+                        <button
+                            type="button"
+                            onClick={() => voltarPaginaAnterior(navigate)}
+                        >
+                            Voltar
+                        </button>
+
+                        <AlternadorModulos />
+                    </div>
 
                     <p>AgroGestao colaborativo</p>
                     <h1>Inicio do produtor</h1>

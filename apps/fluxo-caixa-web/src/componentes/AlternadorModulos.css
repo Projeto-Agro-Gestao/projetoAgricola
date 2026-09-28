@@ -1,5 +1,6 @@
 .alternador-modulos {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
     padding: 4px;
@@ -90,7 +91,7 @@
         display: grid;
         width: 100%;
         grid-template-columns:
-            repeat(3, minmax(0, 1fr));
+            repeat(2, minmax(0, 1fr));
     }
 
     .alternador-modulos-botao {
@@ -101,7 +102,7 @@
     }
 }
 
-@media (max-width: 390px) {
+@media (max-width: 430px) {
     .alternador-modulos-botao span {
         display: none;
     }

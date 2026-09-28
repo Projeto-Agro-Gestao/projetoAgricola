@@ -4,6 +4,7 @@ import {
     useState,
 } from 'react'
 import { useNavigate } from 'react-router'
+import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContadorCarteira.css'
@@ -227,12 +228,16 @@ function ContadorCarteira() {
         <div className="contador-carteira-pagina">
             <div className="contador-carteira-conteudo">
                 <header className="contador-carteira-cabecalho">
-                    <button
-                        type="button"
-                        onClick={() => voltarPaginaAnterior(navigate)}
-                    >
-                        Voltar ao painel
-                    </button>
+                    <div className="contador-carteira-navegacao">
+                        <button
+                            type="button"
+                            onClick={() => voltarPaginaAnterior(navigate)}
+                        >
+                            Voltar
+                        </button>
+
+                        <AlternadorModulos />
+                    </div>
 
                     <p>Area do contador</p>
                     <h1>Carteira de clientes</h1>

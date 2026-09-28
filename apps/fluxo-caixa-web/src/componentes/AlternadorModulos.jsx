@@ -8,100 +8,69 @@ function AlternadorModulos() {
     const navigate = useNavigate()
     const location = useLocation()
 
-    const controleFinanceiroAtivo =
-        location.pathname.startsWith(
-            '/dashboard/financeiro',
-        )
-
-    const contasFinanceirasAtivas =
-        location.pathname.startsWith(
-            '/dashboard/contas',
-        )
-
-    const fornecedoresAtivos =
-        location.pathname.startsWith(
-            '/dashboard/fornecedores',
-        )
+    const itens = [
+        {
+            ativo: location.pathname === '/dashboard',
+            icone: 'Inicio',
+            rota: '/dashboard',
+            texto: 'Tela principal',
+        },
+        {
+            ativo: location.pathname.startsWith('/dashboard/financeiro'),
+            icone: 'R$',
+            rota: '/dashboard/financeiro',
+            texto: 'Controle financeiro',
+        },
+        {
+            ativo: location.pathname.startsWith('/dashboard/contas'),
+            icone: 'Contas',
+            rota: '/dashboard/contas',
+            texto: 'Contas a pagar e receber',
+        },
+        {
+            ativo: location.pathname.startsWith('/dashboard/fornecedores'),
+            icone: 'F',
+            rota: '/dashboard/fornecedores',
+            texto: 'Fornecedores',
+        },
+        {
+            ativo: location.pathname.startsWith('/dashboard/produtor'),
+            icone: 'Produtor',
+            rota: '/dashboard/produtor',
+            texto: 'Inicio do produtor',
+        },
+        {
+            ativo: location.pathname.startsWith('/contador'),
+            icone: 'Contador',
+            rota: '/contador',
+            texto: 'Area do contador',
+        },
+    ]
 
     return (
         <nav
-            aria-label="Alternar entre os módulos financeiros"
+            aria-label="Alternar entre as areas do AgroGestao"
             className="alternador-modulos"
         >
-            <button
-                aria-current={
-                    controleFinanceiroAtivo
-                        ? 'page'
-                        : undefined
-                }
-                className={
-                    controleFinanceiroAtivo
-                        ? 'alternador-modulos-botao ativo'
-                        : 'alternador-modulos-botao'
-                }
-                onClick={() =>
-                    navigate(
-                        '/dashboard/financeiro',
-                    )
-                }
-                type="button"
-            >
-                <span aria-hidden="true">
-                    R$
-                </span>
+            {itens.map((item) => (
+                <button
+                    key={item.rota}
+                    aria-current={item.ativo ? 'page' : undefined}
+                    className={
+                        item.ativo
+                            ? 'alternador-modulos-botao ativo'
+                            : 'alternador-modulos-botao'
+                    }
+                    onClick={() => navigate(item.rota)}
+                    type="button"
+                >
+                    <span aria-hidden="true">
+                        {item.icone}
+                    </span>
 
-                Controle financeiro
-            </button>
-
-            <button
-                aria-current={
-                    contasFinanceirasAtivas
-                        ? 'page'
-                        : undefined
-                }
-                className={
-                    contasFinanceirasAtivas
-                        ? 'alternador-modulos-botao ativo'
-                        : 'alternador-modulos-botao'
-                }
-                onClick={() =>
-                    navigate(
-                        '/dashboard/contas',
-                    )
-                }
-                type="button"
-            >
-                <span aria-hidden="true">
-                    📅
-                </span>
-
-                Contas a pagar e receber
-            </button>
-
-            <button
-                aria-current={
-                    fornecedoresAtivos
-                        ? 'page'
-                        : undefined
-                }
-                className={
-                    fornecedoresAtivos
-                        ? 'alternador-modulos-botao ativo'
-                        : 'alternador-modulos-botao'
-                }
-                onClick={() =>
-                    navigate(
-                        '/dashboard/fornecedores',
-                    )
-                }
-                type="button"
-            >
-                <span aria-hidden="true">
-                    F
-                </span>
-
-                Fornecedores
-            </button>
+                    {item.texto}
+                </button>
+            ))}
         </nav>
     )
 }
