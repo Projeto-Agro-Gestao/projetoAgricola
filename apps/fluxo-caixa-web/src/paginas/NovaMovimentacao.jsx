@@ -1193,6 +1193,7 @@ function NovaMovimentacao() {
                                     </div>
 
                                     <input
+                                        aria-label="Nome da nova categoria"
                                         autoFocus
                                         disabled={
                                             salvandoCategoria
@@ -1376,6 +1377,7 @@ function NovaMovimentacao() {
                                         </div>
 
                                         <input
+                                            aria-label="Nome do novo fornecedor"
                                             disabled={salvandoFornecedor}
                                             maxLength="150"
                                             onChange={(evento) =>

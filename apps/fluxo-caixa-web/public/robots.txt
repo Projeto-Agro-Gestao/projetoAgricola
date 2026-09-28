@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /$
+Allow: /login
+Allow: /cadastro
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /app
+Disallow: /esqueci-senha
+Disallow: /redefinir-senha

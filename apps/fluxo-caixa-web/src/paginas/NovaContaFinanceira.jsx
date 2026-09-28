@@ -1000,6 +1000,7 @@ function NovaContaFinanceira() {
                                         </div>
 
                                         <input
+                                            aria-label="Nome do novo fornecedor"
                                             disabled={salvandoFornecedor}
                                             maxLength="150"
                                             onChange={(evento) =>

@@ -647,6 +647,7 @@ function AdminPainel() {
 
                                         <td>
                                             <select
+                                                aria-label="Status do pagamento"
                                                 disabled={
                                                     salvandoId ===
                                                     usuario.id
@@ -687,6 +688,7 @@ function AdminPainel() {
 
                                         <td>
                                             <input
+                                                aria-label="Data de vencimento do pagamento"
                                                 disabled={
                                                     salvandoId ===
                                                     usuario.id

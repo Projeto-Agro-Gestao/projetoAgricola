@@ -644,6 +644,7 @@ function AdminAssinaturas() {
 
                         <div className="admin-assinaturas-acoes">
                             <input
+                                aria-label="Dias a adicionar ao teste"
                                 min="1"
                                 onChange={(evento) =>
                                     setDiasPorEmpresa({
@@ -676,6 +677,7 @@ function AdminAssinaturas() {
                             </button>
 
                             <input
+                                aria-label="Nova data de vencimento"
                                 onChange={(evento) =>
                                     setDataPorEmpresa({
                                         ...dataPorEmpresa,
