@@ -17,6 +17,7 @@ import {
 } from './componentes/Icones.jsx'
 import Revelar from './componentes/Revelar.jsx'
 import ValorAnimado from './componentes/ValorAnimado.jsx'
+import InstalarApp from './componentes/InstalarApp.jsx'
 import './App.css'
 
 function formatarMoeda(valor) {
@@ -53,13 +54,6 @@ function PaginaInicial() {
                         to="/login"
                     >
                         Entrar
-                    </Link>
-
-                    <Link
-                        className="publica-botao-app publica-botao-pequeno"
-                        to="/app"
-                    >
-                        Versão app
                     </Link>
 
                     <Link
@@ -114,13 +108,6 @@ function PaginaInicial() {
                         >
                             Como funciona
                         </a>
-
-                        <Link
-                            onClick={fecharMenu}
-                            to="/app"
-                        >
-                            Versão app
-                        </Link>
                     </nav>
                 )}
             </header>
@@ -594,6 +581,8 @@ function PaginaInicial() {
                     <span>Política de privacidade</span>
                 </div>
             </footer>
+
+            <InstalarApp />
         </div>
     )
 }

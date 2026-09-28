@@ -179,36 +179,6 @@
   box-shadow: none;
 }
 
-.publica-botao-app {
-  display: inline-flex;
-  min-height: 44px;
-  padding: 0 19px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid
-  color-mix(in oklch, var(--primary) 36%, var(--border));
-  border-radius: var(--radius);
-  background: var(--secondary);
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-decoration: none;
-  transition:
-          border-color 160ms ease,
-          background 160ms ease,
-          transform 160ms ease;
-}
-
-.publica-botao-app:hover {
-  border-color: var(--primary);
-  background: color-mix(
-          in oklch,
-          var(--secondary) 70%,
-          white
-  );
-  transform: translateY(-2px);
-}
-
 .publica-inicio {
   position: relative;
   width: min(1180px, calc(100% - 40px));
@@ -1023,10 +993,6 @@
 
   .publica-acoes {
     gap: 9px;
-  }
-
-  .publica-acoes .publica-botao-app {
-    display: none;
   }
 
   .publica-entrar {
