@@ -21,6 +21,8 @@ import Perfil from './paginas/Perfil.jsx'
 import AppMobile from './paginas/AppMobile.jsx'
 import PlanoPagamentos from './paginas/PlanoPagamentos.jsx'
 import AdminAssinaturas from './paginas/AdminAssinaturas.jsx'
+import ProdutorColaborativo from './paginas/ProdutorColaborativo.jsx'
+import ContadorCarteira from './paginas/ContadorCarteira.jsx'
 
 function App() {
     return (
@@ -118,6 +120,16 @@ function App() {
             <Route
                 path="/dashboard/fornecedores"
                 element={<Fornecedores />}
+            />
+
+            <Route
+                path="/dashboard/produtor"
+                element={<ProdutorColaborativo />}
+            />
+
+            <Route
+                path="/contador"
+                element={<ContadorCarteira />}
             />
         </Routes>
     )
