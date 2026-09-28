@@ -4,6 +4,7 @@ import {
 } from 'react'
 import {
     Link,
+    useLocation,
     useNavigate,
     useSearchParams,
 } from 'react-router'
@@ -133,6 +134,12 @@ async function obterMensagemDeErro(
 
 function NovaMovimentacao() {
     const navigate = useNavigate()
+
+    const location = useLocation()
+
+    const destinoAposSalvar =
+        location.state?.voltarPara
+        ?? '/dashboard'
 
     const [parametros] =
         useSearchParams()
@@ -882,7 +889,7 @@ function NovaMovimentacao() {
                 )
             }
 
-            navigate('/dashboard', {
+            navigate(destinoAposSalvar, {
                 replace: true,
             })
         } catch (erroDaRequisicao) {
@@ -909,7 +916,7 @@ function NovaMovimentacao() {
                         onClick={() =>
                             voltarPaginaAnterior(
                                 navigate,
-                                '/dashboard',
+                                destinoAposSalvar,
                             )
                         }
                         type="button"

@@ -683,12 +683,22 @@ function Dashboard() {
     function abrirNovaReceita() {
         navigate(
             '/dashboard/movimentacoes/nova?tipo=RECEITA',
+            {
+                state: {
+                    voltarPara: '/dashboard/financeiro',
+                },
+            },
         )
     }
 
     function abrirNovaDespesa() {
         navigate(
             '/dashboard/movimentacoes/nova?tipo=DESPESA',
+            {
+                state: {
+                    voltarPara: '/dashboard/financeiro',
+                },
+            },
         )
     }
 
