@@ -1,0 +1,281 @@
+.produtor-colaborativo-pagina {
+    min-height: 100vh;
+    padding: 34px 20px 70px;
+    background:
+        radial-gradient(
+            circle at top left,
+            color-mix(in oklch, var(--secondary) 70%, transparent),
+            transparent 36%
+        ),
+        var(--background);
+    color: var(--foreground);
+}
+
+.produtor-colaborativo-conteudo {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+}
+
+.produtor-colaborativo-cabecalho {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.produtor-colaborativo-cabecalho button {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.produtor-colaborativo-cabecalho p,
+.produtor-colaborativo-card-topo small {
+    margin: 0;
+    color: var(--primary);
+    font-size: 0.74rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.produtor-colaborativo-cabecalho h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+    line-height: 1.08;
+}
+
+.produtor-colaborativo-cabecalho span {
+    max-width: 760px;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+}
+
+.produtor-colaborativo-alerta {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--secondary);
+    color: var(--primary);
+    font-weight: 800;
+}
+
+.produtor-colaborativo-alerta.erro {
+    background: rgb(255 239 239);
+    color: #b42318;
+}
+
+.produtor-colaborativo-indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.produtor-colaborativo-indicadores article,
+.produtor-colaborativo-card,
+.produtor-colaborativo-atalhos {
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.35);
+    background: var(--card);
+    box-shadow: 0 22px 55px rgb(22 58 25 / 0.08);
+}
+
+.produtor-colaborativo-indicadores article {
+    display: grid;
+    gap: 8px;
+    padding: 18px;
+}
+
+.produtor-colaborativo-indicadores small {
+    color: var(--muted-foreground);
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.produtor-colaborativo-indicadores strong {
+    overflow-wrap: anywhere;
+    font-size: 1.35rem;
+}
+
+.produtor-colaborativo-atalhos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 18px;
+}
+
+.produtor-colaborativo-atalhos button,
+.produtor-colaborativo-form button,
+.produtor-colaborativo-inline button {
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.produtor-colaborativo-atalhos button:first-child,
+.produtor-colaborativo-form button {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.produtor-colaborativo-grade,
+.produtor-colaborativo-duas-colunas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.produtor-colaborativo-card {
+    min-width: 0;
+    padding: 22px;
+}
+
+.produtor-colaborativo-card-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.produtor-colaborativo-card-topo h2 {
+    margin: 4px 0 0;
+    font-size: 1.35rem;
+}
+
+.produtor-colaborativo-form,
+.produtor-colaborativo-form label {
+    display: grid;
+    gap: 10px;
+}
+
+.produtor-colaborativo-form {
+    gap: 14px;
+}
+
+.produtor-colaborativo-form label,
+.produtor-colaborativo-inline input,
+.produtor-colaborativo-inline select {
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.produtor-colaborativo-form input,
+.produtor-colaborativo-form select,
+.produtor-colaborativo-form textarea,
+.produtor-colaborativo-inline input,
+.produtor-colaborativo-inline select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+}
+
+.produtor-colaborativo-form textarea {
+    min-height: 88px;
+    padding: 12px;
+    resize: vertical;
+}
+
+.produtor-colaborativo-inline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.produtor-colaborativo-listas,
+.produtor-colaborativo-lista {
+    display: grid;
+    gap: 12px;
+}
+
+.produtor-colaborativo-listas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 16px;
+}
+
+.produtor-colaborativo-listas ul {
+    display: grid;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.produtor-colaborativo-listas li,
+.produtor-colaborativo-lista > div,
+.produtor-colaborativo-lista > a,
+.produtor-colaborativo-lista > button {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+}
+
+.produtor-colaborativo-lista > a,
+.produtor-colaborativo-lista > button {
+    display: grid;
+    gap: 5px;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.produtor-colaborativo-lista span {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.produtor-colaborativo-lista p,
+.produtor-colaborativo-vazio,
+.produtor-colaborativo-listas p,
+.produtor-colaborativo-carregando {
+    color: var(--muted-foreground);
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+    .produtor-colaborativo-indicadores,
+    .produtor-colaborativo-atalhos,
+    .produtor-colaborativo-grade,
+    .produtor-colaborativo-duas-colunas {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .produtor-colaborativo-pagina {
+        padding: 22px 12px 50px;
+    }
+
+    .produtor-colaborativo-indicadores,
+    .produtor-colaborativo-atalhos,
+    .produtor-colaborativo-grade,
+    .produtor-colaborativo-duas-colunas,
+    .produtor-colaborativo-listas,
+    .produtor-colaborativo-inline {
+        grid-template-columns: 1fr;
+    }
+}

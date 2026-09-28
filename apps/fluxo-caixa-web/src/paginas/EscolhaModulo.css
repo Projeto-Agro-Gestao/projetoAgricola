@@ -206,7 +206,9 @@
             );
 }
 
-.escolha-modulo-fornecedores::before {
+.escolha-modulo-fornecedores::before,
+.escolha-modulo-produtor::before,
+.escolha-modulo-contador::before {
     background:
             linear-gradient(
                     90deg,
@@ -264,8 +266,9 @@
             );
 }
 
-.escolha-modulo-fornecedores
-.escolha-modulo-icone {
+.escolha-modulo-fornecedores .escolha-modulo-icone,
+.escolha-modulo-produtor .escolha-modulo-icone,
+.escolha-modulo-contador .escolha-modulo-icone {
     background:
             color-mix(
                     in oklch,

@@ -8,61 +8,32 @@ import {
 import './EscolhaModulo.css'
 
 function limparSessao() {
-    localStorage.removeItem(
-        'agrogestao_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_tipo_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_usuario',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_token_expira_em',
-    )
+    localStorage.removeItem('agrogestao_token')
+    localStorage.removeItem('agrogestao_tipo_token')
+    localStorage.removeItem('agrogestao_usuario')
+    localStorage.removeItem('agrogestao_token_expira_em')
 }
 
 function obterSessao() {
     try {
-        const token =
-            localStorage.getItem(
-                'agrogestao_token',
-            )
-
+        const token = localStorage.getItem('agrogestao_token')
         const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
+            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
+        const usuarioSalvo = localStorage.getItem('agrogestao_usuario')
+        const expiraEm = Number(
+            localStorage.getItem('agrogestao_token_expira_em'),
+        )
 
         if (!token || !usuarioSalvo) {
             return null
         }
 
-        if (
-            expiraEm
-            && Date.now() >= expiraEm
-        ) {
+        if (expiraEm && Date.now() >= expiraEm) {
             limparSessao()
             return null
         }
 
-        const usuario =
-            JSON.parse(usuarioSalvo)
+        const usuario = JSON.parse(usuarioSalvo)
 
         if (!usuario?.empresaId) {
             limparSessao()
@@ -82,9 +53,7 @@ function obterSessao() {
 
 function EscolhaModulo() {
     const navigate = useNavigate()
-
-    const [sessao] =
-        useState(obterSessao)
+    const [sessao] = useState(obterSessao)
 
     useEffect(() => {
         if (!sessao) {
@@ -98,21 +67,23 @@ function EscolhaModulo() {
     ])
 
     function abrirControleInterno() {
-        navigate(
-            '/dashboard/financeiro',
-        )
+        navigate('/dashboard/financeiro')
     }
 
     function abrirContasFinanceiras() {
-        navigate(
-            '/dashboard/contas',
-        )
+        navigate('/dashboard/contas')
     }
 
     function abrirFornecedores() {
-        navigate(
-            '/dashboard/fornecedores',
-        )
+        navigate('/dashboard/fornecedores')
+    }
+
+    function abrirPainelProdutor() {
+        navigate('/dashboard/produtor')
+    }
+
+    function abrirAreaContador() {
+        navigate('/contador')
     }
 
     function abrirAreaAdministrativa() {
@@ -143,32 +114,36 @@ function EscolhaModulo() {
         return null
     }
 
+    const papel = sessao.usuario.papel
+    const podeAdministrar =
+        papel === 'ADMINISTRADOR' ||
+        papel === 'SUPER_ADMIN'
+    const podeVerContador =
+        podeAdministrar ||
+        papel === 'CONTADOR'
+
     return (
         <div className="escolha-modulo-pagina">
             <div className="escolha-modulo-conteudo">
                 <header className="escolha-modulo-cabecalho">
                     <div className="escolha-modulo-marca">
                         <span aria-hidden="true">
-                            ♧
+                            AG
                         </span>
 
                         <div>
                             <strong>
-                                AgroGestão
+                                AgroGestao
                             </strong>
 
                             <small>
-                                {
-                                    sessao.usuario
-                                        .nomeEmpresa
-                                }
+                                {sessao.usuario.nomeEmpresa}
                             </small>
                         </div>
                     </div>
 
                     <div className="escolha-modulo-acoes-topo">
-                        {sessao.usuario.papel ===
-                            'ADMINISTRADOR' && (
+                        {podeAdministrar && (
                             <button
                                 className="escolha-modulo-admin"
                                 onClick={abrirAreaAdministrativa}
@@ -215,33 +190,28 @@ function EscolhaModulo() {
                 <main>
                     <div className="escolha-modulo-apresentacao">
                         <p>
-                            Olá, {
-                            sessao.usuario.nome
-                        }
+                            Ola, {sessao.usuario.nome}
                         </p>
 
                         <h1>
-                            O que você deseja
-                            controlar agora?
+                            O que voce deseja controlar agora?
                         </h1>
 
                         <span>
-                            Escolha uma das áreas.
-                            Cada uma possui informações
-                            e gráficos próprios.
+                            Escolha uma area de trabalho. O produtor fica com
+                            telas simples; o contador tem uma visao mais
+                            organizada para acompanhar clientes e pendencias.
                         </span>
                     </div>
 
                     <section className="escolha-modulo-opcoes">
                         <button
                             className="escolha-modulo-card escolha-modulo-interno"
-                            onClick={
-                                abrirControleInterno
-                            }
+                            onClick={abrirControleInterno}
                             type="button"
                         >
                             <span className="escolha-modulo-icone">
-                                ↕
+                                R$
                             </span>
 
                             <div className="escolha-modulo-card-texto">
@@ -250,53 +220,36 @@ function EscolhaModulo() {
                                 </small>
 
                                 <h2>
-                                    Controle interno
-                                    financeiro
+                                    Controle interno financeiro
                                 </h2>
 
                                 <p>
-                                    Acompanhe receitas —
-                                    dinheiro entrando — e
-                                    despesas — dinheiro
-                                    saindo — que já foram
-                                    registradas.
+                                    Acompanhe receitas, despesas, saldo e
+                                    resultado do periodo registrado.
                                 </p>
 
                                 <ul>
-                                    <li>
-                                        Receita — dinheiro
-                                        entrando
-                                    </li>
-
-                                    <li>
-                                        Despesa — dinheiro
-                                        saindo
-                                    </li>
-
-                                    <li>
-                                        Saldo, porcentagens
-                                        e gráfico realizado
-                                    </li>
+                                    <li>Receita - dinheiro entrando</li>
+                                    <li>Despesa - dinheiro saindo</li>
+                                    <li>Graficos e relatorios</li>
                                 </ul>
                             </div>
 
                             <strong className="escolha-modulo-acao">
                                 Abrir controle interno
                                 <span aria-hidden="true">
-                                    →
+                                    -&gt;
                                 </span>
                             </strong>
                         </button>
 
                         <button
                             className="escolha-modulo-card escolha-modulo-contas"
-                            onClick={
-                                abrirContasFinanceiras
-                            }
+                            onClick={abrirContasFinanceiras}
                             type="button"
                         >
                             <span className="escolha-modulo-icone">
-                                ◷
+                                $
                             </span>
 
                             <div className="escolha-modulo-card-texto">
@@ -305,41 +258,25 @@ function EscolhaModulo() {
                                 </small>
 
                                 <h2>
-                                    Contas a pagar
-                                    e receber
+                                    Contas a pagar e receber
                                 </h2>
 
                                 <p>
-                                    Acompanhe o dinheiro que
-                                    deverá entrar e o dinheiro
-                                    que deverá sair nos próximos
-                                    vencimentos.
+                                    Veja valores que ainda vao entrar ou sair e
+                                    acompanhe vencimentos futuros.
                                 </p>
 
                                 <ul>
-                                    <li>
-                                        Conta a receber —
-                                        dinheiro que deverá
-                                        entrar
-                                    </li>
-
-                                    <li>
-                                        Conta a pagar —
-                                        dinheiro que deverá
-                                        sair
-                                    </li>
-
-                                    <li>
-                                        Previsão, lembretes
-                                        e gráfico futuro
-                                    </li>
+                                    <li>Contas a receber</li>
+                                    <li>Contas a pagar</li>
+                                    <li>Previsao futura</li>
                                 </ul>
                             </div>
 
                             <strong className="escolha-modulo-acao">
                                 Abrir contas
                                 <span aria-hidden="true">
-                                    →
+                                    -&gt;
                                 </span>
                             </strong>
                         </button>
@@ -363,23 +300,14 @@ function EscolhaModulo() {
                                 </h2>
 
                                 <p>
-                                    Cadastre onde comprou,
-                                    acompanhe valores e veja
-                                    quem registrou cada compra.
+                                    Cadastre onde comprou, compare precos e
+                                    organize produtos por categoria.
                                 </p>
 
                                 <ul>
-                                    <li>
-                                        Nome do fornecedor obrigatorio
-                                    </li>
-
-                                    <li>
-                                        Compras ligadas as despesas
-                                    </li>
-
-                                    <li>
-                                        Lixeira com restauracao
-                                    </li>
+                                    <li>Fornecedor e produto</li>
+                                    <li>Comparacao de precos</li>
+                                    <li>Relatorios de compra</li>
                                 </ul>
                             </div>
 
@@ -390,12 +318,90 @@ function EscolhaModulo() {
                                 </span>
                             </strong>
                         </button>
+
+                        <button
+                            className="escolha-modulo-card escolha-modulo-produtor"
+                            onClick={abrirPainelProdutor}
+                            type="button"
+                        >
+                            <span className="escolha-modulo-icone">
+                                P
+                            </span>
+
+                            <div className="escolha-modulo-card-texto">
+                                <small>
+                                    Produtor e contador
+                                </small>
+
+                                <h2>
+                                    Painel simples do produtor
+                                </h2>
+
+                                <p>
+                                    Envie documentos, veja pendencias do
+                                    contador e acompanhe a visao rapida do mes.
+                                </p>
+
+                                <ul>
+                                    <li>Inbox de documentos</li>
+                                    <li>Pendencias solicitadas</li>
+                                    <li>Propriedades e atividades</li>
+                                </ul>
+                            </div>
+
+                            <strong className="escolha-modulo-acao">
+                                Abrir painel do produtor
+                                <span aria-hidden="true">
+                                    -&gt;
+                                </span>
+                            </strong>
+                        </button>
+
+                        {podeVerContador && (
+                            <button
+                                className="escolha-modulo-card escolha-modulo-contador"
+                                onClick={abrirAreaContador}
+                                type="button"
+                            >
+                                <span className="escolha-modulo-icone">
+                                    C
+                                </span>
+
+                                <div className="escolha-modulo-card-texto">
+                                    <small>
+                                        Carteira e analise
+                                    </small>
+
+                                    <h2>
+                                        Area do contador
+                                    </h2>
+
+                                    <p>
+                                        Acompanhe clientes, documentos,
+                                        pendencias, classificacoes e visao
+                                        tributaria resumida.
+                                    </p>
+
+                                    <ul>
+                                        <li>Carteira de clientes</li>
+                                        <li>Documentos em analise</li>
+                                        <li>Indicadores tributarios</li>
+                                    </ul>
+                                </div>
+
+                                <strong className="escolha-modulo-acao">
+                                    Abrir area do contador
+                                    <span aria-hidden="true">
+                                        -&gt;
+                                    </span>
+                                </strong>
+                            </button>
+                        )}
                     </section>
 
                     <p className="escolha-modulo-ajuda">
-                        Você poderá voltar para esta
-                        tela e trocar de área quando
-                        quiser.
+                        Voce podera voltar para esta tela e trocar de area
+                        quando quiser.
                     </p>
                 </main>
             </div>

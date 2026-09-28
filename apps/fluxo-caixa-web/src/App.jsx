@@ -27,6 +27,10 @@ const Perfil = lazy(() => import('./paginas/Perfil.jsx'))
 const AppMobile = lazy(() => import('./paginas/AppMobile.jsx'))
 const PlanoPagamentos = lazy(() => import('./paginas/PlanoPagamentos.jsx'))
 const AdminAssinaturas = lazy(() => import('./paginas/AdminAssinaturas.jsx'))
+const ProdutorColaborativo = lazy(() =>
+    import('./paginas/ProdutorColaborativo.jsx'),
+)
+const ContadorCarteira = lazy(() => import('./paginas/ContadorCarteira.jsx'))
 
 function App() {
     return (
@@ -125,6 +129,16 @@ function App() {
                 <Route
                     path="/dashboard/fornecedores"
                     element={<Fornecedores />}
+                />
+
+                <Route
+                    path="/dashboard/produtor"
+                    element={<ProdutorColaborativo />}
+                />
+
+                <Route
+                    path="/contador"
+                    element={<ContadorCarteira />}
                 />
             </Routes>
         </Suspense>

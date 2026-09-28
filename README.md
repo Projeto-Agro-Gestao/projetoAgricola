@@ -1,58 +1,66 @@
-# Projeto Agrícola — Fluxo de Caixa
+# AgroGestao
 
-Monorepo do sistema de gestão de fluxo de caixa.
+Plataforma de gestao financeira rural para produtores, administradores e contadores especializados no agro.
 
-## Estrutura
+## Visao colaborativa produtor-contador
 
-```
-├── apps/
-│   ├── fluxo-caixa-api/        # Backend Spring Boot 4.1 / Java 21 (docker)
-│   └── fluxo-caixa-web/        # Frontend React 19 + Vite 8 (local, sem docker)
-├── databases/                  # Dumps SQL de referência
-├── legado/                     # Scaffolds antigos (fluxoCaixa, zip) — ignorado
-├── docker-compose.yml          # Sobe mysql + api
-└── .env.example                # Template usado pelo docker-compose
-```
+O AgroGestao foi ampliado para funcionar como uma ponte operacional entre o produtor rural e o contador. A ideia central e manter a operacao simples para quem esta no campo e oferecer uma visao mais organizada para quem precisa conferir documentos, classificacoes, pendencias e dados fiscais.
 
-## Variáveis de ambiente
+## Perfis
 
-- **API** — copie `apps/fluxo-caixa-api/.env.example` → `.env` (deve ter
-  `JWT_SECRET_BASE64`, `DB_PASSWORD`, `MAIL_*`). Gere a chave JWT com
-  `openssl rand -base64 64`.
-- **WEB** — copie `apps/fluxo-caixa-web/.env.example` → `.env` e ajuste
-  `VITE_API_URL`.
-- **Compose** — copie `.env.example` → `.env` na raiz (valores do MySQL e API).
+- `PRODUTOR`: usa telas simples para acompanhar resultado do mes, enviar documentos, responder pendencias e organizar propriedades/atividades.
+- `CONTADOR`: acessa carteira de clientes vinculados, pendencias, documentos, classificacoes e visao tributaria resumida.
+- `ADMINISTRADOR` e `SUPER_ADMIN`: preservam acesso administrativo e podem visualizar a carteira de clientes.
+- `PROPRIETARIO` e demais perfis existentes continuam compativeis com os fluxos financeiros atuais.
 
-## Subir com Docker (banco + API)
+## Fluxo do produtor
 
-```bash
-docker compose up --build
-```
+O produtor pode:
 
-O MySQL sobe vazio e o Flyway cria o schema (migrações `V1`–`V9`).
-O dump em `databases/` é para restauração manual, quando quiser importar dados:
+- ver receitas, despesas, resultado do mes e pendencias abertas;
+- lancar receitas e despesas pelos modulos financeiros existentes;
+- enviar documentos para o contador, como nota fiscal, XML, comprovante ou recibo;
+- cadastrar propriedades rurais;
+- cadastrar atividades rurais;
+- acompanhar pendencias solicitadas pelo contador.
 
-```bash
-docker compose exec -T mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" < databases/Dump20260901.sql
-```
+## Fluxo do contador
 
-## Rodar o frontend (local)
+O contador pode:
 
-```bash
-cd apps/fluxo-caixa-web
-npm install
-npm run dev
-```
+- visualizar a carteira de produtores vinculados;
+- identificar clientes com pendencias;
+- ver documentos enviados;
+- acompanhar movimentacoes sem classificacao;
+- consultar uma visao tributaria gerencial;
+- filtrar clientes por pendencia, documento ausente ou classificacao pendente.
 
-O front acessa a API via `VITE_API_URL` (padrão `http://localhost:8080/api/v1`).
+## Documentos e pendencias
 
-## Healthcheck
+Documentos enviados ficam associados a uma empresa e podem, quando informado, ser ligados a uma movimentacao financeira. Pendencias registram solicitacoes, prazos, prioridade, status e mensagens contextuais.
 
-- API: `GET http://localhost:8080/actuator/health`
+## Rateio
 
-## NFS-e pelo Asaas
+O sistema possui estrutura para ratear movimentacoes entre propriedades ou descricoes livres. O rateio percentual deve fechar exatamente 100%.
 
-A emissao de NFS-e usa a API do Asaas e depende de configuracao fiscal previa
-na propria conta Asaas, incluindo o servico municipal correto. O AgroGestao
-agenda/emite a nota vinculada ao pagamento confirmado, mas nao configura o
-Portal Nacional diretamente nem armazena chaves ou tokens fiscais no codigo.
+## Visao tributaria
+
+A visao tributaria apresenta estimativas de receitas, despesas, resultado anual e projecao ate o fim do ano. Ela serve como apoio gerencial e nao substitui a validacao fiscal do contador responsavel.
+
+## Exportacoes
+
+O modulo colaborativo disponibiliza exportacao CSV de movimentacoes por periodo. A estrutura foi preparada para evoluir futuramente para LCDPR, integracoes contabeis e exportadores especificos.
+
+## Seguranca
+
+O backend valida acesso por empresa e por vinculo contador-cliente. Empresas nao podem acessar dados umas das outras, e contadores acessam apenas empresas vinculadas ou liberadas por perfil administrativo.
+
+## Fast follow preparado
+
+A arquitetura deixa caminho para evoluir:
+
+- PWA/offline completo;
+- regras de classificacao com IA;
+- exportacao TXT LCDPR;
+- integracoes com sistemas contabeis;
+- planos B2B2C por carteira de clientes.

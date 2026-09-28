@@ -207,4 +207,28 @@ public interface MovimentacaoRepository
     findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
             Long empresaId
     );
+
+    long countByEmpresa_IdAndCategoriaIsNullAndExcluidaFalse(
+            Long empresaId
+    );
+
+    @Query("""
+            SELECT movimentacao
+            FROM Movimentacao movimentacao
+            WHERE movimentacao.empresa.id = :empresaId
+              AND movimentacao.dataMovimentacao
+                  BETWEEN :dataInicial AND :dataFinal
+              AND movimentacao.excluida = false
+            ORDER BY
+                movimentacao.dataMovimentacao DESC,
+                movimentacao.id DESC
+            """)
+    List<Movimentacao> buscarPeriodoDesc(
+            @Param("empresaId")
+            Long empresaId,
+            @Param("dataInicial")
+            LocalDate dataInicial,
+            @Param("dataFinal")
+            LocalDate dataFinal
+    );
 }
