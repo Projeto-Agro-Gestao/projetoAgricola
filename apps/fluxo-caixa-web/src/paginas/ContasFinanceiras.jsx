@@ -357,10 +357,6 @@ function obterSessao() {
         const usuario =
             JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -716,7 +712,6 @@ function ContasFinanceiras() {
                     respostas.some(
                         (resposta) =>
                             resposta.status === 401
-                            || resposta.status === 403,
                     )
 
                 if (acessoNegado) {
@@ -836,7 +831,7 @@ function ContasFinanceiras() {
 
                 if (
                     resposta.status === 401
-                    || resposta.status === 403
+
                 ) {
                     limparSessao()
 
@@ -1036,7 +1031,7 @@ function ContasFinanceiras() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 
@@ -1117,8 +1112,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 
@@ -1238,8 +1232,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 
@@ -1307,8 +1300,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 
@@ -1362,8 +1354,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 
@@ -1435,8 +1426,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 
@@ -1548,8 +1538,7 @@ function ContasFinanceiras() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 

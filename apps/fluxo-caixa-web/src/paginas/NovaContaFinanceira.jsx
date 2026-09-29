@@ -90,10 +90,6 @@ function obterSessao() {
         const usuario =
             JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -315,7 +311,7 @@ function NovaContaFinanceira() {
 
                 if (
                     resposta.status === 401
-                    || resposta.status === 403
+
                 ) {
                     limparSessao()
 
@@ -419,7 +415,7 @@ function NovaContaFinanceira() {
 
                 if (
                     resposta.status === 401
-                    || resposta.status === 403
+
                 ) {
                     limparSessao()
 
@@ -551,7 +547,7 @@ function NovaContaFinanceira() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 
@@ -710,7 +706,7 @@ function NovaContaFinanceira() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 

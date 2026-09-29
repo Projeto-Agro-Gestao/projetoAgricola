@@ -99,7 +99,8 @@ function Login() {
             }
 
             navigate(
-                dados.usuario.papel === 'ADMINISTRADOR'
+                dados.usuario.papel === 'ADMINISTRADOR' ||
+                    dados.usuario.papel === 'SUPER_ADMIN'
                     ? '/admin'
                     : '/dashboard',
                 {

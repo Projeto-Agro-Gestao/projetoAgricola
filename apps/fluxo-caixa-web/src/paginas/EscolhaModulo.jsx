@@ -35,10 +35,6 @@ function obterSessao() {
 
         const usuario = JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,

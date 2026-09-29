@@ -74,10 +74,6 @@ function obterSessao() {
 
         const usuario = JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -236,14 +232,10 @@ function EditarMovimentacao() {
                 ])
 
                 if (
-                    respostaMovimentacao.status === 401 ||
-                    respostaMovimentacao.status === 403 ||
-                    respostaCategorias.status === 401 ||
-                    respostaCategorias.status === 403 ||
-                    respostaPropriedades.status === 401 ||
-                    respostaPropriedades.status === 403 ||
-                    respostaAtividades.status === 401 ||
-                    respostaAtividades.status === 403
+                    respostaMovimentacao.status === 401  ||
+                    respostaCategorias.status === 401  ||
+                    respostaPropriedades.status === 401  ||
+                    respostaAtividades.status === 401
                 ) {
                     limparSessao()
 
@@ -497,8 +489,7 @@ function EditarMovimentacao() {
             )
 
             if (
-                resposta.status === 401 ||
-                resposta.status === 403
+                resposta.status === 401
             ) {
                 limparSessao()
 

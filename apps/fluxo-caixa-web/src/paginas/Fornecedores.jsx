@@ -40,11 +40,6 @@ function obterSessao() {
 
         const usuario = JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
-
         return {
             token,
             tipoToken,
@@ -405,7 +400,7 @@ function Fornecedores() {
 
         if (
             resposta.status === 401
-            || resposta.status === 403
+
         ) {
             limparSessao()
             navigate('/login', {

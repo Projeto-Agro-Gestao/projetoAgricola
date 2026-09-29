@@ -220,10 +220,6 @@ function obterSessao() {
         const usuario =
             JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -516,7 +512,6 @@ function Dashboard() {
                     respostas.some(
                         (resposta) =>
                             resposta.status === 401
-                            || resposta.status === 403,
                     )
 
                 if (acessoNegado) {
@@ -781,7 +776,7 @@ function Dashboard() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 

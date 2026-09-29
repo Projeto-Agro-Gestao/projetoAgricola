@@ -22,6 +22,7 @@ const TIPOS_ACESSO = {
 
 const FILTROS_USUARIOS = [
     { valor: 'TODOS', rotulo: 'Todos' },
+    { valor: 'PENDENTES', rotulo: 'Pendentes' },
     { valor: 'LIBERADOS', rotulo: 'Liberados' },
     { valor: 'BLOQUEADOS', rotulo: 'Bloqueados' },
     { valor: 'ATRASADOS', rotulo: 'Atrasados' },
@@ -85,6 +86,7 @@ function formatarStatus(valor) {
 function formatarSituacao(valor) {
     return {
         EM_DIA: 'Em dia',
+        PENDENTE_APROVACAO: 'Pendente de aprovacao',
         BLOQUEADO: 'Bloqueado',
         ATRASADO: 'Atrasado',
         USANDO_SEM_PAGAR: 'Usando sem pagar',
@@ -196,6 +198,8 @@ function AdminPainel() {
                 filtroUsuarios === 'TODOS' ||
                 (filtroUsuarios === 'LIBERADOS' &&
                     usuario.acessoLiberado) ||
+                (filtroUsuarios === 'PENDENTES' &&
+                    usuario.situacao === 'PENDENTE_APROVACAO') ||
                 (filtroUsuarios === 'BLOQUEADOS' &&
                     !usuario.acessoLiberado) ||
                 (filtroUsuarios === 'ATRASADOS' &&
@@ -215,7 +219,10 @@ function AdminPainel() {
             return
         }
 
-        if (sessao.usuario?.papel !== 'ADMINISTRADOR') {
+        if (
+            sessao.usuario?.papel !== 'ADMINISTRADOR' &&
+            sessao.usuario?.papel !== 'SUPER_ADMIN'
+        ) {
             navigate('/dashboard', { replace: true })
         }
     }, [navigate, sessao])
@@ -254,7 +261,10 @@ function AdminPainel() {
     }
 
     useEffect(() => {
-        if (sessao?.usuario?.papel === 'ADMINISTRADOR') {
+        if (
+            sessao?.usuario?.papel === 'ADMINISTRADOR' ||
+            sessao?.usuario?.papel === 'SUPER_ADMIN'
+        ) {
             void Promise.resolve().then(() =>
                 carregarUsuarios(sessao),
             )
@@ -331,6 +341,16 @@ function AdminPainel() {
                 dataVencimentoPagamento:
                     campos.dataVencimentoPagamento ??
                     usuario.dataVencimentoPagamento,
+            },
+        )
+    }
+
+    async function aprovarUsuario(usuario, papel) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/aprovar`,
+            {
+                papel,
             },
         )
     }
@@ -779,6 +799,44 @@ function AdminPainel() {
                                             >
                                                 Editar
                                             </button>
+
+                                            {usuario.situacao ===
+                                                'PENDENTE_APROVACAO' && (
+                                                <div className="admin-prazo-acesso">
+                                                    <button
+                                                        className="admin-botao-primario"
+                                                        disabled={
+                                                            salvandoId ===
+                                                            usuario.id
+                                                        }
+                                                        onClick={() =>
+                                                            aprovarUsuario(
+                                                                usuario,
+                                                                'PRODUTOR',
+                                                            )
+                                                        }
+                                                        type="button"
+                                                    >
+                                                        Aprovar produtor
+                                                    </button>
+                                                    <button
+                                                        className="admin-botao-secundario"
+                                                        disabled={
+                                                            salvandoId ===
+                                                            usuario.id
+                                                        }
+                                                        onClick={() =>
+                                                            aprovarUsuario(
+                                                                usuario,
+                                                                'CONTADOR',
+                                                            )
+                                                        }
+                                                        type="button"
+                                                    >
+                                                        Aprovar contador
+                                                    </button>
+                                                </div>
+                                            )}
 
                                             <button
                                                 className={

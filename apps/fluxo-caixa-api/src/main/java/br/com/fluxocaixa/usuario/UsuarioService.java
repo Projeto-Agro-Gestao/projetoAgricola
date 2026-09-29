@@ -90,7 +90,16 @@ public class UsuarioService {
                 email,
                 telefone,
                 senhaProtegida,
-                PapelUsuario.PROPRIETARIO
+                PapelUsuario.PRODUTOR
+        );
+        usuario.configurarAcesso(
+                false,
+                TipoAcessoUsuario.NORMAL,
+                null
+        );
+        usuario.atualizarPagamento(
+                StatusPagamento.TESTE,
+                null
         );
 
         Usuario usuarioSalvo =

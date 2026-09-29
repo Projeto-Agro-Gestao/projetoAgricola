@@ -42,11 +42,6 @@ function obterSessao() {
         const usuario =
             JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
-
         return {
             token,
             tipoToken,
@@ -194,9 +189,9 @@ function AppMobile() {
 
                 if (
                     respostaCategorias.status === 401
-                    || respostaCategorias.status === 403
+
                     || respostaResumo.status === 401
-                    || respostaResumo.status === 403
+
                 ) {
                     limparSessao()
                     navigate('/login', {
@@ -325,7 +320,7 @@ function AppMobile() {
                     },
                 )
 
-            if (resposta.status === 401 || resposta.status === 403) {
+            if (resposta.status === 401 ) {
                 limparSessao()
                 navigate('/login', {
                     replace: true,

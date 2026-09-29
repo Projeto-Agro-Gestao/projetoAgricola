@@ -47,9 +47,15 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(
-                                "/api/v1/auth/**"
+                                HttpMethod.POST,
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/cadastro"
                         )
                         .permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/me"
+                        )
+                        .authenticated()
                         .requestMatchers(
                                 "/api/v1/webhooks/asaas"
                         )

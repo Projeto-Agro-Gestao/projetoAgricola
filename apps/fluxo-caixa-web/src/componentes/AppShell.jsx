@@ -1,5 +1,11 @@
 import { useLocation, useNavigate } from 'react-router'
-import { limparSessao, obterSessao } from '../servicos/sessao.js'
+import { useEffect, useState } from 'react'
+import { API_BASE_URL as API_URL } from '../config.js'
+import {
+    atualizarUsuarioSessao,
+    limparSessao,
+    obterSessao,
+} from '../servicos/sessao.js'
 import './AppShell.css'
 
 const ROTAS_PUBLICAS = [
@@ -19,8 +25,34 @@ function rotaPublica(pathname) {
 function AppShell() {
     const location = useLocation()
     const navigate = useNavigate()
+    const [confirmandoSaida, setConfirmandoSaida] = useState(false)
+    const sessao = obterSessao()
 
-    if (rotaPublica(location.pathname) || !obterSessao()) {
+    useEffect(() => {
+        if (rotaPublica(location.pathname) || !sessao) {
+            return
+        }
+
+        fetch(`${API_URL}/auth/me`, {
+            headers: {
+                Authorization: `${sessao.tipoToken} ${sessao.token}`,
+            },
+        })
+            .then(async (resposta) => {
+                if (resposta.status === 401) {
+                    limparSessao()
+                    navigate('/login', { replace: true })
+                    return
+                }
+
+                if (resposta.ok) {
+                    atualizarUsuarioSessao(await resposta.json())
+                }
+            })
+            .catch(() => {})
+    }, [location.pathname, navigate, sessao])
+
+    if (rotaPublica(location.pathname) || !sessao) {
         return null
     }
 
@@ -30,24 +62,60 @@ function AppShell() {
     }
 
     return (
-        <nav
-            className="app-shell"
-            aria-label="Navegacao da conta"
-        >
-            <button
-                type="button"
-                onClick={() => navigate('/dashboard')}
+        <>
+            <nav
+                className="app-shell"
+                aria-label="Navegacao da conta"
             >
-                Tela principal
-            </button>
-            <button
-                type="button"
-                className="app-shell-sair"
-                onClick={sair}
-            >
-                Sair da conta
-            </button>
-        </nav>
+                <button
+                    type="button"
+                    onClick={() => navigate('/dashboard')}
+                >
+                    Tela principal
+                </button>
+                <button
+                    type="button"
+                    className="app-shell-sair"
+                    onClick={() => setConfirmandoSaida(true)}
+                >
+                    Sair da conta
+                </button>
+            </nav>
+
+            {confirmandoSaida && (
+                <div
+                    className="app-shell-modal-fundo"
+                    role="presentation"
+                >
+                    <section
+                        aria-modal="true"
+                        className="app-shell-modal"
+                        role="dialog"
+                    >
+                        <h2>Tem certeza que deseja sair da sua conta?</h2>
+                        <p>
+                            Sua sessao sera encerrada e sera necessario fazer
+                            login novamente para acessar o AgroGestao.
+                        </p>
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => setConfirmandoSaida(false)}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                className="app-shell-sair"
+                                onClick={sair}
+                            >
+                                Sair da conta
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+        </>
     )
 }
 

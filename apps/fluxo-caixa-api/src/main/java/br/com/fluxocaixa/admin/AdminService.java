@@ -5,6 +5,7 @@ import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
 import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
+import br.com.fluxocaixa.usuario.UsuarioProvisionamentoService;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Sort;
@@ -27,15 +28,18 @@ public class AdminService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAcessoRepository usuarioAcessoRepository;
     private final CategoriaSugeridaService categoriaSugeridaService;
+    private final UsuarioProvisionamentoService provisionamentoService;
 
     public AdminService(
             UsuarioRepository usuarioRepository,
             UsuarioAcessoRepository usuarioAcessoRepository,
-            CategoriaSugeridaService categoriaSugeridaService) {
+            CategoriaSugeridaService categoriaSugeridaService,
+            UsuarioProvisionamentoService provisionamentoService) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
         this.categoriaSugeridaService = categoriaSugeridaService;
+        this.provisionamentoService = provisionamentoService;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +68,37 @@ public class AdminService {
                 obterTipoAcesso(request),
                 obterDataExpiracao(request)
         );
+
+        return montarResponse(usuario);
+    }
+
+    @Transactional
+    public AdminUsuarioResponse aprovarUsuario(
+            Long usuarioId,
+            AprovarUsuarioRequest request) {
+
+        validarAdministrador();
+
+        Usuario usuario = buscarUsuario(usuarioId);
+
+        if (request.papel() != PapelUsuario.PRODUTOR
+                && request.papel() != PapelUsuario.CONTADOR) {
+            throw new IllegalArgumentException(
+                    "Cadastro publico so pode ser aprovado como PRODUTOR ou CONTADOR."
+            );
+        }
+
+        usuario.alterarPapel(request.papel());
+        usuario.configurarAcesso(
+                true,
+                TipoAcessoUsuario.NORMAL,
+                null
+        );
+        usuario.atualizarPagamento(
+                StatusPagamento.TESTE,
+                usuario.getDataVencimentoPagamento()
+        );
+        provisionamentoService.garantirEstruturaOperacional(usuario);
 
         return montarResponse(usuario);
     }
@@ -180,6 +215,10 @@ public class AdminService {
             LocalDate hoje) {
 
         if (!usuario.isAcessoLiberado()) {
+            if (usuario.getStatusPagamento() == StatusPagamento.TESTE) {
+                return "PENDENTE_APROVACAO";
+            }
+
             return "BLOQUEADO";
         }
 

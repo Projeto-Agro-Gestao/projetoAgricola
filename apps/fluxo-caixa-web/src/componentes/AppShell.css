@@ -1,7 +1,7 @@
 .app-shell {
     position: fixed;
     right: 18px;
-    bottom: 18px;
+    top: 18px;
     z-index: 50;
     display: flex;
     gap: 8px;
@@ -44,11 +44,48 @@
     .app-shell {
         left: 12px;
         right: 12px;
-        bottom: 12px;
+        top: 12px;
     }
 
     .app-shell button {
         flex: 1;
         padding: 0 10px;
     }
+}
+
+.app-shell-modal-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(9, 24, 7, 0.42);
+}
+
+.app-shell-modal {
+    width: min(440px, 100%);
+    border: 1px solid #cfe3c4;
+    border-radius: 8px;
+    background: #fbfff7;
+    box-shadow: 0 24px 70px rgba(17, 42, 9, 0.28);
+    padding: 24px;
+}
+
+.app-shell-modal h2 {
+    margin: 0 0 10px;
+    color: #081807;
+    font-size: 1.35rem;
+}
+
+.app-shell-modal p {
+    margin: 0 0 20px;
+    color: #50614a;
+    line-height: 1.5;
+}
+
+.app-shell-modal div {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }

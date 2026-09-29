@@ -46,6 +46,21 @@ public class AdminController {
         );
     }
 
+    @PatchMapping("/usuarios/{usuarioId}/aprovar")
+    public ResponseEntity<AdminUsuarioResponse>
+    aprovarUsuario(
+            @PathVariable Long usuarioId,
+            @Valid @RequestBody
+            AprovarUsuarioRequest request) {
+
+        return ResponseEntity.ok(
+                adminService.aprovarUsuario(
+                        usuarioId,
+                        request
+                )
+        );
+    }
+
     @PatchMapping("/usuarios/{usuarioId}/pagamento")
     public ResponseEntity<AdminUsuarioResponse>
     atualizarPagamento(

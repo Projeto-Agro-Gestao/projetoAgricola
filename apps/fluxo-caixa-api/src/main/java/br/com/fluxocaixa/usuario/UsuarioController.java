@@ -4,6 +4,7 @@ import br.com.fluxocaixa.autenticacao.AutenticacaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +47,13 @@ public class UsuarioController {
                 autenticacaoService.entrar(request);
 
         return ResponseEntity.ok(resposta);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioResponse> me() {
+
+        return ResponseEntity.ok(
+                usuarioService.buscarPerfilLogado()
+        );
     }
 }

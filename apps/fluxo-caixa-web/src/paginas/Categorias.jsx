@@ -74,10 +74,6 @@ function obterSessao() {
 
         const usuario = JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -172,7 +168,7 @@ function Categorias() {
 
     const tratarFalhaDeAutenticacao = useCallback(
         (status) => {
-            if (status === 401 || status === 403) {
+            if (status === 401 ) {
                 limparSessao()
 
                 navigate('/login', {

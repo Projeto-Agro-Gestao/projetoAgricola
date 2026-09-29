@@ -132,6 +132,11 @@ public class Usuario {
         this.email = email;
     }
 
+    public void alterarPapel(PapelUsuario papel) {
+
+        this.papel = papel;
+    }
+
     public Long getId() {
         return id;
     }

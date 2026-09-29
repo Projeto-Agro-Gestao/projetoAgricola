@@ -89,10 +89,6 @@ function obterSessao() {
         const usuario =
             JSON.parse(usuarioSalvo)
 
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
@@ -312,7 +308,7 @@ function NovaMovimentacao() {
 
                 if (
                     resposta.status === 401
-                    || resposta.status === 403
+
                 ) {
                     limparSessao()
 
@@ -413,7 +409,7 @@ function NovaMovimentacao() {
 
                 if (
                     resposta.status === 401
-                    || resposta.status === 403
+
                 ) {
                     limparSessao()
 
@@ -500,9 +496,9 @@ function NovaMovimentacao() {
 
                 if (
                     respostaPropriedades.status === 401
-                    || respostaPropriedades.status === 403
+
                     || respostaAtividades.status === 401
-                    || respostaAtividades.status === 403
+
                 ) {
                     limparSessao()
 
@@ -668,7 +664,7 @@ function NovaMovimentacao() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 
@@ -779,7 +775,7 @@ function NovaMovimentacao() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 
@@ -988,7 +984,7 @@ function NovaMovimentacao() {
 
             if (
                 resposta.status === 401
-                || resposta.status === 403
+
             ) {
                 limparSessao()
 

@@ -4,10 +4,10 @@ const CHAVE_USUARIO = 'agrogestao_usuario'
 const CHAVE_EXPIRA_EM = 'agrogestao_token_expira_em'
 
 export function limparSessao() {
-    localStorage.removeItem(CHAVE_TOKEN)
-    localStorage.removeItem(CHAVE_TIPO_TOKEN)
-    localStorage.removeItem(CHAVE_USUARIO)
-    localStorage.removeItem(CHAVE_EXPIRA_EM)
+    Object.keys(localStorage)
+        .filter((chave) => chave.startsWith('agrogestao_'))
+        .forEach((chave) => localStorage.removeItem(chave))
+    sessionStorage.clear()
 }
 
 export function obterSessao() {
@@ -31,11 +31,6 @@ export function obterSessao() {
         }
 
         const usuario = JSON.parse(usuarioSalvo)
-
-        if (!usuario?.empresaId) {
-            limparSessao()
-            return null
-        }
 
         return {
             token,
