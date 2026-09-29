@@ -108,9 +108,6 @@ function EscolhaModulo() {
     const podeAdministrar =
         papel === 'ADMINISTRADOR' ||
         papel === 'SUPER_ADMIN'
-    const podeVerContador =
-        podeAdministrar ||
-        papel === 'CONTADOR'
 
     return (
         <div className="escolha-modulo-pagina">
@@ -347,46 +344,44 @@ function EscolhaModulo() {
                             </strong>
                         </button>
 
-                        {podeVerContador && (
-                            <button
-                                className="escolha-modulo-card escolha-modulo-contador"
-                                onClick={abrirAreaContador}
-                                type="button"
-                            >
-                                <span className="escolha-modulo-icone">
-                                    C
+                        <button
+                            className="escolha-modulo-card escolha-modulo-contador"
+                            onClick={abrirAreaContador}
+                            type="button"
+                        >
+                            <span className="escolha-modulo-icone">
+                                C
+                            </span>
+
+                            <div className="escolha-modulo-card-texto">
+                                <small>
+                                    Carteira e analise
+                                </small>
+
+                                <h2>
+                                    Area do contador
+                                </h2>
+
+                                <p>
+                                    Acompanhe clientes, documentos,
+                                    pendencias, classificacoes e visao
+                                    tributaria resumida.
+                                </p>
+
+                                <ul>
+                                    <li>Carteira de clientes</li>
+                                    <li>Documentos em analise</li>
+                                    <li>Indicadores tributarios</li>
+                                </ul>
+                            </div>
+
+                            <strong className="escolha-modulo-acao">
+                                Abrir area do contador
+                                <span aria-hidden="true">
+                                    -&gt;
                                 </span>
-
-                                <div className="escolha-modulo-card-texto">
-                                    <small>
-                                        Carteira e analise
-                                    </small>
-
-                                    <h2>
-                                        Area do contador
-                                    </h2>
-
-                                    <p>
-                                        Acompanhe clientes, documentos,
-                                        pendencias, classificacoes e visao
-                                        tributaria resumida.
-                                    </p>
-
-                                    <ul>
-                                        <li>Carteira de clientes</li>
-                                        <li>Documentos em analise</li>
-                                        <li>Indicadores tributarios</li>
-                                    </ul>
-                                </div>
-
-                                <strong className="escolha-modulo-acao">
-                                    Abrir area do contador
-                                    <span aria-hidden="true">
-                                        -&gt;
-                                    </span>
-                                </strong>
-                            </button>
-                        )}
+                            </strong>
+                        </button>
                     </section>
 
                     <p className="escolha-modulo-ajuda">
