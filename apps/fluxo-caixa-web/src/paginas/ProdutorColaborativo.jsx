@@ -89,11 +89,14 @@ function ProdutorColaborativo() {
     const [documentos, setDocumentos] = useState([])
     const [propriedades, setPropriedades] = useState([])
     const [atividades, setAtividades] = useState([])
+    const [movimentacoes, setMovimentacoes] = useState([])
     const [mensagem, setMensagem] = useState('')
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
     const [arquivo, setArquivo] = useState(null)
     const [documentoTipo, setDocumentoTipo] = useState('OUTRO')
+    const [documentoMovimentacaoId, setDocumentoMovimentacaoId] =
+        useState('')
     const [documentoObservacao, setDocumentoObservacao] = useState('')
     const [novaPropriedade, setNovaPropriedade] = useState('')
     const [novaAtividade, setNovaAtividade] = useState('')
@@ -130,12 +133,17 @@ function ProdutorColaborativo() {
                 respostaDocumentos,
                 respostaPropriedades,
                 respostaAtividades,
+                respostaMovimentacoes,
             ] = await Promise.all([
                 fetch(`${baseUrl}/produtor/dashboard`, { headers }),
                 fetch(`${baseUrl}/pendencias`, { headers }),
                 fetch(`${baseUrl}/documentos`, { headers }),
                 fetch(`${baseUrl}/propriedades`, { headers }),
                 fetch(`${baseUrl}/atividades`, { headers }),
+                fetch(
+                    `${API_URL}/empresas/${empresaId}/movimentacoes?size=50`,
+                    { headers },
+                ),
             ])
 
             if (!respostaDashboard.ok) {
@@ -162,6 +170,12 @@ function ProdutorColaborativo() {
             setAtividades(
                 respostaAtividades.ok ? await respostaAtividades.json() : [],
             )
+            if (respostaMovimentacoes.ok) {
+                const dadosMovimentacoes = await respostaMovimentacoes.json()
+                setMovimentacoes(dadosMovimentacoes.content ?? [])
+            } else {
+                setMovimentacoes([])
+            }
         } catch (error) {
             setErro(error.message)
         } finally {
@@ -268,6 +282,10 @@ function ProdutorColaborativo() {
             dados.append('observacao', documentoObservacao.trim())
         }
 
+        if (documentoMovimentacaoId) {
+            dados.append('movimentacaoId', documentoMovimentacaoId)
+        }
+
         const resposta = await fetch(`${baseUrl}/documentos`, {
             method: 'POST',
             headers: obterHeaders(sessao),
@@ -285,8 +303,13 @@ function ProdutorColaborativo() {
         }
 
         setArquivo(null)
+        setDocumentoMovimentacaoId('')
         setDocumentoObservacao('')
-        setMensagem('Documento enviado para analise.')
+        setMensagem(
+            documentoMovimentacaoId
+                ? 'Documento vinculado a movimentacao e enviado para analise.'
+                : 'Documento enviado para analise.',
+        )
         carregarTudo()
     }
 
@@ -461,6 +484,37 @@ function ProdutorColaborativo() {
                                         )
                                     }
                                 />
+                            </label>
+
+                            <label>
+                                Vincular a uma movimentacao
+                                <select
+                                    value={documentoMovimentacaoId}
+                                    onChange={(evento) =>
+                                        setDocumentoMovimentacaoId(
+                                            evento.target.value,
+                                        )
+                                    }
+                                >
+                                    <option value="">
+                                        Deixar no inbox do contador
+                                    </option>
+
+                                    {movimentacoes.map((movimentacao) => (
+                                        <option
+                                            key={movimentacao.id}
+                                            value={movimentacao.id}
+                                        >
+                                            {formatarData(
+                                                movimentacao.dataMovimentacao,
+                                            )}{' '}
+                                            - {movimentacao.descricao} -{' '}
+                                            {formatarDinheiro(
+                                                movimentacao.valor,
+                                            )}
+                                        </option>
+                                    ))}
+                                </select>
                             </label>
 
                             <label>

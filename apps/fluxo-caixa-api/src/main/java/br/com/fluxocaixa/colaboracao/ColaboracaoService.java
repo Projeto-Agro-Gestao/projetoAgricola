@@ -138,7 +138,11 @@ public class ColaboracaoService {
     public List<ContadorClienteResponse> carteiraContador() {
 
         Usuario contador = usuarioAtual();
-        validarContadorOuAdmin(contador);
+
+        if (!isAdmin(contador)
+                && contador.getPapel() != PapelUsuario.CONTADOR) {
+            return List.of();
+        }
 
         List<ContadorEmpresa> vinculos = isAdmin(contador)
                 ? empresaRepository.findAll()
@@ -190,11 +194,9 @@ public class ColaboracaoService {
                                             empresa.getId(),
                                             StatusPendenciaAgro.RESOLVIDA
                                     ),
-                            pendenciaRepository
-                                    .countByEmpresa_IdAndTipoAndStatusNot(
-                                            empresa.getId(),
-                                            TipoPendenciaAgro.DOCUMENTO_AUSENTE,
-                                            StatusPendenciaAgro.RESOLVIDA
+                            movimentacaoRepository
+                                    .countDespesasSemDocumento(
+                                            empresa.getId()
                                     ),
                             movimentacaoRepository
                                     .countByEmpresa_IdAndCategoriaIsNullAndExcluidaFalse(
@@ -347,6 +349,19 @@ public class ColaboracaoService {
                             arquivo.getBytes()
                     )
             );
+
+            if (movimentacao != null) {
+                pendenciaRepository
+                        .findAllByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNotOrderByCriadoEmDesc(
+                                empresaId,
+                                movimentacao.getId(),
+                                TipoPendenciaAgro.DOCUMENTO_AUSENTE,
+                                StatusPendenciaAgro.RESOLVIDA
+                        )
+                        .forEach(pendencia ->
+                                pendencia.responderPeloProdutor(documento)
+                        );
+            }
 
             auditar(empresa, usuario, "ENVIAR_DOCUMENTO",
                     "DocumentoAgro", documento.getId(),
@@ -833,7 +848,10 @@ public class ColaboracaoService {
             Long empresaId) {
 
         if (isAdmin(usuario)
-                || usuario.getEmpresa().getId().equals(empresaId)
+                || (
+                        usuario.getEmpresa() != null
+                                && usuario.getEmpresa().getId().equals(empresaId)
+                )
                 || contadorEmpresaRepository
                         .existsByContador_IdAndEmpresa_IdAndStatus(
                                 usuario.getId(),

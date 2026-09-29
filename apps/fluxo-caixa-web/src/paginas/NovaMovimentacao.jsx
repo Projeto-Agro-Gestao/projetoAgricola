@@ -212,6 +212,26 @@ function NovaMovimentacao() {
     ] = useState([])
 
     const [
+        propriedades,
+        setPropriedades,
+    ] = useState([])
+
+    const [
+        atividades,
+        setAtividades,
+    ] = useState([])
+
+    const [
+        propriedadeRuralId,
+        setPropriedadeRuralId,
+    ] = useState('')
+
+    const [
+        atividadeRuralId,
+        setAtividadeRuralId,
+    ] = useState('')
+
+    const [
         fornecedorId,
         setFornecedorId,
     ] = useState('')
@@ -448,6 +468,95 @@ function NovaMovimentacao() {
         navigate,
         sessao,
         tipo,
+    ])
+
+    useEffect(() => {
+        if (!sessao || !empresaId) {
+            return undefined
+        }
+
+        let componenteAtivo = true
+
+        async function carregarOrganizacaoRural() {
+            const headers = {
+                Authorization:
+                    `${sessao.tipoToken} ${sessao.token}`,
+            }
+
+            try {
+                const [
+                    respostaPropriedades,
+                    respostaAtividades,
+                ] = await Promise.all([
+                    fetch(
+                        `${API_URL}/colaboracao/empresas/${empresaId}/propriedades`,
+                        { headers },
+                    ),
+                    fetch(
+                        `${API_URL}/colaboracao/empresas/${empresaId}/atividades`,
+                        { headers },
+                    ),
+                ])
+
+                if (
+                    respostaPropriedades.status === 401
+                    || respostaPropriedades.status === 403
+                    || respostaAtividades.status === 401
+                    || respostaAtividades.status === 403
+                ) {
+                    limparSessao()
+
+                    navigate('/login', {
+                        replace: true,
+                    })
+
+                    return
+                }
+
+                const dadosPropriedades =
+                    respostaPropriedades.ok
+                        ? await respostaPropriedades.json()
+                        : []
+
+                const dadosAtividades =
+                    respostaAtividades.ok
+                        ? await respostaAtividades.json()
+                        : []
+
+                if (!componenteAtivo) {
+                    return
+                }
+
+                setPropriedades(
+                    Array.isArray(dadosPropriedades)
+                        ? dadosPropriedades
+                        : [],
+                )
+
+                setAtividades(
+                    Array.isArray(dadosAtividades)
+                        ? dadosAtividades
+                        : [],
+                )
+            } catch {
+                if (!componenteAtivo) {
+                    return
+                }
+
+                setPropriedades([])
+                setAtividades([])
+            }
+        }
+
+        carregarOrganizacaoRural()
+
+        return () => {
+            componenteAtivo = false
+        }
+    }, [
+        empresaId,
+        navigate,
+        sessao,
     ])
 
     function alterarTipo(novoTipo) {
@@ -842,6 +951,16 @@ function NovaMovimentacao() {
             unidadeMedida:
                 tipo === 'DESPESA'
                     ? unidadeMedida.trim() || null
+                    : null,
+
+            propriedadeRuralId:
+                propriedadeRuralId
+                    ? Number(propriedadeRuralId)
+                    : null,
+
+            atividadeRuralId:
+                atividadeRuralId
+                    ? Number(atividadeRuralId)
                     : null,
         }
 
@@ -1275,6 +1394,70 @@ function NovaMovimentacao() {
                                     Gerenciar categorias
                                 </Link>
                             </p>
+                        </div>
+
+                        <div className="formulario-linha">
+                            <div className="formulario-campo">
+                                <label htmlFor="propriedadeRural">
+                                    Propriedade
+                                </label>
+
+                                <select
+                                    disabled={salvando}
+                                    id="propriedadeRural"
+                                    onChange={(evento) =>
+                                        setPropriedadeRuralId(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={propriedadeRuralId}
+                                >
+                                    <option value="">
+                                        Sem propriedade especifica
+                                    </option>
+
+                                    {propriedades.map(
+                                        (propriedade) => (
+                                            <option
+                                                key={propriedade.id}
+                                                value={propriedade.id}
+                                            >
+                                                {propriedade.nome}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="formulario-campo">
+                                <label htmlFor="atividadeRural">
+                                    Atividade
+                                </label>
+
+                                <select
+                                    disabled={salvando}
+                                    id="atividadeRural"
+                                    onChange={(evento) =>
+                                        setAtividadeRuralId(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={atividadeRuralId}
+                                >
+                                    <option value="">
+                                        Sem atividade especifica
+                                    </option>
+
+                                    {atividades.map((atividade) => (
+                                        <option
+                                            key={atividade.id}
+                                            value={atividade.id}
+                                        >
+                                            {atividade.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {tipo === 'DESPESA' && (

@@ -24,6 +24,10 @@ public record MovimentacaoResponse(
         BigDecimal quantidade,
         String unidadeMedida,
         BigDecimal valorUnitario,
+        Long propriedadeRuralId,
+        String propriedadeRuralNome,
+        Long atividadeRuralId,
+        String atividadeRuralNome,
         boolean excluida,
         LocalDateTime excluidaEm,
         LocalDateTime criadoEm,
@@ -59,6 +63,18 @@ public record MovimentacaoResponse(
                 movimentacao.getQuantidade(),
                 movimentacao.getUnidadeMedida(),
                 movimentacao.getValorUnitario(),
+                movimentacao.getPropriedadeRural() == null
+                        ? null
+                        : movimentacao.getPropriedadeRural().getId(),
+                movimentacao.getPropriedadeRural() == null
+                        ? null
+                        : movimentacao.getPropriedadeRural().getNome(),
+                movimentacao.getAtividadeRural() == null
+                        ? null
+                        : movimentacao.getAtividadeRural().getId(),
+                movimentacao.getAtividadeRural() == null
+                        ? null
+                        : movimentacao.getAtividadeRural().getNome(),
                 movimentacao.isExcluida(),
                 movimentacao.getExcluidaEm(),
                 movimentacao.getCriadoEm(),

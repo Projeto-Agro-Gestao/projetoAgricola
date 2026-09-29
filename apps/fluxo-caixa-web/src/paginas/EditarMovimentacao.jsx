@@ -148,6 +148,26 @@ function EditarMovimentacao() {
     ] = useState([])
 
     const [
+        propriedades,
+        setPropriedades,
+    ] = useState([])
+
+    const [
+        atividades,
+        setAtividades,
+    ] = useState([])
+
+    const [
+        propriedadeRuralId,
+        setPropriedadeRuralId,
+    ] = useState('')
+
+    const [
+        atividadeRuralId,
+        setAtividadeRuralId,
+    ] = useState('')
+
+    const [
         carregando,
         setCarregando,
     ] = useState(true)
@@ -183,6 +203,8 @@ function EditarMovimentacao() {
                 const [
                     respostaMovimentacao,
                     respostaCategorias,
+                    respostaPropriedades,
+                    respostaAtividades,
                 ] = await Promise.all([
                     fetch(
                         `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacaoId}`,
@@ -197,13 +219,31 @@ function EditarMovimentacao() {
                             headers: cabecalhos,
                         },
                     ),
+
+                    fetch(
+                        `${API_URL}/colaboracao/empresas/${empresaId}/propriedades`,
+                        {
+                            headers: cabecalhos,
+                        },
+                    ),
+
+                    fetch(
+                        `${API_URL}/colaboracao/empresas/${empresaId}/atividades`,
+                        {
+                            headers: cabecalhos,
+                        },
+                    ),
                 ])
 
                 if (
                     respostaMovimentacao.status === 401 ||
                     respostaMovimentacao.status === 403 ||
                     respostaCategorias.status === 401 ||
-                    respostaCategorias.status === 403
+                    respostaCategorias.status === 403 ||
+                    respostaPropriedades.status === 401 ||
+                    respostaPropriedades.status === 403 ||
+                    respostaAtividades.status === 401 ||
+                    respostaAtividades.status === 403
                 ) {
                     limparSessao()
 
@@ -240,6 +280,16 @@ function EditarMovimentacao() {
                 const dadosCategorias =
                     await respostaCategorias.json()
 
+                const dadosPropriedades =
+                    respostaPropriedades.ok
+                        ? await respostaPropriedades.json()
+                        : []
+
+                const dadosAtividades =
+                    respostaAtividades.ok
+                        ? await respostaAtividades.json()
+                        : []
+
                 if (!componenteAtivo) {
                     return
                 }
@@ -268,10 +318,34 @@ function EditarMovimentacao() {
                     movimentacao.observacao ?? '',
                 )
 
+                setPropriedadeRuralId(
+                    movimentacao.propriedadeRuralId
+                        ? String(movimentacao.propriedadeRuralId)
+                        : '',
+                )
+
+                setAtividadeRuralId(
+                    movimentacao.atividadeRuralId
+                        ? String(movimentacao.atividadeRuralId)
+                        : '',
+                )
+
                 setCategorias(
                     Array.isArray(dadosCategorias)
                         ? dadosCategorias
                         : dadosCategorias.content ?? [],
+                )
+
+                setPropriedades(
+                    Array.isArray(dadosPropriedades)
+                        ? dadosPropriedades
+                        : [],
+                )
+
+                setAtividades(
+                    Array.isArray(dadosAtividades)
+                        ? dadosAtividades
+                        : [],
                 )
 
                 setErro('')
@@ -394,6 +468,14 @@ function EditarMovimentacao() {
             dataMovimentacao,
             observacao:
                 observacao.trim() || null,
+            propriedadeRuralId:
+                propriedadeRuralId
+                    ? Number(propriedadeRuralId)
+                    : null,
+            atividadeRuralId:
+                atividadeRuralId
+                    ? Number(atividadeRuralId)
+                    : null,
         }
 
         try {
@@ -672,6 +754,70 @@ function EditarMovimentacao() {
                                             ),
                                         )}
                                     </select>
+                                </div>
+
+                                <div className="formulario-linha">
+                                    <div className="formulario-campo">
+                                        <label htmlFor="propriedadeRural">
+                                            Propriedade
+                                        </label>
+
+                                        <select
+                                            disabled={salvando}
+                                            id="propriedadeRural"
+                                            onChange={(evento) =>
+                                                setPropriedadeRuralId(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            value={propriedadeRuralId}
+                                        >
+                                            <option value="">
+                                                Sem propriedade especifica
+                                            </option>
+
+                                            {propriedades.map(
+                                                (propriedade) => (
+                                                    <option
+                                                        key={propriedade.id}
+                                                        value={propriedade.id}
+                                                    >
+                                                        {propriedade.nome}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div className="formulario-campo">
+                                        <label htmlFor="atividadeRural">
+                                            Atividade
+                                        </label>
+
+                                        <select
+                                            disabled={salvando}
+                                            id="atividadeRural"
+                                            onChange={(evento) =>
+                                                setAtividadeRuralId(
+                                                    evento.target.value,
+                                                )
+                                            }
+                                            value={atividadeRuralId}
+                                        >
+                                            <option value="">
+                                                Sem atividade especifica
+                                            </option>
+
+                                            {atividades.map((atividade) => (
+                                                <option
+                                                    key={atividade.id}
+                                                    value={atividade.id}
+                                                >
+                                                    {atividade.nome}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div className="formulario-campo">

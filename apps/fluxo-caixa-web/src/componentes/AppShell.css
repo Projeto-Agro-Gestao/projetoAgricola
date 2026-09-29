@@ -1,0 +1,54 @@
+.app-shell {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 50;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #cfe3c4;
+    border-radius: 8px;
+    background: rgba(250, 255, 247, 0.96);
+    box-shadow: 0 12px 34px rgba(39, 86, 22, 0.14);
+}
+
+.app-shell button {
+    min-height: 42px;
+    border: 1px solid #b8d8aa;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #275616;
+    cursor: pointer;
+    font-weight: 800;
+    padding: 0 14px;
+}
+
+.app-shell button:hover {
+    border-color: #348b00;
+    color: #348b00;
+}
+
+.app-shell .app-shell-sair {
+    background: #348b00;
+    border-color: #348b00;
+    color: #ffffff;
+}
+
+.app-shell .app-shell-sair:hover {
+    background: #2a7000;
+    border-color: #2a7000;
+    color: #ffffff;
+}
+
+@media (max-width: 720px) {
+    .app-shell {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .app-shell button {
+        flex: 1;
+        padding: 0 10px;
+    }
+}

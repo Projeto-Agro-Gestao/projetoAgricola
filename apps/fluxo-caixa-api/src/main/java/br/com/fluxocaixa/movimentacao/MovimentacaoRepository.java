@@ -213,6 +213,23 @@ public interface MovimentacaoRepository
     );
 
     @Query("""
+            SELECT COUNT(movimentacao)
+            FROM Movimentacao movimentacao
+            WHERE movimentacao.empresa.id = :empresaId
+              AND movimentacao.tipo = br.com.fluxocaixa.movimentacao.TipoMovimentacao.DESPESA
+              AND movimentacao.excluida = false
+              AND NOT EXISTS (
+                    SELECT documento.id
+                    FROM DocumentoAgro documento
+                    WHERE documento.movimentacao.id = movimentacao.id
+              )
+            """)
+    long countDespesasSemDocumento(
+            @Param("empresaId")
+            Long empresaId
+    );
+
+    @Query("""
             SELECT movimentacao
             FROM Movimentacao movimentacao
             WHERE movimentacao.empresa.id = :empresaId

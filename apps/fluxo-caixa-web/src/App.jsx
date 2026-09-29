@@ -9,6 +9,7 @@ import {
     Routes,
 } from 'react-router'
 import PaginaInicial from './PaginaInicial.jsx'
+import AppShell from './componentes/AppShell.jsx'
 import CarregandoRota from './componentes/CarregandoRota.jsx'
 import { registrarRotaAtual } from './navegacao.js'
 
@@ -43,8 +44,10 @@ function App() {
     }, [location])
 
     return (
-        <Suspense fallback={<CarregandoRota />}>
-            <Routes>
+        <>
+            <AppShell />
+            <Suspense fallback={<CarregandoRota />}>
+                <Routes>
                 <Route
                     path="/"
                     element={<PaginaInicial />}
@@ -149,8 +152,9 @@ function App() {
                     path="/contador"
                     element={<ContadorCarteira />}
                 />
-            </Routes>
-        </Suspense>
+                </Routes>
+            </Suspense>
+        </>
     )
 }
 

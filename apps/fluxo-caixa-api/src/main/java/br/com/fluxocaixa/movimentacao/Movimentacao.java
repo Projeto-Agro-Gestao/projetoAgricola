@@ -1,6 +1,8 @@
 package br.com.fluxocaixa.movimentacao;
 
 import br.com.fluxocaixa.categoria.Categoria;
+import br.com.fluxocaixa.colaboracao.AtividadeRural;
+import br.com.fluxocaixa.colaboracao.PropriedadeRural;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.fornecedor.Fornecedor;
 import br.com.fluxocaixa.produto.Produto;
@@ -106,6 +108,14 @@ public class Movimentacao {
     @Column(name = "valor_unitario", precision = 19, scale = 4)
     private BigDecimal valorUnitario;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "propriedade_rural_id")
+    private PropriedadeRural propriedadeRural;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "atividade_rural_id")
+    private AtividadeRural atividadeRural;
+
     protected Movimentacao() {
     }
 
@@ -125,6 +135,8 @@ public class Movimentacao {
                 tipo,
                 dataMovimentacao,
                 observacao,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -151,6 +163,44 @@ public class Movimentacao {
             BigDecimal quantidade,
             String unidadeMedida) {
 
+        this(
+                empresa,
+                categoria,
+                descricao,
+                valor,
+                tipo,
+                dataMovimentacao,
+                observacao,
+                fornecedor,
+                compradorNome,
+                produto,
+                produtoNome,
+                produtoClassificacao,
+                quantidade,
+                unidadeMedida,
+                null,
+                null
+        );
+    }
+
+    public Movimentacao(
+            Empresa empresa,
+            Categoria categoria,
+            String descricao,
+            BigDecimal valor,
+            TipoMovimentacao tipo,
+            LocalDate dataMovimentacao,
+            String observacao,
+            Fornecedor fornecedor,
+            String compradorNome,
+            Produto produto,
+            String produtoNome,
+            String produtoClassificacao,
+            BigDecimal quantidade,
+            String unidadeMedida,
+            PropriedadeRural propriedadeRural,
+            AtividadeRural atividadeRural) {
+
         this.empresa = empresa;
         this.categoria = categoria;
         this.descricao = descricao;
@@ -176,6 +226,8 @@ public class Movimentacao {
                 valor,
                 quantidade
         );
+        this.propriedadeRural = propriedadeRural;
+        this.atividadeRural = atividadeRural;
     }
 
     public void moverParaLixeira() {
@@ -213,7 +265,9 @@ public class Movimentacao {
             String produtoNome,
             String produtoClassificacao,
             BigDecimal quantidade,
-            String unidadeMedida) {
+            String unidadeMedida,
+            PropriedadeRural propriedadeRural,
+            AtividadeRural atividadeRural) {
 
         this.categoria = categoria;
         this.descricao = descricao;
@@ -239,6 +293,8 @@ public class Movimentacao {
                 valor,
                 quantidade
         );
+        this.propriedadeRural = propriedadeRural;
+        this.atividadeRural = atividadeRural;
     }
 
     public Long getId() {
@@ -337,6 +393,14 @@ public class Movimentacao {
 
     public BigDecimal getValorUnitario() {
         return valorUnitario;
+    }
+
+    public PropriedadeRural getPropriedadeRural() {
+        return propriedadeRural;
+    }
+
+    public AtividadeRural getAtividadeRural() {
+        return atividadeRural;
     }
 
     private BigDecimal calcularValorUnitario(

@@ -30,4 +30,19 @@ public interface PendenciaAgroRepository
             TipoPendenciaAgro tipo,
             StatusPendenciaAgro status
     );
+
+    boolean existsByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNot(
+            Long empresaId,
+            Long movimentacaoId,
+            TipoPendenciaAgro tipo,
+            StatusPendenciaAgro status
+    );
+
+    List<PendenciaAgro>
+    findAllByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNotOrderByCriadoEmDesc(
+            Long empresaId,
+            Long movimentacaoId,
+            TipoPendenciaAgro tipo,
+            StatusPendenciaAgro status
+    );
 }

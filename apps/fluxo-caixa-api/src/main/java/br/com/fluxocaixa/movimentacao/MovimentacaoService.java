@@ -3,6 +3,15 @@ package br.com.fluxocaixa.movimentacao;
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.categoria.CategoriaNaoEncontradaException;
 import br.com.fluxocaixa.categoria.CategoriaRepository;
+import br.com.fluxocaixa.colaboracao.AtividadeRural;
+import br.com.fluxocaixa.colaboracao.AtividadeRuralRepository;
+import br.com.fluxocaixa.colaboracao.PendenciaAgro;
+import br.com.fluxocaixa.colaboracao.PendenciaAgroRepository;
+import br.com.fluxocaixa.colaboracao.PrioridadePendenciaAgro;
+import br.com.fluxocaixa.colaboracao.PropriedadeRural;
+import br.com.fluxocaixa.colaboracao.PropriedadeRuralRepository;
+import br.com.fluxocaixa.colaboracao.StatusPendenciaAgro;
+import br.com.fluxocaixa.colaboracao.TipoPendenciaAgro;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
@@ -23,17 +32,26 @@ public class MovimentacaoService {
     private final EmpresaRepository empresaRepository;
     private final CategoriaRepository categoriaRepository;
     private final FornecedorService fornecedorService;
+    private final PropriedadeRuralRepository propriedadeRuralRepository;
+    private final AtividadeRuralRepository atividadeRuralRepository;
+    private final PendenciaAgroRepository pendenciaAgroRepository;
 
     public MovimentacaoService(
             MovimentacaoRepository movimentacaoRepository,
             EmpresaRepository empresaRepository,
             CategoriaRepository categoriaRepository,
-            FornecedorService fornecedorService) {
+            FornecedorService fornecedorService,
+            PropriedadeRuralRepository propriedadeRuralRepository,
+            AtividadeRuralRepository atividadeRuralRepository,
+            PendenciaAgroRepository pendenciaAgroRepository) {
 
         this.movimentacaoRepository = movimentacaoRepository;
         this.empresaRepository = empresaRepository;
         this.categoriaRepository = categoriaRepository;
         this.fornecedorService = fornecedorService;
+        this.propriedadeRuralRepository = propriedadeRuralRepository;
+        this.atividadeRuralRepository = atividadeRuralRepository;
+        this.pendenciaAgroRepository = pendenciaAgroRepository;
     }
 
     @Transactional
@@ -65,6 +83,18 @@ public class MovimentacaoService {
                         request.tipo()
                 );
 
+        PropriedadeRural propriedadeRural =
+                buscarPropriedadeSeInformada(
+                        empresaId,
+                        request.propriedadeRuralId()
+                );
+
+        AtividadeRural atividadeRural =
+                buscarAtividadeSeInformada(
+                        empresaId,
+                        request.atividadeRuralId()
+                );
+
         Movimentacao movimentacao = new Movimentacao(
                 empresa,
                 categoria,
@@ -83,11 +113,18 @@ public class MovimentacaoService {
                         request.produtoClassificacao()
                 ),
                 request.quantidade(),
-                normalizarTextoOpcional(request.unidadeMedida())
+                normalizarTextoOpcional(request.unidadeMedida()),
+                propriedadeRural,
+                atividadeRural
         );
 
         Movimentacao movimentacaoSalva =
                 movimentacaoRepository.save(movimentacao);
+
+        criarPendenciaDocumentoAusenteSeNecessario(
+                empresa,
+                movimentacaoSalva
+        );
 
         return MovimentacaoResponse.de(movimentacaoSalva);
     }
@@ -222,6 +259,18 @@ public class MovimentacaoService {
                         request.tipo()
                 );
 
+        PropriedadeRural propriedadeRural =
+                buscarPropriedadeSeInformada(
+                        empresaId,
+                        request.propriedadeRuralId()
+                );
+
+        AtividadeRural atividadeRural =
+                buscarAtividadeSeInformada(
+                        empresaId,
+                        request.atividadeRuralId()
+                );
+
         movimentacao.atualizar(
                 categoria,
                 descricao,
@@ -239,11 +288,18 @@ public class MovimentacaoService {
                         request.produtoClassificacao()
                 ),
                 request.quantidade(),
-                normalizarTextoOpcional(request.unidadeMedida())
+                normalizarTextoOpcional(request.unidadeMedida()),
+                propriedadeRural,
+                atividadeRural
         );
 
         Movimentacao movimentacaoAtualizada =
                 movimentacaoRepository.saveAndFlush(movimentacao);
+
+        criarPendenciaDocumentoAusenteSeNecessario(
+                movimentacaoAtualizada.getEmpresa(),
+                movimentacaoAtualizada
+        );
 
         return MovimentacaoResponse.de(movimentacaoAtualizada);
     }
@@ -445,6 +501,73 @@ public class MovimentacaoService {
         if (dataInicial.isAfter(dataFinal)) {
             throw new PeriodoInvalidoException();
         }
+    }
+
+    private PropriedadeRural buscarPropriedadeSeInformada(
+            Long empresaId,
+            Long propriedadeRuralId) {
+
+        if (propriedadeRuralId == null) {
+            return null;
+        }
+
+        return propriedadeRuralRepository
+                .findByIdAndEmpresa_Id(propriedadeRuralId, empresaId)
+                .filter(PropriedadeRural::isAtiva)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Propriedade nao encontrada."
+                        )
+                );
+    }
+
+    private AtividadeRural buscarAtividadeSeInformada(
+            Long empresaId,
+            Long atividadeRuralId) {
+
+        if (atividadeRuralId == null) {
+            return null;
+        }
+
+        return atividadeRuralRepository
+                .findByIdAndEmpresa_Id(atividadeRuralId, empresaId)
+                .filter(AtividadeRural::isAtiva)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Atividade nao encontrada."
+                        )
+                );
+    }
+
+    private void criarPendenciaDocumentoAusenteSeNecessario(
+            Empresa empresa,
+            Movimentacao movimentacao) {
+
+        if (movimentacao.getTipo() != TipoMovimentacao.DESPESA
+                || pendenciaAgroRepository
+                        .existsByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNot(
+                                empresa.getId(),
+                                movimentacao.getId(),
+                                TipoPendenciaAgro.DOCUMENTO_AUSENTE,
+                                StatusPendenciaAgro.RESOLVIDA
+                        )) {
+            return;
+        }
+
+        pendenciaAgroRepository.save(
+                new PendenciaAgro(
+                        empresa,
+                        movimentacao,
+                        null,
+                        null,
+                        null,
+                        TipoPendenciaAgro.DOCUMENTO_AUSENTE,
+                        PrioridadePendenciaAgro.NORMAL,
+                        "Documento pendente",
+                        "Anexe a nota fiscal, recibo ou comprovante desta despesa para o contador revisar.",
+                        null
+                )
+        );
     }
 
     private Fornecedor buscarFornecedorSeInformado(

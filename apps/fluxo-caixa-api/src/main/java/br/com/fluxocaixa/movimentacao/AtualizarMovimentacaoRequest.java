@@ -88,6 +88,11 @@ public record AtualizarMovimentacaoRequest(
                 message = "A unidade deve possuir no maximo 30 caracteres"
         )
         String unidadeMedida
+        ,
+
+        Long propriedadeRuralId,
+
+        Long atividadeRuralId
 
 ) {
 }
