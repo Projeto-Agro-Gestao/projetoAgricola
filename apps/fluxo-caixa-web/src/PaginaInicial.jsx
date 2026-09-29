@@ -1,31 +1,54 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import {
+    IconeAlerta,
     IconeCalendario,
     IconeCamadas,
+    IconeCategoria,
     IconeCheck,
+    IconeDocumento,
     IconeFechar,
     IconeFolha,
     IconeLista,
     IconeMenu,
-    IconeMenos,
-    IconePata,
-    IconeSetaBaixo,
-    IconeSetaCima,
-    IconeSetaDiagonal,
     IconeSetaDireita,
 } from './componentes/Icones.jsx'
 import Revelar from './componentes/Revelar.jsx'
-import ValorAnimado from './componentes/ValorAnimado.jsx'
 import InstalarApp from './componentes/InstalarApp.jsx'
 import './App.css'
 
-function formatarMoeda(valor) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(valor)
-}
+const recursos = [
+    {
+        icone: <IconeLista />,
+        titulo: 'Movimentacoes financeiras',
+        texto: 'Receitas e despesas da propriedade ficam organizadas em uma base unica para produtor e contador.',
+    },
+    {
+        icone: <IconeDocumento />,
+        titulo: 'Documentos vinculados',
+        texto: 'Notas, recibos e comprovantes podem acompanhar a movimentacao correspondente.',
+    },
+    {
+        icone: <IconeAlerta />,
+        titulo: 'Pendencias visiveis',
+        texto: 'O contador acompanha o que falta e solicita informacoes ao produtor dentro do contexto correto.',
+    },
+    {
+        icone: <IconeCategoria />,
+        titulo: 'Classificacao contabil',
+        texto: 'Categorias financeiras e tratamentos fiscais ficam separados para evitar conclusoes automaticas.',
+    },
+    {
+        icone: <IconeCamadas />,
+        titulo: 'Propriedades e atividades',
+        texto: 'A leitura pode considerar propriedade, atividade rural, fornecedor, categoria e periodo.',
+    },
+    {
+        icone: <IconeCalendario />,
+        titulo: 'Rotina durante o ano',
+        texto: 'As informacoes chegam ao contador aos poucos, antes de virar uma correria no fechamento.',
+    },
+]
 
 function PaginaInicial() {
     const [menuAberto, setMenuAberto] = useState(false)
@@ -38,547 +61,459 @@ function PaginaInicial() {
         <div className="publica">
             <header className="publica-cabecalho">
                 <Link className="publica-marca" to="/">
-                    <span className="publica-marca-icone"><IconeFolha /></span>
-                    <span>AgroGestão</span>
+                    <span className="publica-marca-icone">
+                        <IconeFolha />
+                    </span>
+                    <span>AgroGestao</span>
                 </Link>
 
-                <nav className="publica-menu">
-                    <a href="#atividades">Atividades</a>
+                <nav className="publica-menu" aria-label="Principal">
+                    <a href="#produtores">Para produtores</a>
+                    <a href="#contadores">Para contadores</a>
+                    <a href="#como-funciona">Como funciona</a>
                     <a href="#recursos">Recursos</a>
-                    <a href="#financeiro">Como funciona</a>
                 </nav>
 
                 <div className="publica-acoes">
-                    <Link
-                        className="publica-entrar"
-                        to="/login"
-                    >
+                    <Link className="publica-entrar" to="/login">
                         Entrar
                     </Link>
 
-                    <Link
-                        className="publica-botao publica-botao-pequeno"
-                        to="/cadastro"
-                    >
-                        Criar conta
+                    <Link className="publica-botao publica-botao-pequeno" to="/cadastro">
+                        Quero conhecer
                     </Link>
 
                     <button
                         aria-expanded={menuAberto}
-                        aria-label={
-                            menuAberto
-                                ? 'Fechar menu'
-                                : 'Abrir menu'
-                        }
+                        aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
                         className="publica-menu-mobile-botao"
-                        onClick={() =>
-                            setMenuAberto(
-                                (valorAtual) => !valorAtual,
-                            )
-                        }
+                        onClick={() => setMenuAberto((valorAtual) => !valorAtual)}
                         type="button"
                     >
-                        {menuAberto ? (
-                            <IconeFechar />
-                        ) : (
-                            <IconeMenu />
-                        )}
+                        {menuAberto ? <IconeFechar /> : <IconeMenu />}
                     </button>
                 </div>
 
                 {menuAberto && (
-                    <nav className="publica-menu-mobile">
-                        <a
-                            href="#atividades"
-                            onClick={fecharMenu}
-                        >
-                            Atividades
+                    <nav className="publica-menu-mobile" aria-label="Menu mobile">
+                        <a href="#produtores" onClick={fecharMenu}>
+                            Para produtores
                         </a>
-
-                        <a
-                            href="#recursos"
-                            onClick={fecharMenu}
-                        >
-                            Recursos
+                        <a href="#contadores" onClick={fecharMenu}>
+                            Para contadores
                         </a>
-
-                        <a
-                            href="#financeiro"
-                            onClick={fecharMenu}
-                        >
+                        <a href="#como-funciona" onClick={fecharMenu}>
                             Como funciona
+                        </a>
+                        <a href="#recursos" onClick={fecharMenu}>
+                            Recursos
                         </a>
                     </nav>
                 )}
             </header>
 
             <main>
-                <section className="publica-inicio">
-                    <div className="publica-inicio-conteudo">
-              <span className="publica-etiqueta">
-                Gestão financeira para o produtor rural
-              </span>
+                <section className="publica-hero">
+                    <div className="publica-hero-texto">
+                        <span className="publica-etiqueta">
+                            Gestao financeira rural para produtores e contadores
+                        </span>
 
                         <h1>
-                            Mais clareza para cuidar das
+                            Produtor organizado.
+                            <br />
                             {' '}
-                            <strong>finanças da propriedade</strong>
+                            Contador com tudo na mao.
                         </h1>
 
                         <p>
-                            Registre receitas e despesas, organize suas
-                            categorias e acompanhe quanto entrou, quanto
-                            saiu e quanto sobrou em sua propriedade rural.
+                            Conecte produtor rural e escritorio contabil durante
+                            todo o ano. Movimentacoes, documentos, pendencias e
+                            informacoes da propriedade em uma unica plataforma.
                         </p>
 
-                        <div className="publica-inicio-botoes">
-                            <Link
-                                className="publica-botao"
-                                to="/cadastro"
-                            >
-                                Criar conta <span><IconeSetaDireita /></span>
+                        <div className="publica-hero-acoes">
+                            <Link className="publica-botao publica-botao-grande" to="/cadastro">
+                                Quero conhecer a plataforma
+                                <span>
+                                    <IconeSetaDireita />
+                                </span>
                             </Link>
 
-                            <a
-                                className="publica-botao-secundario"
-                                href="#recursos"
-                            >
-                                Conheça os recursos
+                            <a className="publica-botao-secundario" href="#produtores">
+                                Sou produtor rural
                             </a>
                         </div>
                     </div>
 
-                    <div className="publica-previa">
-                        <div className="publica-barra-janela">
-                            <span className="publica-circulo publica-vermelho" />
-                            <span className="publica-circulo publica-amarelo" />
-                            <span className="publica-circulo publica-verde" />
+                    <div className="publica-hero-visual" aria-label="Previa ilustrativa da plataforma">
+                        <div className="publica-flutuante publica-flutuante-a">
+                            <strong>3 documentos pendentes</strong>
+                            <span>visiveis para o contador</span>
                         </div>
 
-                        <div className="publica-painel">
-                            <div className="publica-painel-topo">
+                        <div className="publica-flutuante publica-flutuante-b">
+                            <strong>Produtor atualizado</strong>
+                            <span>movimentacoes enviadas</span>
+                        </div>
+
+                        <div className="publica-app-mockup">
+                            <div className="publica-app-topo">
+                                <span>Carteira rural</span>
+                                <strong>Setembro</strong>
+                            </div>
+
+                            <div className="publica-app-grid">
+                                <article>
+                                    <small>Receitas</small>
+                                    <strong>R$ 150.000</strong>
+                                    <span>vendas registradas</span>
+                                </article>
+                                <article>
+                                    <small>Despesas</small>
+                                    <strong>R$ 85.000</strong>
+                                    <span>com documentos</span>
+                                </article>
+                                <article>
+                                    <small>Resultado</small>
+                                    <strong>R$ 65.000</strong>
+                                    <span>financeiro</span>
+                                </article>
+                            </div>
+
+                            <div className="publica-app-linha">
+                                <span className="publica-ponto publica-ponto-verde" />
                                 <div>
-                    <span className="publica-painel-legenda">
-                      Demonstração do sistema
-                    </span>
-
-                                    <h2>Resumo financeiro</h2>
+                                    <strong>Compra de fertilizante</strong>
+                                    <small>Documento vinculado · Fazenda Boa Vista</small>
                                 </div>
-
-                                <span className="publica-periodo">
-                    Dados ilustrativos
-                  </span>
+                                <b>R$ 8.500</b>
                             </div>
 
-                            <div className="publica-resumo">
-                                <article className="publica-cartao publica-receita">
-                                    <span>Total que entrou</span>
-                                    <strong>
-                                        <ValorAnimado
-                                            formatar={formatarMoeda}
-                                            valor={15700}
-                                        />
-                                    </strong>
-                                    <small>Exemplo de receitas</small>
-                                </article>
-
-                                <article className="publica-cartao publica-despesa">
-                                    <span>Total que saiu</span>
-                                    <strong>
-                                        <ValorAnimado
-                                            formatar={formatarMoeda}
-                                            valor={850}
-                                        />
-                                    </strong>
-                                    <small>Exemplo de despesas</small>
-                                </article>
-
-                                <article className="publica-cartao publica-saldo">
-                                    <span>Quanto sobrou</span>
-                                    <strong>
-                                        <ValorAnimado
-                                            formatar={formatarMoeda}
-                                            valor={14850}
-                                        />
-                                    </strong>
-                                    <small>Exemplo de saldo</small>
-                                </article>
+                            <div className="publica-app-linha">
+                                <span className="publica-ponto publica-ponto-lima" />
+                                <div>
+                                    <strong>Venda da producao</strong>
+                                    <small>Receita enviada ao contador</small>
+                                </div>
+                                <b>R$ 30.000</b>
                             </div>
 
-                            <div className="publica-painel-inferior">
-                                <article className="publica-grafico">
-                                    <div className="publica-bloco-titulo">
-                                        <div>
-                                            <h3>Fluxo de caixa</h3>
-
-                                            <p>
-                                                Exemplo visual de receitas e despesas
-                                            </p>
-                                        </div>
-
-                                        <span>Demonstração</span>
-                                    </div>
-
-                                    <div className="publica-grafico-area">
-                                        <div className="publica-linha publica-linha-1" />
-                                        <div className="publica-linha publica-linha-2" />
-                                        <div className="publica-linha publica-linha-3" />
-
-                                        <svg
-                                            aria-label="Gráfico demonstrativo de receitas e despesas"
-                                            preserveAspectRatio="none"
-                                            role="img"
-                                            viewBox="0 0 600 180"
-                                        >
-                                            <path
-                                                className="publica-area-receita"
-                                                d="M0,145 C80,130 120,155 190,110 C270,55 320,70 390,90 C470,115 520,70 600,25 L600,180 L0,180 Z"
-                                            />
-
-                                            <path
-                                                className="publica-linha-receita"
-                                                d="M0,145 C80,130 120,155 190,110 C270,55 320,70 390,90 C470,115 520,70 600,25"
-                                                pathLength="1"
-                                            />
-
-                                            <path
-                                                className="publica-linha-despesa"
-                                                d="M0,165 C90,135 150,150 230,155 C320,165 355,110 430,120 C500,130 535,150 600,158"
-                                                pathLength="1"
-                                            />
-                                        </svg>
-                                    </div>
-                                </article>
-
-                                <article className="publica-movimentacoes">
-                                    <div className="publica-bloco-titulo">
-                                        <div>
-                                            <h3>Movimentações recentes</h3>
-                                            <p>Exemplos de lançamentos rurais</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="publica-movimentacao">
-                      <span className="publica-movimentacao-icone publica-entrada">
-                        <IconeSetaBaixo />
-                      </span>
-
-                                        <div>
-                                            <strong>Venda da produção</strong>
-                                            <small>Categoria de receita</small>
-                                        </div>
-
-                                        <b className="publica-valor-entrada">
-                                            +{' '}
-                                            <ValorAnimado
-                                                formatar={formatarMoeda}
-                                                valor={3200}
-                                            />
-                                        </b>
-                                    </div>
-
-                                    <div className="publica-movimentacao">
-                      <span className="publica-movimentacao-icone publica-saida">
-                        <IconeSetaCima />
-                      </span>
-
-                                        <div>
-                                            <strong>Abastecimento do trator</strong>
-                                            <small>Categoria: Combustível</small>
-                                        </div>
-
-                                        <b className="publica-valor-saida">
-                                            −{' '}
-                                            <ValorAnimado
-                                                formatar={formatarMoeda}
-                                                valor={850}
-                                            />
-                                        </b>
-                                    </div>
-                                </article>
+                            <div className="publica-app-rodape">
+                                <span>2 propriedades</span>
+                                <span>11 movimentacoes</span>
+                                <span>5 documentos</span>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section
-                    className="publica-segmentos"
-                    id="atividades"
-                >
-                    <Revelar as="p">
-                        Feito para a rotina do produtor rural — adapta as
-                        categorias à atividade escolhida.
-                    </Revelar>
-
-                    <Revelar className="publica-segmentos-lista">
-                        <article>
-                            <span><IconeFolha /></span>
-                            <strong>Agricultura</strong>
-                        </article>
-
-                        <article>
-                            <span><IconePata /></span>
-                            <strong>Pecuária</strong>
-                        </article>
-
-                        <article>
-                            <span>R$</span>
-                            <strong>Receitas</strong>
-                        </article>
-
-                        <article>
-                            <span><IconeMenos /></span>
-                            <strong>Despesas</strong>
-                        </article>
-
-                        <article>
-                            <span><IconeCheck /></span>
-                            <strong>Categorias próprias</strong>
-                        </article>
-                    </Revelar>
+                <section className="publica-faixa-confianca">
+                    <span>Feito para a rotina financeira do produtor rural.</span>
+                    <div>
+                        <b>Agricultura</b>
+                        <b>Pecuaria</b>
+                        <b>Receitas</b>
+                        <b>Despesas</b>
+                        <b>Documentos</b>
+                        <b>Contadores</b>
+                    </div>
                 </section>
 
-                <section
-                    className="publica-recursos"
-                    id="recursos"
-                >
-                    <Revelar className="publica-secao-titulo">
-                        <span className="publica-etiqueta">
-                            Recursos
-                        </span>
-
-                        <h2>
-                            O que você resolve com o AgroGestão
-                        </h2>
-
+                <section className="publica-problema">
+                    <Revelar className="publica-secao-editorial">
+                        <span className="publica-etiqueta">O problema</span>
+                        <h2>Hoje, produtor e contador ainda trabalham separados.</h2>
                         <p>
-                            Registre receitas e despesas, organize
-                            categorias e acompanhe o resultado da
-                            sua propriedade em um só lugar.
+                            O produtor registra informacoes de um lado, guarda
+                            documentos em outro e muitas vezes precisa enviar
+                            tudo ao contador de forma manual. O contador recebe
+                            dados espalhados, cobra documentos e organiza tudo
+                            antes de conseguir analisar.
                         </p>
                     </Revelar>
 
-                    <div className="publica-grade-recursos">
-                        <Revelar as="article" atraso={0}>
-                            <span className="publica-recurso-icone">
-                                R$
-                            </span>
-
-                            <h3>Receitas e despesas</h3>
-
-                            <p>
-                                Cadastre entradas e gastos com
-                                valor, data e observações.
-                            </p>
-                        </Revelar>
-
-                        <Revelar as="article" atraso={60}>
-                            <span className="publica-recurso-icone">
-                                <IconeLista />
-                            </span>
-
-                            <h3>Movimentações organizadas</h3>
-
-                            <p>
-                                Consulte e filtre os lançamentos
-                                registrados na propriedade.
-                            </p>
-                        </Revelar>
-
-                        <Revelar as="article" atraso={120}>
-                            <span className="publica-recurso-icone">
-                                <IconeCheck />
-                            </span>
-
-                            <h3>Categorias do seu jeito</h3>
-
-                            <p>
-                                Use categorias iniciais ou crie
-                                novas sem sair do lançamento.
-                            </p>
-                        </Revelar>
-
-                        <Revelar as="article" atraso={180}>
-                            <span className="publica-recurso-icone">
-                                <IconeSetaDiagonal />
-                            </span>
-
-                            <h3>Resumo financeiro</h3>
-
-                            <p>
-                                Veja quanto entrou, quanto saiu,
-                                o saldo e os indicadores.
-                            </p>
-                        </Revelar>
-
-                        <Revelar as="article" atraso={240}>
-                            <span className="publica-recurso-icone">
-                                <IconeCamadas />
-                            </span>
-
-                            <h3>Dados por propriedade</h3>
-
-                            <p>
-                                Cada conta acessa apenas as
-                                informações da sua empresa.
-                            </p>
-                        </Revelar>
-
-                        <Revelar
-                            as="article"
-                            atraso={300}
-                            className="publica-recurso-proximo"
-                        >
-                            <span className="publica-recurso-icone">
-                                <IconeCalendario />
-                            </span>
-
-                            <h3>Contas a pagar e receber</h3>
-
-                            <p>
-                                Previsões, vencimentos e
-                                lembretes para os próximos
-                                pagamentos.
-                            </p>
-
-                            <span className="publica-badge">
-                                Em breve
-                            </span>
-                        </Revelar>
-                    </div>
+                    <Revelar className="publica-fluxo-antigo">
+                        <span>Produtor</span>
+                        <i>WhatsApp</i>
+                        <i>Planilhas</i>
+                        <i>Fotos</i>
+                        <i>E-mails</i>
+                        <span>Contador</span>
+                        <strong>Organizacao manual</strong>
+                    </Revelar>
                 </section>
 
-                <section
-                    className="publica-financeiro"
-                    id="financeiro"
-                >
-                    <Revelar className="publica-financeiro-texto">
-                        <span className="publica-etiqueta">
-                            Como funciona
-                        </span>
-
-                        <h2>
-                            Do cadastro ao resultado, em poucos passos
-                        </h2>
-
+                <section className="publica-ponte" id="como-funciona">
+                    <Revelar className="publica-ponte-texto">
+                        <span className="publica-etiqueta">A nova forma de trabalhar</span>
+                        <h2>Uma ponte entre o produtor e o contador.</h2>
                         <p>
-                            O painel usa os registros da sua própria conta.
-                            Os exemplos desta página são demonstrações
-                            visuais e estão identificados como tal.
+                            O produtor registra e envia informacoes durante o
+                            ano. A plataforma organiza. O contador acompanha,
+                            solicita o que falta, classifica e trabalha com tudo
+                            mais claro.
+                        </p>
+                    </Revelar>
+
+                    <Revelar className="publica-ponte-visual">
+                        <article>
+                            <small>Produtor</small>
+                            <strong>Registra a rotina</strong>
+                            <span>Receitas, despesas e documentos</span>
+                        </article>
+
+                        <div className="publica-ponte-centro">
+                            <strong>AgroGestao</strong>
+                            <div>
+                                <span>Movimentacoes</span>
+                                <span>Documentos</span>
+                                <span>Pendencias</span>
+                                <span>Propriedades</span>
+                                <span>Categorias</span>
+                                <span>Financeiro</span>
+                            </div>
+                        </div>
+
+                        <article>
+                            <small>Contador</small>
+                            <strong>Analisa e valida</strong>
+                            <span>Classificacao, documentos e simulacoes</span>
+                        </article>
+                    </Revelar>
+                </section>
+
+                <section className="publica-contador" id="contadores">
+                    <Revelar className="publica-contador-copy">
+                        <span className="publica-etiqueta">Para contadores</span>
+                        <h2>Seu escritorio acompanha todos os produtores em um so lugar.</h2>
+                        <p>
+                            Veja quem precisa de atencao, quais documentos
+                            chegaram, o que esta sem classificacao e como esta o
+                            resultado financeiro dos produtores vinculados.
                         </p>
 
                         <ul>
-                            <li>
-                                Cadastro para Agricultura, Pecuária ou ambas
-                            </li>
-
-                            <li>
-                                Categorias iniciais conforme a atividade
-                            </li>
-
-                            <li>
-                                Receitas e despesas separadas por categoria
-                            </li>
-
-                            <li>
-                                Histórico financeiro preservado
-                            </li>
-
-                            <li>
-                                Dados separados entre as empresas
-                            </li>
+                            <li>Acompanhe varios produtores sem planilhas paralelas.</li>
+                            <li>Solicite documentos dentro do contexto da movimentacao.</li>
+                            <li>Reduza trocas soltas de mensagem ao longo do ano.</li>
+                            <li>Trabalhe com dados que ja chegam organizados.</li>
                         </ul>
                     </Revelar>
 
-                    <Revelar className="publica-passos">
-                        <article>
-                            <span>1</span>
-
+                    <Revelar className="publica-carteira-mockup">
+                        <div className="publica-carteira-topo">
                             <div>
-                                <strong>Crie sua conta</strong>
-
-                                <p>
-                                    Informe os dados da propriedade e escolha
-                                    Agricultura, Pecuária ou as duas atividades.
-                                </p>
+                                <small>Meus produtores</small>
+                                <strong>Carteira do escritorio</strong>
                             </div>
-                        </article>
+                            <span>47 produtores</span>
+                        </div>
 
-                        <article>
-                            <span>2</span>
+                        <div className="publica-carteira-metricas">
+                            <article>
+                                <strong>31</strong>
+                                <span>em dia</span>
+                            </article>
+                            <article>
+                                <strong>8</strong>
+                                <span>com documentos pendentes</span>
+                            </article>
+                            <article>
+                                <strong>5</strong>
+                                <span>aguardando classificacao</span>
+                            </article>
+                        </div>
 
-                            <div>
-                                <strong>Receba categorias iniciais</strong>
-
-                                <p>
-                                    O sistema prepara categorias compatíveis com
-                                    as atividades escolhidas.
-                                </p>
-                            </div>
-                        </article>
-
-                        <article>
-                            <span>3</span>
-
-                            <div>
-                                <strong>Registre as movimentações</strong>
-
-                                <p>
-                                    Cadastre receitas e despesas com informações
-                                    organizadas.
-                                </p>
-                            </div>
-                        </article>
-
-                        <article className="publica-passo-ativo">
-                            <span>
-                                <IconeCheck />
-                            </span>
-
-                            <div>
-                                <strong>Acompanhe o resultado</strong>
-
-                                <p>
-                                    Visualize o resumo calculado com os dados reais
-                                    da sua propriedade.
-                                </p>
-                            </div>
-                        </article>
+                        <div className="publica-tabela">
+                            {[
+                                ['Fazenda Boa Vista', 'Em dia', '4 docs', 'hoje'],
+                                ['Sitio Santa Clara', 'Pendencia', '2 docs', 'ontem'],
+                                ['Agro Vale Norte', 'Revisar', '7 docs', '2 dias'],
+                            ].map(([nome, status, docs, data]) => (
+                                <div key={nome}>
+                                    <strong>{nome}</strong>
+                                    <span>{status}</span>
+                                    <span>{docs}</span>
+                                    <small>{data}</small>
+                                </div>
+                            ))}
+                        </div>
                     </Revelar>
                 </section>
 
-                <section className="publica-chamada">
-                    <h2>
-                        Comece a organizar as finanças da sua propriedade
-                    </h2>
+                <section className="publica-cta-meio">
+                    <Revelar>
+                        <h2>Seu escritorio ainda precisa correr atras das informacoes?</h2>
+                        <p>
+                            Centralize seus produtores e acompanhe as informacoes
+                            ao longo do ano.
+                        </p>
+                        <Link to="/cadastro">Quero conhecer para meu escritorio</Link>
+                    </Revelar>
+                </section>
 
-                    <p>
-                        Crie sua conta gratuitamente e acompanhe resultados
-                        calculados a partir das suas movimentações.
-                    </p>
+                <section className="publica-produtor" id="produtores">
+                    <Revelar className="publica-mobile-mockup">
+                        <div className="publica-celular">
+                            <div className="publica-celular-topo" />
+                            <strong>Inicio do produtor</strong>
+                            <div className="publica-celular-card">
+                                <span>Receitas do mes</span>
+                                <b>R$ 30.000</b>
+                            </div>
+                            <div className="publica-celular-card">
+                                <span>Despesas</span>
+                                <b>R$ 12.000</b>
+                            </div>
+                            <button type="button">Enviar documento</button>
+                            <small>Pendencia do contador: nota de combustivel</small>
+                        </div>
+                    </Revelar>
 
-                    <Link to="/cadastro">
-                        Criar conta
-                    </Link>
+                    <Revelar className="publica-produtor-copy">
+                        <span className="publica-etiqueta">Para produtores</span>
+                        <h2>O produtor registra. O contador acompanha.</h2>
+                        <p>
+                            Uma experiencia simples para registrar o dia a dia
+                            da propriedade, enviar documentos e responder
+                            solicitacoes sem precisar entender de contabilidade.
+                        </p>
+                        <Link className="publica-botao-secundario" to="/cadastro">
+                            Quero organizar minha propriedade
+                        </Link>
+                    </Revelar>
+                </section>
+
+                <section className="publica-jornada">
+                    <Revelar className="publica-secao-editorial publica-secao-centro">
+                        <span className="publica-etiqueta">Como funciona</span>
+                        <h2>Uma jornada unica, com visoes diferentes.</h2>
+                        <p>
+                            O dado nasce no produtor e segue para documentos,
+                            classificacao, pendencias e analise do contador.
+                        </p>
+                    </Revelar>
+
+                    <div className="publica-jornada-grid">
+                        {[
+                            ['Propriedade', 'Cadastre a empresa rural e suas atividades.'],
+                            ['Movimentacoes', 'Registre receitas e despesas uma unica vez.'],
+                            ['Documentos', 'Anexe notas, recibos e comprovantes.'],
+                            ['Contador', 'Acompanhe pendencias, classificacoes e simulacoes.'],
+                        ].map(([titulo, texto]) => (
+                            <Revelar as="article" key={titulo}>
+                                <span>
+                                    <IconeCheck />
+                                </span>
+                                <h3>{titulo}</h3>
+                                <p>{texto}</p>
+                            </Revelar>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="publica-recursos" id="recursos">
+                    <Revelar className="publica-secao-editorial">
+                        <span className="publica-etiqueta">Recursos</span>
+                        <h2>Financeiro rural conectado ao processo contabil.</h2>
+                        <p>
+                            Nao e um fluxo de caixa isolado. E uma base
+                            organizada para produtor e contador trabalharem com
+                            as mesmas informacoes.
+                        </p>
+                    </Revelar>
+
+                    <div className="publica-recursos-grid">
+                        {recursos.map((recurso) => (
+                            <Revelar as="article" key={recurso.titulo}>
+                                <span>{recurso.icone}</span>
+                                <h3>{recurso.titulo}</h3>
+                                <p>{recurso.texto}</p>
+                            </Revelar>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="publica-diferencial">
+                    <Revelar>
+                        <span className="publica-etiqueta">Diferencial</span>
+                        <h2>Chega de organizar tudo quando o ano termina.</h2>
+                        <p>
+                            Quando produtor e contador trabalham conectados
+                            durante o ano, as informacoes chegam mais
+                            organizadas, as pendencias aparecem antes e o
+                            trabalho deixa de ficar concentrado em um unico
+                            momento.
+                        </p>
+                    </Revelar>
+                </section>
+
+                <section className="publica-publicos">
+                    <Revelar className="publica-publico-produtor">
+                        <span>Para produtores</span>
+                        <h2>Mais controle sobre o financeiro da propriedade.</h2>
+                        <p>
+                            Registre movimentacoes, acompanhe resultado e envie
+                            documentos ao contador sem retrabalho.
+                        </p>
+                        <Link to="/cadastro">Conhecer como produtor</Link>
+                    </Revelar>
+
+                    <Revelar className="publica-publico-contador">
+                        <span>Para contadores</span>
+                        <h2>Mais organizacao para acompanhar sua carteira.</h2>
+                        <p>
+                            Veja produtores, pendencias, documentos e dados
+                            financeiros em uma visao preparada para analise.
+                        </p>
+                        <Link to="/cadastro">Conhecer para meu escritorio</Link>
+                    </Revelar>
+                </section>
+
+                <section className="publica-cta-final">
+                    <Revelar>
+                        <h2>
+                            Organize a rotina financeira do produtor e simplifique
+                            o trabalho do contador.
+                        </h2>
+                        <p>
+                            Uma plataforma para manter produtor e contador
+                            conectados durante todo o ano.
+                        </p>
+                        <div>
+                            <Link className="publica-botao publica-botao-claro" to="/cadastro">
+                                Quero conhecer a plataforma
+                            </Link>
+                            <Link className="publica-botao-secundario publica-link-claro" to="/cadastro">
+                                Sou produtor rural
+                            </Link>
+                        </div>
+                    </Revelar>
                 </section>
             </main>
 
-            <footer
-                className="publica-rodape"
-                id="sobre"
-            >
+            <footer className="publica-rodape">
                 <Link className="publica-marca" to="/">
-                    <span className="publica-marca-icone"><IconeFolha /></span>
-                    <span>AgroGestão</span>
+                    <span className="publica-marca-icone">
+                        <IconeFolha />
+                    </span>
+                    <span>AgroGestao</span>
                 </Link>
 
-                <p>
-                    © 2026 AgroGestão. Todos os direitos reservados.
-                </p>
+                <nav>
+                    <a href="#produtores">Para produtores</a>
+                    <a href="#contadores">Para contadores</a>
+                    <a href="#recursos">Recursos</a>
+                    <a href="#como-funciona">Como funciona</a>
+                    <Link to="/login">Entrar</Link>
+                </nav>
+
+                <p>© 2026 AgroGestao. Todos os direitos reservados.</p>
 
                 <div>
                     <span>Termos de uso</span>
-                    <span>Política de privacidade</span>
+                    <span>Politica de privacidade</span>
                 </div>
             </footer>
 
