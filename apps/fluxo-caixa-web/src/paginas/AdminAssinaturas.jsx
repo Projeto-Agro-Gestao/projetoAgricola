@@ -275,12 +275,14 @@ function AdminAssinaturas() {
                     onSubmit={salvarConfiguracao}
                 >
                     <div className="admin-assinaturas-config-topo">
-                        <small>Configuração geral</small>
-                        <h2>Plano padrão</h2>
-                        <p>
-                            Defina preço, teste gratuito e regras de aviso sem
-                            alterar código.
-                        </p>
+                        <div>
+                            <small>Configuração geral</small>
+                            <h2>Plano padrão</h2>
+                            <p>
+                                Defina preço, teste gratuito e regras de aviso sem
+                                alterar código.
+                            </p>
+                        </div>
                     </div>
 
                     <label>

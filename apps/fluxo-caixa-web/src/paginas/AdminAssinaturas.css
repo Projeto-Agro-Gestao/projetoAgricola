@@ -89,6 +89,7 @@
 }
 
 .admin-assinaturas-config {
+    align-items: center;
     display: grid;
     gap: 14px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -97,8 +98,11 @@
 }
 
 .admin-assinaturas-config-topo {
+    align-self: stretch;
     border-right: 1px solid #dcebd5;
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     gap: 4px;
     padding-right: 12px;
 }
