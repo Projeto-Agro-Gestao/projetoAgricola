@@ -17,7 +17,9 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -64,7 +66,8 @@ public class DocumentoAgro {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
-    @Column
+    @JdbcTypeCode(SqlTypes.LONGVARBINARY)
+    @Column(name = "conteudo", columnDefinition = "LONGBLOB")
     private byte[] conteudo;
 
     @Column(name = "analisado_em")
