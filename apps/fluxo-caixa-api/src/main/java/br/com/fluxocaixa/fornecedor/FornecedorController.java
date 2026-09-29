@@ -105,6 +105,18 @@ public class FornecedorController {
         );
     }
 
+    @GetMapping("/inteligencia-compras")
+    public ResponseEntity<InteligenciaComprasResponse>
+    obterInteligenciaCompras(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                fornecedorService.obterInteligenciaCompras(
+                        empresaId
+                )
+        );
+    }
+
     @PostMapping("/categorias-produto")
     public ResponseEntity<CategoriaProdutoResponse>
     criarCategoriaProduto(

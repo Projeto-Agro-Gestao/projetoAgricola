@@ -93,6 +93,38 @@ function hojeIso() {
     return new Date().toISOString().slice(0, 10)
 }
 
+function criarFornecedorFormVazio() {
+    return {
+        id: null,
+        nome: '',
+        nomeFantasia: '',
+        razaoSocial: '',
+        tipoPessoa: 'JURIDICA',
+        documento: '',
+        telefone: '',
+        telefoneWhatsapp: '',
+        email: '',
+        contatoComercial: '',
+        site: '',
+        observacao: '',
+        cep: '',
+        logradouro: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        municipio: '',
+        uf: '',
+        pais: 'Brasil',
+        prazoMedioEntregaDias: '',
+        formasPagamento: '',
+        prazoPagamento: '',
+        condicaoFrete: '',
+        valorMinimoPedido: '',
+        observacoesComerciais: '',
+        ativo: true,
+    }
+}
+
 function obterValorComparavel(cotacao) {
     return Number(
         cotacao?.valorPorKg
@@ -126,6 +158,8 @@ function Fornecedores() {
     const [produtos, setProdutos] = useState([])
     const [cotacoes, setCotacoes] = useState([])
     const [comparativos, setComparativos] = useState([])
+    const [inteligenciaCompras, setInteligenciaCompras] =
+        useState(null)
     const [compras, setCompras] = useState([])
     const [fornecedorSelecionado, setFornecedorSelecionado] =
         useState(null)
@@ -138,12 +172,8 @@ function Fornecedores() {
     const [confirmacao, setConfirmacao] = useState(null)
     const [migracao, setMigracao] = useState(null)
 
-    const [fornecedorForm, setFornecedorForm] = useState({
-        id: null,
-        nome: '',
-        telefone: '',
-        observacao: '',
-    })
+    const [fornecedorForm, setFornecedorForm] =
+        useState(criarFornecedorFormVazio)
 
     const [categoriaProdutoNome, setCategoriaProdutoNome] =
         useState('')
@@ -417,6 +447,7 @@ function Fornecedores() {
                 requisitar('/fornecedores/produtos'),
                 requisitar('/fornecedores/cotacoes'),
                 requisitar('/fornecedores/comparativo-cotacoes'),
+                requisitar('/fornecedores/inteligencia-compras'),
                 requisitar('/categorias?tipo=DESPESA'),
             ])
 
@@ -448,6 +479,7 @@ function Fornecedores() {
                 produtosDados,
                 cotacoesDados,
                 comparativosDados,
+                inteligenciaDados,
                 categoriasFinanceirasDados,
             ] = await Promise.all(
                 respostas.map((resposta) => resposta.json()),
@@ -459,6 +491,7 @@ function Fornecedores() {
             setProdutos(produtosDados)
             setCotacoes(cotacoesDados)
             setComparativos(comparativosDados)
+            setInteligenciaCompras(inteligenciaDados)
             setCategoriasFinanceiras(
                 categoriasFinanceirasDados.filter(
                     (categoria) => categoria.ativo,
@@ -523,21 +556,60 @@ function Fornecedores() {
             fornecedorForm.id ? 'PUT' : 'POST',
             {
                 nome,
+                nomeFantasia:
+                    fornecedorForm.nomeFantasia.trim() || null,
+                razaoSocial:
+                    fornecedorForm.razaoSocial.trim() || null,
+                tipoPessoa: fornecedorForm.tipoPessoa || null,
+                documento:
+                    fornecedorForm.documento.trim() || null,
                 telefone: fornecedorForm.telefone.trim() || null,
+                telefoneWhatsapp:
+                    fornecedorForm.telefoneWhatsapp.trim() || null,
+                email: fornecedorForm.email.trim() || null,
+                contatoComercial:
+                    fornecedorForm.contatoComercial.trim() || null,
+                site: fornecedorForm.site.trim() || null,
                 observacao:
                     fornecedorForm.observacao.trim() || null,
+                ativo: fornecedorForm.ativo,
+                cep: fornecedorForm.cep.trim() || null,
+                logradouro:
+                    fornecedorForm.logradouro.trim() || null,
+                numero: fornecedorForm.numero.trim() || null,
+                complemento:
+                    fornecedorForm.complemento.trim() || null,
+                bairro: fornecedorForm.bairro.trim() || null,
+                municipio:
+                    fornecedorForm.municipio.trim() || null,
+                uf: fornecedorForm.uf.trim() || null,
+                pais: fornecedorForm.pais.trim() || null,
+                prazoMedioEntregaDias:
+                    fornecedorForm.prazoMedioEntregaDias
+                        ? Number(
+                            fornecedorForm.prazoMedioEntregaDias,
+                        )
+                        : null,
+                formasPagamento:
+                    fornecedorForm.formasPagamento.trim() || null,
+                prazoPagamento:
+                    fornecedorForm.prazoPagamento.trim() || null,
+                condicaoFrete:
+                    fornecedorForm.condicaoFrete.trim() || null,
+                valorMinimoPedido:
+                    fornecedorForm.valorMinimoPedido
+                        ? Number(fornecedorForm.valorMinimoPedido)
+                        : null,
+                observacoesComerciais:
+                    fornecedorForm.observacoesComerciais.trim()
+                    || null,
             },
             fornecedorForm.id
                 ? 'Fornecedor atualizado.'
                 : 'Fornecedor cadastrado.',
         )
 
-        setFornecedorForm({
-            id: null,
-            nome: '',
-            telefone: '',
-            observacao: '',
-        })
+        setFornecedorForm(criarFornecedorFormVazio())
     }
 
     async function salvarCategoriaProduto(evento) {
@@ -1098,6 +1170,76 @@ function Fornecedores() {
                                 value={fornecedorForm.nome}
                             />
 
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    Tipo
+                                    <select
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                tipoPessoa:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        value={fornecedorForm.tipoPessoa}
+                                    >
+                                        <option value="JURIDICA">PJ</option>
+                                        <option value="FISICA">PF</option>
+                                    </select>
+                                </label>
+
+                                <label>
+                                    CPF/CNPJ
+                                    <input
+                                        maxLength="20"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                documento:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        placeholder="Evita cadastro duplicado"
+                                        type="text"
+                                        value={fornecedorForm.documento}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    Razao social
+                                    <input
+                                        maxLength="180"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                razaoSocial:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.razaoSocial}
+                                    />
+                                </label>
+
+                                <label>
+                                    Nome fantasia
+                                    <input
+                                        maxLength="150"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                nomeFantasia:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.nomeFantasia}
+                                    />
+                                </label>
+                            </div>
+
                             <label htmlFor="telefoneFornecedor">
                                 Telefone
                             </label>
@@ -1114,6 +1256,174 @@ function Fornecedores() {
                                 type="text"
                                 value={fornecedorForm.telefone}
                             />
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    WhatsApp
+                                    <input
+                                        maxLength="30"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                telefoneWhatsapp:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.telefoneWhatsapp}
+                                    />
+                                </label>
+
+                                <label>
+                                    E-mail
+                                    <input
+                                        maxLength="150"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                email: evento.target.value,
+                                            })
+                                        }
+                                        type="email"
+                                        value={fornecedorForm.email}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    CEP
+                                    <input
+                                        maxLength="12"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                cep: evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.cep}
+                                    />
+                                </label>
+
+                                <label>
+                                    Cidade
+                                    <input
+                                        maxLength="100"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                municipio:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.municipio}
+                                    />
+                                </label>
+
+                                <label>
+                                    UF
+                                    <input
+                                        maxLength="2"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                uf: evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.uf}
+                                    />
+                                </label>
+
+                                <label>
+                                    Logradouro
+                                    <input
+                                        maxLength="180"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                logradouro:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.logradouro}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    Prazo de entrega
+                                    <input
+                                        min="0"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                prazoMedioEntregaDias:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        placeholder="Dias"
+                                        type="number"
+                                        value={
+                                            fornecedorForm
+                                                .prazoMedioEntregaDias
+                                        }
+                                    />
+                                </label>
+
+                                <label>
+                                    Valor minimo
+                                    <input
+                                        min="0"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                valorMinimoPedido:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        step="0.01"
+                                        type="number"
+                                        value={fornecedorForm.valorMinimoPedido}
+                                    />
+                                </label>
+
+                                <label>
+                                    Pagamento
+                                    <input
+                                        maxLength="250"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                formasPagamento:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.formasPagamento}
+                                    />
+                                </label>
+
+                                <label>
+                                    Frete
+                                    <input
+                                        maxLength="150"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                condicaoFrete:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.condicaoFrete}
+                                    />
+                                </label>
+                            </div>
 
                             <label htmlFor="observacaoFornecedor">
                                 Observação
@@ -1135,12 +1445,9 @@ function Fornecedores() {
                                 {fornecedorForm.id && (
                                     <button
                                         onClick={() =>
-                                            setFornecedorForm({
-                                                id: null,
-                                                nome: '',
-                                                telefone: '',
-                                                observacao: '',
-                                            })
+                                            setFornecedorForm(
+                                                criarFornecedorFormVazio(),
+                                            )
                                         }
                                         type="button"
                                     >
@@ -1239,12 +1546,81 @@ function Fornecedores() {
                                                                 setFornecedorForm({
                                                                     id: fornecedor.id,
                                                                     nome: fornecedor.nome,
+                                                                    nomeFantasia:
+                                                                        fornecedor.nomeFantasia
+                                                                        ?? '',
+                                                                    razaoSocial:
+                                                                        fornecedor.razaoSocial
+                                                                        ?? '',
+                                                                    tipoPessoa:
+                                                                        fornecedor.tipoPessoa
+                                                                        ?? 'JURIDICA',
+                                                                    documento:
+                                                                        fornecedor.documento
+                                                                        ?? '',
                                                                     telefone:
                                                                         fornecedor.telefone
+                                                                        ?? '',
+                                                                    telefoneWhatsapp:
+                                                                        fornecedor.telefoneWhatsapp
+                                                                        ?? '',
+                                                                    email:
+                                                                        fornecedor.email
+                                                                        ?? '',
+                                                                    contatoComercial:
+                                                                        fornecedor.contatoComercial
+                                                                        ?? '',
+                                                                    site:
+                                                                        fornecedor.site
                                                                         ?? '',
                                                                     observacao:
                                                                         fornecedor.observacao
                                                                         ?? '',
+                                                                    cep:
+                                                                        fornecedor.cep
+                                                                        ?? '',
+                                                                    logradouro:
+                                                                        fornecedor.logradouro
+                                                                        ?? '',
+                                                                    numero:
+                                                                        fornecedor.numero
+                                                                        ?? '',
+                                                                    complemento:
+                                                                        fornecedor.complemento
+                                                                        ?? '',
+                                                                    bairro:
+                                                                        fornecedor.bairro
+                                                                        ?? '',
+                                                                    municipio:
+                                                                        fornecedor.municipio
+                                                                        ?? '',
+                                                                    uf:
+                                                                        fornecedor.uf
+                                                                        ?? '',
+                                                                    pais:
+                                                                        fornecedor.pais
+                                                                        ?? 'Brasil',
+                                                                    prazoMedioEntregaDias:
+                                                                        fornecedor.prazoMedioEntregaDias
+                                                                        ?? '',
+                                                                    formasPagamento:
+                                                                        fornecedor.formasPagamento
+                                                                        ?? '',
+                                                                    prazoPagamento:
+                                                                        fornecedor.prazoPagamento
+                                                                        ?? '',
+                                                                    condicaoFrete:
+                                                                        fornecedor.condicaoFrete
+                                                                        ?? '',
+                                                                    valorMinimoPedido:
+                                                                        fornecedor.valorMinimoPedido
+                                                                        ?? '',
+                                                                    observacoesComerciais:
+                                                                        fornecedor.observacoesComerciais
+                                                                        ?? '',
+                                                                    ativo:
+                                                                        fornecedor.ativo
+                                                                        ?? true,
                                                                 })
                                                             }
                                                             type="button"

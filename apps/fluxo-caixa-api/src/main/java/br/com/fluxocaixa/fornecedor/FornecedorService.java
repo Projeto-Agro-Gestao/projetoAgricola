@@ -31,6 +31,7 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class FornecedorService {
@@ -73,6 +74,7 @@ public class FornecedorService {
         String nome = normalizarTextoObrigatorio(
                 request.nome()
         );
+        String documento = normalizarDocumento(request.documento());
 
         if (
                 fornecedorRepository
@@ -86,11 +88,28 @@ public class FornecedorService {
             );
         }
 
+        if (documento != null
+                && fornecedorRepository
+                .existsByEmpresa_IdAndDocumentoAndExcluidoFalse(
+                        empresaId,
+                        documento
+                )) {
+            throw new IllegalArgumentException(
+                    "Fornecedor ja cadastrado com este CPF/CNPJ"
+            );
+        }
+
         Fornecedor fornecedor = new Fornecedor(
                 empresa,
                 nome,
                 normalizarTextoOpcional(request.telefone()),
                 normalizarTextoOpcional(request.observacao())
+        );
+        aplicarCadastroProfissional(
+                fornecedor,
+                nome,
+                request,
+                documento
         );
 
         return FornecedorResponse.de(
@@ -232,6 +251,111 @@ public class FornecedorService {
                 )
                 .map(ComparativoProduto::paraResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public InteligenciaComprasResponse obterInteligenciaCompras(
+            Long empresaId) {
+
+        verificarEmpresa(empresaId);
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicioMes = hoje.withDayOfMonth(1);
+        LocalDate inicioAno = hoje.withDayOfYear(1);
+
+        List<CompraFornecedorResponse> compras =
+                listarTodasCompras(empresaId);
+
+        List<CotacaoFornecedor> cotacoes =
+                cotacaoFornecedorRepository
+                        .findAllByEmpresa_IdOrderByDataCotacaoDescIdDesc(
+                                empresaId
+                        );
+
+        BigDecimal gastoMes = compras
+                .stream()
+                .filter(compra -> !compra.data().isBefore(inicioMes))
+                .map(CompraFornecedorResponse::valor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal gastoAno = compras
+                .stream()
+                .filter(compra -> !compra.data().isBefore(inicioAno))
+                .map(CompraFornecedorResponse::valor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<OportunidadeCompraResponse> oportunidades =
+                calcularOportunidades(cotacoes);
+
+        BigDecimal economiaPotencial =
+                oportunidades
+                        .stream()
+                        .map(OportunidadeCompraResponse::economiaPotencial)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<GastoFornecedorResponse> gastosPorFornecedor =
+                calcularGastosPorFornecedor(empresaId);
+
+        List<HistoricoPrecoProdutoResponse> historicoProdutos =
+                calcularHistoricoProdutos(cotacoes);
+
+        String produtoMaiorAumento =
+                historicoProdutos
+                        .stream()
+                        .filter(item -> item.variacaoPercentual() != null)
+                        .max(
+                                Comparator.comparing(
+                                        HistoricoPrecoProdutoResponse
+                                                ::variacaoPercentual
+                                )
+                        )
+                        .map(HistoricoPrecoProdutoResponse::produtoNome)
+                        .orElse("-");
+
+        String melhorOportunidade =
+                oportunidades
+                        .stream()
+                        .max(
+                                Comparator.comparing(
+                                        OportunidadeCompraResponse
+                                                ::economiaPotencial
+                                )
+                        )
+                        .map(
+                                item -> item.produtoNome()
+                                        + " em "
+                                        + item.fornecedorMelhorPreco()
+                        )
+                        .orElse("Sem dados suficientes");
+
+        long fornecedoresAtivos =
+                fornecedorRepository
+                        .findAllByEmpresa_IdAndExcluidoFalseOrderByNomeAsc(
+                                empresaId
+                        )
+                        .stream()
+                        .filter(Fornecedor::isAtivo)
+                        .count();
+
+        long cotacoesAbertas =
+                cotacoes
+                        .stream()
+                        .filter(CotacaoFornecedor::estaComoCotacao)
+                        .count();
+
+        return new InteligenciaComprasResponse(
+                gastoMes,
+                gastoAno,
+                economiaPotencial,
+                BigDecimal.ZERO,
+                fornecedoresAtivos,
+                cotacoesAbertas,
+                produtoMaiorAumento,
+                melhorOportunidade,
+                oportunidades,
+                gastosPorFornecedor,
+                historicoProdutos
+        );
     }
 
     @Transactional
@@ -664,11 +788,31 @@ public class FornecedorService {
                         empresaId,
                         fornecedorId
                 );
+        String nome = normalizarTextoObrigatorio(request.nome());
+        String documento = normalizarDocumento(request.documento());
+
+        if (documento != null
+                && fornecedorRepository
+                .existsByEmpresa_IdAndDocumentoAndIdNotAndExcluidoFalse(
+                        empresaId,
+                        documento,
+                        fornecedorId
+                )) {
+            throw new IllegalArgumentException(
+                    "Fornecedor ja cadastrado com este CPF/CNPJ"
+            );
+        }
 
         fornecedor.atualizar(
-                normalizarTextoObrigatorio(request.nome()),
+                nome,
                 normalizarTextoOpcional(request.telefone()),
                 normalizarTextoOpcional(request.observacao())
+        );
+        aplicarCadastroProfissional(
+                fornecedor,
+                nome,
+                request,
+                documento
         );
 
         return FornecedorResponse.de(
@@ -1082,6 +1226,511 @@ public class FornecedorService {
         }
     }
 
+    private void aplicarCadastroProfissional(
+            Fornecedor fornecedor,
+            String nome,
+            CriarFornecedorRequest request,
+            String documento) {
+
+        fornecedor.atualizarCadastroProfissional(
+                nome,
+                normalizarTextoOpcional(request.nomeFantasia()),
+                normalizarTextoOpcional(request.razaoSocial()),
+                request.tipoPessoa(),
+                documento,
+                normalizarTextoOpcional(request.telefone()),
+                normalizarTextoOpcional(request.telefoneWhatsapp()),
+                normalizarTextoOpcional(request.email()),
+                normalizarTextoOpcional(request.contatoComercial()),
+                normalizarTextoOpcional(request.site()),
+                normalizarTextoOpcional(request.observacao()),
+                request.ativo() == null || request.ativo(),
+                normalizarTextoOpcional(request.cep()),
+                normalizarTextoOpcional(request.logradouro()),
+                normalizarTextoOpcional(request.numero()),
+                normalizarTextoOpcional(request.complemento()),
+                normalizarTextoOpcional(request.bairro()),
+                normalizarTextoOpcional(request.municipio()),
+                normalizarUf(request.uf()),
+                normalizarTextoOpcionalOuPadrao(
+                        request.pais(),
+                        "Brasil"
+                ),
+                request.prazoMedioEntregaDias(),
+                normalizarTextoOpcional(request.formasPagamento()),
+                normalizarTextoOpcional(request.prazoPagamento()),
+                normalizarTextoOpcional(request.condicaoFrete()),
+                request.valorMinimoPedido(),
+                normalizarTextoOpcional(request.observacoesComerciais())
+        );
+    }
+
+    private void aplicarCadastroProfissional(
+            Fornecedor fornecedor,
+            String nome,
+            AtualizarFornecedorRequest request,
+            String documento) {
+
+        fornecedor.atualizarCadastroProfissional(
+                nome,
+                normalizarTextoOpcional(request.nomeFantasia()),
+                normalizarTextoOpcional(request.razaoSocial()),
+                request.tipoPessoa(),
+                documento,
+                normalizarTextoOpcional(request.telefone()),
+                normalizarTextoOpcional(request.telefoneWhatsapp()),
+                normalizarTextoOpcional(request.email()),
+                normalizarTextoOpcional(request.contatoComercial()),
+                normalizarTextoOpcional(request.site()),
+                normalizarTextoOpcional(request.observacao()),
+                request.ativo() == null || request.ativo(),
+                normalizarTextoOpcional(request.cep()),
+                normalizarTextoOpcional(request.logradouro()),
+                normalizarTextoOpcional(request.numero()),
+                normalizarTextoOpcional(request.complemento()),
+                normalizarTextoOpcional(request.bairro()),
+                normalizarTextoOpcional(request.municipio()),
+                normalizarUf(request.uf()),
+                normalizarTextoOpcionalOuPadrao(
+                        request.pais(),
+                        "Brasil"
+                ),
+                request.prazoMedioEntregaDias(),
+                normalizarTextoOpcional(request.formasPagamento()),
+                normalizarTextoOpcional(request.prazoPagamento()),
+                normalizarTextoOpcional(request.condicaoFrete()),
+                request.valorMinimoPedido(),
+                normalizarTextoOpcional(request.observacoesComerciais())
+        );
+    }
+
+    private List<CompraFornecedorResponse> listarTodasCompras(
+            Long empresaId) {
+
+        List<CompraFornecedorResponse> compras = new ArrayList<>();
+
+        movimentacaoRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
+                        empresaId
+                )
+                .stream()
+                .map(this::criarCompraMovimentacao)
+                .forEach(compras::add);
+
+        contaFinanceiraRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataVencimentoDescIdDesc(
+                        empresaId
+                )
+                .stream()
+                .map(this::criarCompraConta)
+                .forEach(compras::add);
+
+        return compras;
+    }
+
+    private List<OportunidadeCompraResponse> calcularOportunidades(
+            List<CotacaoFornecedor> cotacoes) {
+
+        Map<Long, List<CotacaoFornecedor>> porProduto =
+                new LinkedHashMap<>();
+
+        cotacoes
+                .stream()
+                .filter(CotacaoFornecedor::estaComoCotacao)
+                .forEach(
+                        cotacao -> porProduto
+                                .computeIfAbsent(
+                                        cotacao.getProduto().getId(),
+                                        chave -> new ArrayList<>()
+                                )
+                                .add(cotacao)
+                );
+
+        return porProduto
+                .values()
+                .stream()
+                .filter(grupo -> grupo.size() > 1)
+                .flatMap(
+                        grupo -> {
+                            CotacaoFornecedor melhor =
+                                    grupo.stream()
+                                            .filter(
+                                                    cotacao ->
+                                                            valorComparavel(
+                                                                    cotacao
+                                                            ) != null
+                                            )
+                                            .min(
+                                                    Comparator.comparing(
+                                                            this::valorComparavel
+                                                    )
+                                            )
+                                            .orElse(null);
+
+                            if (melhor == null) {
+                                return List.<OportunidadeCompraResponse>of()
+                                        .stream();
+                            }
+
+                            BigDecimal melhorValor =
+                                    valorComparavel(melhor);
+
+                            return grupo
+                                    .stream()
+                                    .filter(cotacao -> cotacao != melhor)
+                                    .filter(
+                                            cotacao ->
+                                                    valorComparavel(
+                                                            cotacao
+                                                    ) != null
+                                    )
+                                    .map(
+                                            cotacao -> criarOportunidade(
+                                                    melhor,
+                                                    melhorValor,
+                                                    cotacao
+                                            )
+                                    );
+                        }
+                )
+                .filter(
+                        oportunidade ->
+                                oportunidade.economiaPotencial()
+                                        .compareTo(BigDecimal.ZERO) > 0
+                )
+                .sorted(
+                        Comparator.comparing(
+                                OportunidadeCompraResponse
+                                        ::economiaPotencial
+                        ).reversed()
+                )
+                .limit(10)
+                .toList();
+    }
+
+    private OportunidadeCompraResponse criarOportunidade(
+            CotacaoFornecedor melhor,
+            BigDecimal melhorValor,
+            CotacaoFornecedor cotacao) {
+
+        BigDecimal valorCotacao = valorComparavel(cotacao);
+        BigDecimal economia =
+                valorCotacao
+                        .subtract(melhorValor)
+                        .multiply(cotacao.getQuantidade());
+        BigDecimal percentual =
+                valorCotacao.compareTo(BigDecimal.ZERO) == 0
+                        ? BigDecimal.ZERO
+                        : valorCotacao
+                        .subtract(melhorValor)
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(
+                                valorCotacao,
+                                2,
+                                RoundingMode.HALF_UP
+                        );
+
+        return new OportunidadeCompraResponse(
+                cotacao.getProduto().getNome(),
+                cotacao.getUnidadeMedida(),
+                melhor.getFornecedor().getNome(),
+                melhorValor,
+                cotacao.getFornecedor().getNome(),
+                valorCotacao,
+                economia.max(BigDecimal.ZERO).setScale(
+                        2,
+                        RoundingMode.HALF_UP
+                ),
+                percentual,
+                idadePreco(cotacao.getDataCotacao())
+        );
+    }
+
+    private List<GastoFornecedorResponse> calcularGastosPorFornecedor(
+            Long empresaId) {
+
+        Map<Long, GastoFornecedorAcumulado> acumulados =
+                new LinkedHashMap<>();
+
+        movimentacaoRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataMovimentacaoDescIdDesc(
+                        empresaId
+                )
+                .forEach(
+                        movimentacao -> acumulados
+                                .computeIfAbsent(
+                                        movimentacao
+                                                .getFornecedor()
+                                                .getId(),
+                                        chave ->
+                                                new GastoFornecedorAcumulado(
+                                                        movimentacao
+                                                                .getFornecedor()
+                                                                .getId(),
+                                                        movimentacao
+                                                                .getFornecedorNome()
+                                                )
+                                )
+                                .adicionar(
+                                        movimentacao.getValor(),
+                                        movimentacao
+                                                .getDataMovimentacao()
+                                )
+                );
+
+        contaFinanceiraRepository
+                .findAllByEmpresa_IdAndFornecedorIsNotNullAndExcluidaFalseOrderByDataVencimentoDescIdDesc(
+                        empresaId
+                )
+                .forEach(
+                        conta -> acumulados
+                                .computeIfAbsent(
+                                        conta.getFornecedor().getId(),
+                                        chave ->
+                                                new GastoFornecedorAcumulado(
+                                                        conta.getFornecedor()
+                                                                .getId(),
+                                                        conta.getFornecedorNome()
+                                                )
+                                )
+                                .adicionar(
+                                        conta.getValorTotal(),
+                                        conta.getDataVencimento()
+                                )
+                );
+
+        BigDecimal totalGeral =
+                acumulados
+                        .values()
+                        .stream()
+                        .map(GastoFornecedorAcumulado::total)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return acumulados
+                .values()
+                .stream()
+                .sorted(
+                        Comparator.comparing(
+                                GastoFornecedorAcumulado::total
+                        ).reversed()
+                )
+                .limit(8)
+                .map(acumulado -> acumulado.paraResponse(totalGeral))
+                .toList();
+    }
+
+    private List<GastoFornecedorResponse> calcularGastosPorFornecedorLegado(
+            List<CompraFornecedorResponse> compras) {
+
+        BigDecimal totalGeral =
+                compras
+                        .stream()
+                        .map(CompraFornecedorResponse::valor)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, GastoFornecedorAcumulado> acumulados =
+                new LinkedHashMap<>();
+
+        compras.forEach(
+                compra -> acumulados
+                        .computeIfAbsent(
+                                compra.descricao() == null
+                                        ? "Fornecedor"
+                                        : compra.descricao(),
+                                chave -> new GastoFornecedorAcumulado(
+                                        compra.origemId(),
+                                        compra.descricao()
+                                )
+                        )
+                        .adicionar(
+                                compra.valor(),
+                                compra.data()
+                        )
+        );
+
+        return acumulados
+                .values()
+                .stream()
+                .sorted(
+                        Comparator.comparing(
+                                GastoFornecedorAcumulado::total
+                        ).reversed()
+                )
+                .limit(8)
+                .map(acumulado -> acumulado.paraResponse(totalGeral))
+                .toList();
+    }
+
+    private List<HistoricoPrecoProdutoResponse> calcularHistoricoProdutos(
+            List<CotacaoFornecedor> cotacoes) {
+
+        Map<String, List<CotacaoFornecedor>> porProduto =
+                new LinkedHashMap<>();
+
+        cotacoes.forEach(
+                cotacao -> porProduto
+                        .computeIfAbsent(
+                                cotacao.getProduto().getNome()
+                                        + "|"
+                                        + cotacao.getUnidadeMedida(),
+                                chave -> new ArrayList<>()
+                        )
+                        .add(cotacao)
+        );
+
+        LocalDate hoje = LocalDate.now();
+
+        return porProduto
+                .values()
+                .stream()
+                .map(
+                        grupo -> criarHistoricoProduto(
+                                grupo,
+                                hoje
+                        )
+                )
+                .sorted(
+                        Comparator.comparing(
+                                HistoricoPrecoProdutoResponse
+                                        ::dataUltimoPreco,
+                                Comparator.nullsLast(
+                                        Comparator.reverseOrder()
+                                )
+                        )
+                )
+                .limit(12)
+                .toList();
+    }
+
+    private HistoricoPrecoProdutoResponse criarHistoricoProduto(
+            List<CotacaoFornecedor> grupo,
+            LocalDate hoje) {
+
+        List<CotacaoFornecedor> ordenadas =
+                grupo
+                        .stream()
+                        .filter(cotacao -> valorComparavel(cotacao) != null)
+                        .sorted(
+                                Comparator
+                                        .comparing(
+                                                CotacaoFornecedor
+                                                        ::getDataCotacao
+                                        )
+                                        .reversed()
+                        )
+                        .toList();
+
+        if (ordenadas.isEmpty()) {
+            CotacaoFornecedor referencia = grupo.get(0);
+            return new HistoricoPrecoProdutoResponse(
+                    referencia.getProduto().getNome(),
+                    referencia.getUnidadeMedida(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "-",
+                    null
+            );
+        }
+
+        CotacaoFornecedor atual = ordenadas.get(0);
+        BigDecimal precoAtual = valorComparavel(atual);
+        BigDecimal precoAnterior =
+                ordenadas.size() > 1
+                        ? valorComparavel(ordenadas.get(1))
+                        : null;
+        BigDecimal variacao =
+                precoAnterior == null
+                        || precoAnterior.compareTo(BigDecimal.ZERO) == 0
+                        ? null
+                        : precoAtual
+                        .subtract(precoAnterior)
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(
+                                precoAnterior,
+                                2,
+                                RoundingMode.HALF_UP
+                        );
+
+        BigDecimal menor =
+                ordenadas
+                        .stream()
+                        .map(this::valorComparavel)
+                        .min(Comparator.naturalOrder())
+                        .orElse(null);
+        BigDecimal maior =
+                ordenadas
+                        .stream()
+                        .map(this::valorComparavel)
+                        .max(Comparator.naturalOrder())
+                        .orElse(null);
+
+        String melhorFornecedor =
+                ordenadas
+                        .stream()
+                        .min(
+                                Comparator.comparing(
+                                        this::valorComparavel
+                                )
+                        )
+                        .map(item -> item.getFornecedor().getNome())
+                        .orElse("-");
+
+        return new HistoricoPrecoProdutoResponse(
+                atual.getProduto().getNome(),
+                atual.getUnidadeMedida(),
+                precoAtual,
+                precoAnterior,
+                mediaDesde(
+                        ordenadas,
+                        hoje.minusDays(30)
+                ),
+                mediaDesde(
+                        ordenadas,
+                        hoje.minusDays(90)
+                ),
+                menor,
+                maior,
+                variacao,
+                melhorFornecedor,
+                atual.getDataCotacao()
+        );
+    }
+
+    private BigDecimal mediaDesde(
+            List<CotacaoFornecedor> cotacoes,
+            LocalDate dataMinima) {
+
+        List<BigDecimal> valores =
+                cotacoes
+                        .stream()
+                        .filter(
+                                cotacao ->
+                                        !cotacao.getDataCotacao()
+                                                .isBefore(dataMinima)
+                        )
+                        .map(this::valorComparavel)
+                        .filter(valor -> valor != null)
+                        .toList();
+
+        if (valores.isEmpty()) {
+            return null;
+        }
+
+        return valores
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(
+                        BigDecimal.valueOf(valores.size()),
+                        4,
+                        RoundingMode.HALF_UP
+                );
+    }
+
     private String normalizarTextoObrigatorio(String texto) {
         return texto
                 .trim()
@@ -1096,6 +1745,127 @@ public class FornecedorService {
         return texto
                 .trim()
                 .replaceAll("\\s+", " ");
+    }
+
+    private String normalizarTextoOpcionalOuPadrao(
+            String texto,
+            String padrao) {
+
+        String normalizado = normalizarTextoOpcional(texto);
+
+        return normalizado == null
+                ? padrao
+                : normalizado;
+    }
+
+    private String normalizarDocumento(String documento) {
+        if (documento == null || documento.isBlank()) {
+            return null;
+        }
+
+        String normalizado = documento.replaceAll("\\D", "");
+
+        return normalizado.isBlank()
+                ? null
+                : normalizado;
+    }
+
+    private String normalizarUf(String uf) {
+        String normalizada = normalizarTextoOpcional(uf);
+
+        return normalizada == null
+                ? null
+                : normalizada.toUpperCase();
+    }
+
+    private String idadePreco(LocalDate data) {
+        if (data == null) {
+            return "Sem data";
+        }
+
+        long dias = ChronoUnit.DAYS.between(
+                data,
+                LocalDate.now()
+        );
+
+        if (dias == 0) {
+            return "Registrado hoje";
+        }
+
+        return "Registrado ha " + dias + " dias";
+    }
+
+    private static final class GastoFornecedorAcumulado {
+
+        private final Long fornecedorId;
+        private final String fornecedorNome;
+        private BigDecimal total = BigDecimal.ZERO;
+        private long compras;
+        private LocalDate ultimaCompra;
+
+        private GastoFornecedorAcumulado(
+                Long fornecedorId,
+                String fornecedorNome) {
+
+            this.fornecedorId = fornecedorId;
+            this.fornecedorNome = fornecedorNome;
+        }
+
+        private void adicionar(
+                BigDecimal valor,
+                LocalDate data) {
+
+            if (valor != null) {
+                total = total.add(valor);
+            }
+
+            compras++;
+
+            if (data != null
+                    && (ultimaCompra == null
+                    || data.isAfter(ultimaCompra))) {
+                ultimaCompra = data;
+            }
+        }
+
+        private BigDecimal total() {
+            return total;
+        }
+
+        private GastoFornecedorResponse paraResponse(
+                BigDecimal totalGeral) {
+
+            BigDecimal participacao =
+                    totalGeral == null
+                            || totalGeral.compareTo(BigDecimal.ZERO) == 0
+                            ? BigDecimal.ZERO
+                            : total
+                            .multiply(BigDecimal.valueOf(100))
+                            .divide(
+                                    totalGeral,
+                                    2,
+                                    RoundingMode.HALF_UP
+                            );
+
+            BigDecimal ticketMedio =
+                    compras == 0
+                            ? BigDecimal.ZERO
+                            : total.divide(
+                            BigDecimal.valueOf(compras),
+                            2,
+                            RoundingMode.HALF_UP
+                    );
+
+            return new GastoFornecedorResponse(
+                    fornecedorId,
+                    fornecedorNome,
+                    total,
+                    participacao,
+                    compras,
+                    ticketMedio,
+                    ultimaCompra
+            );
+        }
     }
 
     private static final class ComparativoProduto {

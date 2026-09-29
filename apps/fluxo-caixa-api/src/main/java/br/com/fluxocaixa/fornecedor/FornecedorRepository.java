@@ -32,4 +32,15 @@ public interface FornecedorRepository
             Long empresaId,
             String nome
     );
+
+    boolean existsByEmpresa_IdAndDocumentoAndExcluidoFalse(
+            Long empresaId,
+            String documento
+    );
+
+    boolean existsByEmpresa_IdAndDocumentoAndIdNotAndExcluidoFalse(
+            Long empresaId,
+            String documento,
+            Long fornecedorId
+    );
 }

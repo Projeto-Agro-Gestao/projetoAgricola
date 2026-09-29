@@ -3,6 +3,8 @@ package br.com.fluxocaixa.fornecedor;
 import br.com.fluxocaixa.empresa.Empresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,6 +17,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "fornecedores")
@@ -31,11 +34,81 @@ public class Fornecedor {
     @Column(nullable = false, length = 150)
     private String nome;
 
+    @Column(name = "nome_fantasia", length = 150)
+    private String nomeFantasia;
+
+    @Column(name = "razao_social", length = 180)
+    private String razaoSocial;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_pessoa", length = 20)
+    private TipoPessoaFornecedor tipoPessoa;
+
+    @Column(length = 20)
+    private String documento;
+
     @Column(length = 30)
     private String telefone;
 
+    @Column(name = "telefone_whatsapp", length = 30)
+    private String telefoneWhatsapp;
+
+    @Column(length = 150)
+    private String email;
+
+    @Column(name = "contato_comercial", length = 150)
+    private String contatoComercial;
+
+    @Column(length = 180)
+    private String site;
+
     @Column(length = 500)
     private String observacao;
+
+    @Column(nullable = false)
+    private boolean ativo = true;
+
+    @Column(length = 12)
+    private String cep;
+
+    @Column(length = 180)
+    private String logradouro;
+
+    @Column(length = 30)
+    private String numero;
+
+    @Column(length = 100)
+    private String complemento;
+
+    @Column(length = 100)
+    private String bairro;
+
+    @Column(length = 100)
+    private String municipio;
+
+    @Column(length = 2)
+    private String uf;
+
+    @Column(length = 60)
+    private String pais;
+
+    @Column(name = "prazo_medio_entrega_dias")
+    private Integer prazoMedioEntregaDias;
+
+    @Column(name = "formas_pagamento", length = 250)
+    private String formasPagamento;
+
+    @Column(name = "prazo_pagamento", length = 100)
+    private String prazoPagamento;
+
+    @Column(name = "condicao_frete", length = 150)
+    private String condicaoFrete;
+
+    @Column(name = "valor_minimo_pedido", precision = 19, scale = 2)
+    private BigDecimal valorMinimoPedido;
+
+    @Column(name = "observacoes_comerciais", length = 500)
+    private String observacoesComerciais;
 
     @Column(nullable = false)
     private boolean excluido = false;
@@ -66,8 +139,10 @@ public class Fornecedor {
 
         this.empresa = empresa;
         this.nome = nome;
+        this.nomeFantasia = nome;
         this.telefone = telefone;
         this.observacao = observacao;
+        this.pais = "Brasil";
     }
 
     public void atualizar(
@@ -76,8 +151,65 @@ public class Fornecedor {
             String observacao) {
 
         this.nome = nome;
+        this.nomeFantasia = nome;
         this.telefone = telefone;
         this.observacao = observacao;
+    }
+
+    public void atualizarCadastroProfissional(
+            String nome,
+            String nomeFantasia,
+            String razaoSocial,
+            TipoPessoaFornecedor tipoPessoa,
+            String documento,
+            String telefone,
+            String telefoneWhatsapp,
+            String email,
+            String contatoComercial,
+            String site,
+            String observacao,
+            boolean ativo,
+            String cep,
+            String logradouro,
+            String numero,
+            String complemento,
+            String bairro,
+            String municipio,
+            String uf,
+            String pais,
+            Integer prazoMedioEntregaDias,
+            String formasPagamento,
+            String prazoPagamento,
+            String condicaoFrete,
+            BigDecimal valorMinimoPedido,
+            String observacoesComerciais) {
+
+        this.nome = nome;
+        this.nomeFantasia = nomeFantasia;
+        this.razaoSocial = razaoSocial;
+        this.tipoPessoa = tipoPessoa;
+        this.documento = documento;
+        this.telefone = telefone;
+        this.telefoneWhatsapp = telefoneWhatsapp;
+        this.email = email;
+        this.contatoComercial = contatoComercial;
+        this.site = site;
+        this.observacao = observacao;
+        this.ativo = ativo;
+        this.cep = cep;
+        this.logradouro = logradouro;
+        this.numero = numero;
+        this.complemento = complemento;
+        this.bairro = bairro;
+        this.municipio = municipio;
+        this.uf = uf;
+        this.pais = pais;
+        this.prazoMedioEntregaDias = prazoMedioEntregaDias;
+        this.formasPagamento = formasPagamento;
+        this.prazoPagamento = prazoPagamento;
+        this.condicaoFrete = condicaoFrete;
+        this.valorMinimoPedido = valorMinimoPedido;
+        this.observacoesComerciais = observacoesComerciais;
     }
 
     public void moverParaLixeira() {
@@ -102,12 +234,104 @@ public class Fornecedor {
         return nome;
     }
 
+    public String getNomeFantasia() {
+        return nomeFantasia;
+    }
+
+    public String getRazaoSocial() {
+        return razaoSocial;
+    }
+
+    public TipoPessoaFornecedor getTipoPessoa() {
+        return tipoPessoa;
+    }
+
+    public String getDocumento() {
+        return documento;
+    }
+
     public String getTelefone() {
         return telefone;
     }
 
+    public String getTelefoneWhatsapp() {
+        return telefoneWhatsapp;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getContatoComercial() {
+        return contatoComercial;
+    }
+
+    public String getSite() {
+        return site;
+    }
+
     public String getObservacao() {
         return observacao;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public String getCep() {
+        return cep;
+    }
+
+    public String getLogradouro() {
+        return logradouro;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public String getComplemento() {
+        return complemento;
+    }
+
+    public String getBairro() {
+        return bairro;
+    }
+
+    public String getMunicipio() {
+        return municipio;
+    }
+
+    public String getUf() {
+        return uf;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public Integer getPrazoMedioEntregaDias() {
+        return prazoMedioEntregaDias;
+    }
+
+    public String getFormasPagamento() {
+        return formasPagamento;
+    }
+
+    public String getPrazoPagamento() {
+        return prazoPagamento;
+    }
+
+    public String getCondicaoFrete() {
+        return condicaoFrete;
+    }
+
+    public BigDecimal getValorMinimoPedido() {
+        return valorMinimoPedido;
+    }
+
+    public String getObservacoesComerciais() {
+        return observacoesComerciais;
     }
 
     public boolean isExcluido() {
