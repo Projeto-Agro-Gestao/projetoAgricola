@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './AdminPainel.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 const STATUS_PAGAMENTO = [
     'EM_DIA',
@@ -29,13 +30,6 @@ const FILTROS_USUARIOS = [
     { valor: 'SEM_PAGAR', rotulo: 'Sem pagar' },
     { valor: 'SEM_USO', rotulo: 'Sem uso' },
 ]
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-    localStorage.removeItem('agrogestao_token_expira_em')
-}
 
 function obterSessao() {
     try {

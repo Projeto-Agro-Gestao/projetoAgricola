@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './AdminAssinaturas.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 const FILTROS = [
     { valor: 'TODOS', rotulo: 'Todos' },
@@ -21,13 +22,6 @@ const FILTROS = [
     { valor: 'SUSPENDED', rotulo: 'Bloqueados' },
     { valor: 'CANCELLED', rotulo: 'Cancelados' },
 ]
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-    localStorage.removeItem('agrogestao_token_expira_em')
-}
 
 function obterSessao() {
     try {

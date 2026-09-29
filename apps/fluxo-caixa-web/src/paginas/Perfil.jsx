@@ -6,13 +6,7 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Perfil.css'
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-    localStorage.removeItem('agrogestao_token_expira_em')
-}
+import { limparSessao } from '../servicos/sessao.js'
 
 function obterSessao() {
     try {

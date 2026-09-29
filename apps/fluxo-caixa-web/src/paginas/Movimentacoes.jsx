@@ -10,6 +10,7 @@ import {
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Movimentacoes.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -47,16 +48,6 @@ function formatarData(data) {
 
     const [ano, mes, dia] = data.split('-')
     return `${dia}/${mes}/${ano}`
-}
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-
-    localStorage.removeItem(
-        'agrogestao_token_expira_em',
-    )
 }
 
 function obterSessao() {

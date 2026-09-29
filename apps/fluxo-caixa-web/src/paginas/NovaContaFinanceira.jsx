@@ -10,6 +10,7 @@ import {
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaContaFinanceira.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 function completarComZero(numero) {
     return String(numero).padStart(2, '0')
@@ -31,24 +32,6 @@ function obterDataAtual() {
         )
 
     return `${ano}-${mes}-${dia}`
-}
-
-function limparSessao() {
-    localStorage.removeItem(
-        'agrogestao_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_tipo_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_usuario',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_token_expira_em',
-    )
 }
 
 function obterSessao() {

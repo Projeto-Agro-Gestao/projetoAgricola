@@ -11,6 +11,7 @@ import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContasFinanceiras.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 const LARGURA_GRAFICO = 900
 const ALTURA_GRAFICO = 280
@@ -297,24 +298,6 @@ function GraficoProjecaoContas({ pontos }) {
                 )}
             </svg>
         </div>
-    )
-}
-
-function limparSessao() {
-    localStorage.removeItem(
-        'agrogestao_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_tipo_token',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_usuario',
-    )
-
-    localStorage.removeItem(
-        'agrogestao_token_expira_em',
     )
 }
 

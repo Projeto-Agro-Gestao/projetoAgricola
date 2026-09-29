@@ -10,6 +10,7 @@ import {
 import { API_BASE_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Categorias.css'
+import { limparSessao } from '../servicos/sessao.js'
 
 const AREAS_CATEGORIA = [
     {
@@ -30,15 +31,6 @@ function obterRotuloArea(area) {
     return AREAS_CATEGORIA.find(
         (item) => item.valor === area,
     )?.rotulo ?? 'Geral'
-}
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-    localStorage.removeItem(
-        'agrogestao_token_expira_em',
-    )
 }
 
 function obterSessao() {

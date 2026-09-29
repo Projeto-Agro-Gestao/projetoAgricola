@@ -6,13 +6,7 @@ import {
     useNavigate,
 } from 'react-router'
 import './EscolhaModulo.css'
-
-function limparSessao() {
-    localStorage.removeItem('agrogestao_token')
-    localStorage.removeItem('agrogestao_tipo_token')
-    localStorage.removeItem('agrogestao_usuario')
-    localStorage.removeItem('agrogestao_token_expira_em')
-}
+import { limparSessao } from '../servicos/sessao.js'
 
 function obterSessao() {
     try {
