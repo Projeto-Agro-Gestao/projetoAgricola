@@ -1,0 +1,11 @@
+package br.com.fluxocaixa.colaboracao;
+
+public enum StatusTratamentoFiscal {
+    PENDENTE_ANALISE,
+    POTENCIALMENTE_DEDUTIVEL,
+    NAO_DEDUTIVEL,
+    PARCIALMENTE_CONSIDERADO,
+    VALIDADO_PELO_CONTADOR,
+    DOCUMENTO_INSUFICIENTE,
+    PENDENTE_DOCUMENTO
+}

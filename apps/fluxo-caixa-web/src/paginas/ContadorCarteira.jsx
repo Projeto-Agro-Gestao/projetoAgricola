@@ -72,6 +72,7 @@ function ContadorCarteira() {
     const [pendencias, setPendencias] = useState([])
     const [documentos, setDocumentos] = useState([])
     const [visao, setVisao] = useState(null)
+    const [dashboardFiscal, setDashboardFiscal] = useState(null)
     const [filtro, setFiltro] = useState('TODOS')
     const [erro, setErro] = useState('')
     const [carregando, setCarregando] = useState(false)
@@ -150,12 +151,17 @@ function ContadorCarteira() {
         }
 
         try {
-            const [respostaPendencias, respostaDocumentos, respostaVisao] =
-                await Promise.all([
-                    fetch(`${base}/pendencias`, opcoes),
-                    fetch(`${base}/documentos`, opcoes),
-                    fetch(`${base}/visao-tributaria`, opcoes),
-                ])
+            const [
+                respostaPendencias,
+                respostaDocumentos,
+                respostaVisao,
+                respostaDashboardFiscal,
+            ] = await Promise.all([
+                fetch(`${base}/pendencias`, opcoes),
+                fetch(`${base}/documentos`, opcoes),
+                fetch(`${base}/visao-tributaria`, opcoes),
+                fetch(`${base}/dashboard-contabil`, opcoes),
+            ])
 
             setPendencias(
                 respostaPendencias.ok ? await respostaPendencias.json() : [],
@@ -164,6 +170,11 @@ function ContadorCarteira() {
                 respostaDocumentos.ok ? await respostaDocumentos.json() : [],
             )
             setVisao(respostaVisao.ok ? await respostaVisao.json() : null)
+            setDashboardFiscal(
+                respostaDashboardFiscal.ok
+                    ? await respostaDashboardFiscal.json()
+                    : null,
+            )
         } catch {
             setErro('Nao foi possivel carregar os detalhes do cliente.')
         }
@@ -374,6 +385,67 @@ function ContadorCarteira() {
                                     )}
                                 </span>
                             </div>
+                        </div>
+
+                        <div className="contador-carteira-tributaria">
+                            <h3>Painel contabil e fiscal</h3>
+                            <p>
+                                Usa o financeiro real como fonte de verdade e
+                                acrescenta classificacao, documentos e
+                                simulacao tributaria parametrizada.
+                            </p>
+                            <div>
+                                <span>
+                                    Receita bruta:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal?.receitaBruta,
+                                    )}
+                                </span>
+                                <span>
+                                    Despesas:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal?.despesasRegistradas,
+                                    )}
+                                </span>
+                                <span>
+                                    Resultado financeiro:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal?.resultadoFinanceiro,
+                                    )}
+                                </span>
+                                <span>
+                                    Base estimada:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal?.baseEstimadaSimulacao,
+                                    )}
+                                </span>
+                                <span>
+                                    Tributo estimado:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal?.tributoEstimado,
+                                    )}
+                                </span>
+                                <span>
+                                    Potencialmente dedutivel:{' '}
+                                    {formatarDinheiro(
+                                        dashboardFiscal
+                                            ?.valorPotencialmenteDedutivel,
+                                    )}
+                                </span>
+                                <span>
+                                    Sem documento:{' '}
+                                    {dashboardFiscal?.despesasSemDocumento ?? 0}
+                                </span>
+                                <span>
+                                    Sem classificacao fiscal:{' '}
+                                    {dashboardFiscal
+                                        ?.despesasPendentesClassificacao ?? 0}
+                                </span>
+                            </div>
+                            <small>
+                                {dashboardFiscal?.aviso ??
+                                    'Valores estimados para apoio a analise. A apuracao fiscal definitiva deve ser validada pelo profissional responsavel.'}
+                            </small>
                         </div>
                     </section>
                 </div>

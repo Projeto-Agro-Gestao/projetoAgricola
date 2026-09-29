@@ -50,6 +50,10 @@ public class ColaboracaoService {
     private final RateioRepository rateioRepository;
     private final ContadorEmpresaRepository contadorEmpresaRepository;
     private final AuditoriaAgroRepository auditoriaRepository;
+    private final ClassificacaoContabilRepository classificacaoContabilRepository;
+    private final AnaliseFiscalMovimentacaoRepository analiseFiscalRepository;
+    private final RegimeTributarioEmpresaRepository regimeTributarioRepository;
+    private final ParametroTributarioRepository parametroTributarioRepository;
 
     public ColaboracaoService(
             EmpresaRepository empresaRepository,
@@ -63,7 +67,11 @@ public class ColaboracaoService {
             PendenciaMensagemRepository mensagemRepository,
             RateioRepository rateioRepository,
             ContadorEmpresaRepository contadorEmpresaRepository,
-            AuditoriaAgroRepository auditoriaRepository) {
+            AuditoriaAgroRepository auditoriaRepository,
+            ClassificacaoContabilRepository classificacaoContabilRepository,
+            AnaliseFiscalMovimentacaoRepository analiseFiscalRepository,
+            RegimeTributarioEmpresaRepository regimeTributarioRepository,
+            ParametroTributarioRepository parametroTributarioRepository) {
 
         this.empresaRepository = empresaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -77,6 +85,10 @@ public class ColaboracaoService {
         this.rateioRepository = rateioRepository;
         this.contadorEmpresaRepository = contadorEmpresaRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.classificacaoContabilRepository = classificacaoContabilRepository;
+        this.analiseFiscalRepository = analiseFiscalRepository;
+        this.regimeTributarioRepository = regimeTributarioRepository;
+        this.parametroTributarioRepository = parametroTributarioRepository;
     }
 
     @Transactional(readOnly = true)
@@ -768,6 +780,370 @@ public class ColaboracaoService {
     }
 
     @Transactional(readOnly = true)
+    public ContadorDashboardFiscalResponse dashboardContabil(
+            Long empresaId,
+            LocalDate dataInicial,
+            LocalDate dataFinal) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+        Empresa empresa = obterEmpresa(empresaId);
+        Periodo periodo = periodoOuMesAtual(dataInicial, dataFinal);
+
+        BigDecimal receitas = normalizar(
+                movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                        empresaId,
+                        TipoMovimentacao.RECEITA,
+                        periodo.inicio(),
+                        periodo.fim(),
+                        null
+                )
+        );
+
+        BigDecimal despesas = normalizar(
+                movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                        empresaId,
+                        TipoMovimentacao.DESPESA,
+                        periodo.inicio(),
+                        periodo.fim(),
+                        null
+                )
+        );
+
+        List<Movimentacao> movimentacoes =
+                movimentacaoRepository.buscarPeriodoDesc(
+                        empresaId,
+                        periodo.inicio(),
+                        periodo.fim()
+                );
+
+        List<AnaliseFiscalMovimentacao> analises =
+                analiseFiscalRepository
+                        .findAllByEmpresa_IdOrderByAtualizadoEmDesc(
+                                empresaId
+                        );
+
+        BigDecimal potencialmenteDedutivel =
+                somarAnalises(
+                        analises,
+                        StatusTratamentoFiscal.POTENCIALMENTE_DEDUTIVEL
+                ).add(
+                        somarAnalises(
+                                analises,
+                                StatusTratamentoFiscal.VALIDADO_PELO_CONTADOR
+                        )
+                );
+
+        BigDecimal naoConsiderado =
+                somarAnalises(
+                        analises,
+                        StatusTratamentoFiscal.NAO_DEDUTIVEL
+                );
+
+        BigDecimal baseEstimada =
+                receitas.subtract(potencialmenteDedutivel);
+
+        RegimeTributarioEmpresa regime =
+                regimeTributarioRepository
+                        .findFirstByEmpresa_IdAndDataInicioLessThanEqualAndSituacaoOrderByDataInicioDescIdDesc(
+                                empresaId,
+                                periodo.fim(),
+                                "ATIVO"
+                        )
+                        .orElse(null);
+
+        ParametroTributario parametro = regime == null
+                ? null
+                : parametroTributarioRepository
+                        .findFirstByEmpresa_IdAndRegimeAndCompetenciaLessThanEqualOrderByCompetenciaDescIdDesc(
+                                empresaId,
+                                regime.getRegime(),
+                                competencia(periodo.fim())
+                        )
+                        .orElse(null);
+
+        BigDecimal tributoEstimado =
+                calcularTributoEstimado(baseEstimada, parametro);
+
+        long pendentesClassificacao = movimentacoes.stream()
+                .filter(movimentacao -> movimentacao.getTipo()
+                        == TipoMovimentacao.DESPESA)
+                .filter(movimentacao -> analises.stream()
+                        .noneMatch(analise -> analise.getMovimentacao()
+                                .getId()
+                                .equals(movimentacao.getId())))
+                .count();
+
+        return new ContadorDashboardFiscalResponse(
+                empresa.getId(),
+                empresa.getNome(),
+                periodo.inicio(),
+                periodo.fim(),
+                receitas,
+                despesas,
+                receitas.subtract(despesas),
+                documentoRepository
+                        .findAllByEmpresa_IdOrderByCriadoEmDesc(empresaId)
+                        .size(),
+                documentoRepository.countByEmpresa_IdAndStatus(
+                        empresaId,
+                        StatusDocumentoAgro.AGUARDANDO_ANALISE
+                ),
+                movimentacaoRepository.countDespesasSemDocumento(empresaId),
+                pendentesClassificacao,
+                normalizar(potencialmenteDedutivel),
+                normalizar(naoConsiderado),
+                normalizar(baseEstimada),
+                tributoEstimado,
+                normalizar(receitas.subtract(despesas)
+                        .subtract(tributoEstimado)),
+                regime == null ? null : regime.getRegime(),
+                "Valores estimados para apoio a analise. A apuracao fiscal definitiva deve ser validada pelo profissional responsavel."
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClassificacaoContabilResponse> listarClassificacoesContabeis(
+            Long empresaId) {
+
+        validarAcessoEmpresa(usuarioAtual(), empresaId);
+
+        return classificacaoContabilRepository
+                .findAllByEmpresa_IdAndAtivaTrueOrderByNomeAsc(empresaId)
+                .stream()
+                .map(ClassificacaoContabilResponse::de)
+                .toList();
+    }
+
+    @Transactional
+    public ClassificacaoContabilResponse salvarClassificacaoContabil(
+            Long empresaId,
+            SalvarClassificacaoContabilRequest request) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+        Empresa empresa = obterEmpresa(empresaId);
+
+        ClassificacaoContabil classificacao =
+                classificacaoContabilRepository.save(
+                        new ClassificacaoContabil(
+                                empresa,
+                                obrigatorio(request.nome(), "nome"),
+                                request.descricao()
+                        )
+                );
+
+        auditar(empresa, usuario, "CRIAR_CLASSIFICACAO_CONTABIL",
+                "ClassificacaoContabil", classificacao.getId(),
+                classificacao.getNome());
+
+        return ClassificacaoContabilResponse.de(classificacao);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AnaliseFiscalMovimentacaoResponse> listarAnalisesFiscais(
+            Long empresaId) {
+
+        validarAcessoEmpresa(usuarioAtual(), empresaId);
+
+        return analiseFiscalRepository
+                .findAllByEmpresa_IdOrderByAtualizadoEmDesc(empresaId)
+                .stream()
+                .map(AnaliseFiscalMovimentacaoResponse::de)
+                .toList();
+    }
+
+    @Transactional
+    public AnaliseFiscalMovimentacaoResponse atualizarAnaliseFiscal(
+            Long empresaId,
+            Long movimentacaoId,
+            AtualizarAnaliseFiscalRequest request) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+        Movimentacao movimentacao =
+                movimentacaoRepository
+                        .findByIdAndEmpresa_IdAndExcluidaFalse(
+                                movimentacaoId,
+                                empresaId
+                        )
+                        .orElseThrow(() ->
+                                new MovimentacaoNaoEncontradaException(
+                                        movimentacaoId
+                                )
+                        );
+
+        ClassificacaoContabil classificacao =
+                request.classificacaoContabilId() == null
+                        ? null
+                        : classificacaoContabilRepository
+                                .findByIdAndEmpresa_Id(
+                                        request.classificacaoContabilId(),
+                                        empresaId
+                                )
+                                .orElseThrow(() ->
+                                        new IllegalArgumentException(
+                                                "Classificacao contabil nao encontrada."
+                                        )
+                                );
+
+        AnaliseFiscalMovimentacao analise =
+                analiseFiscalRepository
+                        .findByEmpresa_IdAndMovimentacao_Id(
+                                empresaId,
+                                movimentacaoId
+                        )
+                        .orElseGet(() ->
+                                new AnaliseFiscalMovimentacao(
+                                        movimentacao.getEmpresa(),
+                                        movimentacao
+                                )
+                        );
+
+        analise.atualizar(
+                classificacao,
+                request.tratamentoFiscal(),
+                request.status(),
+                request.valorConsiderado(),
+                request.observacao(),
+                usuario
+        );
+
+        AnaliseFiscalMovimentacao salva =
+                analiseFiscalRepository.save(analise);
+
+        auditar(movimentacao.getEmpresa(), usuario,
+                "ATUALIZAR_ANALISE_FISCAL", "Movimentacao",
+                movimentacao.getId(), request.observacao());
+
+        return AnaliseFiscalMovimentacaoResponse.de(salva);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegimeTributarioEmpresaResponse> listarRegimesTributarios(
+            Long empresaId) {
+
+        validarAcessoEmpresa(usuarioAtual(), empresaId);
+
+        return regimeTributarioRepository
+                .findAllByEmpresa_IdOrderByDataInicioDescIdDesc(empresaId)
+                .stream()
+                .map(RegimeTributarioEmpresaResponse::de)
+                .toList();
+    }
+
+    @Transactional
+    public RegimeTributarioEmpresaResponse salvarRegimeTributario(
+            Long empresaId,
+            SalvarRegimeTributarioRequest request) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+        Empresa empresa = obterEmpresa(empresaId);
+
+        RegimeTributarioEmpresa regime =
+                regimeTributarioRepository.save(
+                        new RegimeTributarioEmpresa(
+                                empresa,
+                                request.regime() == null
+                                        ? RegimeTributario.OUTRO
+                                        : request.regime(),
+                                request.dataInicio() == null
+                                        ? LocalDate.now()
+                                        : request.dataInicio(),
+                                request.dataFim(),
+                                request.competencia(),
+                                request.observacao(),
+                                usuario
+                        )
+                );
+
+        auditar(empresa, usuario, "CONFIGURAR_REGIME_TRIBUTARIO",
+                "RegimeTributarioEmpresa", regime.getId(),
+                regime.getRegime().name());
+
+        return RegimeTributarioEmpresaResponse.de(regime);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ParametroTributarioResponse> listarParametrosTributarios(
+            Long empresaId) {
+
+        validarAcessoEmpresa(usuarioAtual(), empresaId);
+
+        return parametroTributarioRepository
+                .findAllByEmpresa_IdOrderByCompetenciaDescIdDesc(empresaId)
+                .stream()
+                .map(ParametroTributarioResponse::de)
+                .toList();
+    }
+
+    @Transactional
+    public ParametroTributarioResponse salvarParametroTributario(
+            Long empresaId,
+            SalvarParametroTributarioRequest request) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+        Empresa empresa = obterEmpresa(empresaId);
+
+        ParametroTributario parametro =
+                parametroTributarioRepository.save(
+                        new ParametroTributario(
+                                empresa,
+                                request.regime() == null
+                                        ? RegimeTributario.OUTRO
+                                        : request.regime(),
+                                obrigatorio(
+                                        request.competencia(),
+                                        "competencia"
+                                ),
+                                request.nome(),
+                                request.aliquotaPercentual(),
+                                request.parcelaDeduzir(),
+                                request.observacao(),
+                                usuario
+                        )
+                );
+
+        auditar(empresa, usuario, "CRIAR_PARAMETRO_TRIBUTARIO",
+                "ParametroTributario", parametro.getId(),
+                parametro.getCompetencia());
+
+        return ParametroTributarioResponse.de(parametro);
+    }
+
+    @Transactional(readOnly = true)
+    public SimulacaoTributariaResponse simularTributos(
+            Long empresaId,
+            LocalDate dataInicial,
+            LocalDate dataFinal) {
+
+        ContadorDashboardFiscalResponse dashboard =
+                dashboardContabil(empresaId, dataInicial, dataFinal);
+
+        BigDecimal carga = dashboard.receitaBruta().compareTo(BigDecimal.ZERO) == 0
+                ? BigDecimal.ZERO
+                : dashboard.tributoEstimado()
+                        .multiply(CEM)
+                        .divide(dashboard.receitaBruta(), 2, RoundingMode.HALF_UP);
+
+        return new SimulacaoTributariaResponse(
+                empresaId,
+                dashboard.dataInicial(),
+                dashboard.dataFinal(),
+                dashboard.regimeAtual(),
+                dashboard.receitaBruta(),
+                dashboard.valorPotencialmenteDedutivel(),
+                dashboard.baseEstimadaSimulacao(),
+                dashboard.tributoEstimado(),
+                carga,
+                "Simulacao baseada nas movimentacoes reais, analises fiscais validadas e parametros tributarios configurados.",
+                dashboard.aviso()
+        );
+    }
+
+    @Transactional(readOnly = true)
     public byte[] exportarMovimentacoesCsv(
             Long empresaId,
             LocalDate dataInicial,
@@ -920,6 +1296,70 @@ public class ColaboracaoService {
         }
     }
 
+    private Periodo periodoOuMesAtual(
+            LocalDate dataInicial,
+            LocalDate dataFinal) {
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicio = dataInicial == null
+                ? hoje.withDayOfMonth(1)
+                : dataInicial;
+        LocalDate fim = dataFinal == null
+                ? hoje.withDayOfMonth(hoje.lengthOfMonth())
+                : dataFinal;
+
+        if (fim.isBefore(inicio)) {
+            throw new IllegalArgumentException(
+                    "A data final deve ser igual ou posterior a data inicial."
+            );
+        }
+
+        return new Periodo(inicio, fim);
+    }
+
+    private BigDecimal somarAnalises(
+            List<AnaliseFiscalMovimentacao> analises,
+            StatusTratamentoFiscal tratamentoFiscal) {
+
+        return analises.stream()
+                .filter(analise -> analise.getTratamentoFiscal()
+                        == tratamentoFiscal)
+                .map(analise -> analise.getValorConsiderado() == null
+                        ? analise.getMovimentacao().getValor()
+                        : analise.getValorConsiderado())
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcularTributoEstimado(
+            BigDecimal baseEstimada,
+            ParametroTributario parametro) {
+
+        if (parametro == null
+                || parametro.getAliquotaPercentual() == null
+                || baseEstimada.compareTo(BigDecimal.ZERO) <= 0) {
+            return ZERO;
+        }
+
+        BigDecimal bruto = baseEstimada
+                .multiply(parametro.getAliquotaPercentual())
+                .divide(CEM, 2, RoundingMode.HALF_UP);
+
+        BigDecimal parcela = parametro.getParcelaDeduzir() == null
+                ? BigDecimal.ZERO
+                : parametro.getParcelaDeduzir();
+
+        BigDecimal resultado = bruto.subtract(parcela);
+        return normalizar(resultado.max(BigDecimal.ZERO));
+    }
+
+    private String competencia(LocalDate data) {
+        return "%04d-%02d".formatted(
+                data.getYear(),
+                data.getMonthValue()
+        );
+    }
+
     private boolean combinaPalavraChave(
             String texto,
             String categoriaNome) {
@@ -960,5 +1400,8 @@ public class ColaboracaoService {
             return "";
         }
         return "\"" + valor.replace("\"", "\"\"") + "\"";
+    }
+
+    private record Periodo(LocalDate inicio, LocalDate fim) {
     }
 }

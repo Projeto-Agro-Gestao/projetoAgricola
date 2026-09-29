@@ -70,6 +70,18 @@ class ColaboracaoServiceTest {
     @Mock
     private AuditoriaAgroRepository auditoriaRepository;
 
+    @Mock
+    private ClassificacaoContabilRepository classificacaoContabilRepository;
+
+    @Mock
+    private AnaliseFiscalMovimentacaoRepository analiseFiscalRepository;
+
+    @Mock
+    private RegimeTributarioEmpresaRepository regimeTributarioRepository;
+
+    @Mock
+    private ParametroTributarioRepository parametroTributarioRepository;
+
     private ColaboracaoService service;
     private Empresa empresa;
     private Usuario usuario;
@@ -88,7 +100,11 @@ class ColaboracaoServiceTest {
                 mensagemRepository,
                 rateioRepository,
                 contadorEmpresaRepository,
-                auditoriaRepository
+                auditoriaRepository,
+                classificacaoContabilRepository,
+                analiseFiscalRepository,
+                regimeTributarioRepository,
+                parametroTributarioRepository
         );
 
         empresa = new Empresa("Fazenda Teste", null);
@@ -200,5 +216,61 @@ class ColaboracaoServiceTest {
         assertThatThrownBy(() -> service.criarRateio(1L, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("100%");
+    }
+
+    @Test
+    void dashboardContabilUsaMovimentacoesComoFonteDeVerdade() {
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicio = hoje.withDayOfMonth(1);
+        LocalDate fim = hoje.withDayOfMonth(hoje.lengthOfMonth());
+
+        when(empresaRepository.findById(1L))
+                .thenReturn(Optional.of(empresa));
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                1L,
+                TipoMovimentacao.RECEITA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("30000.00"));
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                1L,
+                TipoMovimentacao.DESPESA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("12000.00"));
+        when(movimentacaoRepository.buscarPeriodoDesc(1L, inicio, fim))
+                .thenReturn(List.of());
+        when(analiseFiscalRepository
+                .findAllByEmpresa_IdOrderByAtualizadoEmDesc(1L))
+                .thenReturn(List.of());
+        when(regimeTributarioRepository
+                .findFirstByEmpresa_IdAndDataInicioLessThanEqualAndSituacaoOrderByDataInicioDescIdDesc(
+                        1L,
+                        fim,
+                        "ATIVO"
+                ))
+                .thenReturn(Optional.empty());
+        when(documentoRepository.findAllByEmpresa_IdOrderByCriadoEmDesc(1L))
+                .thenReturn(List.of());
+        when(documentoRepository.countByEmpresa_IdAndStatus(
+                1L,
+                StatusDocumentoAgro.AGUARDANDO_ANALISE
+        )).thenReturn(0L);
+        when(movimentacaoRepository.countDespesasSemDocumento(1L))
+                .thenReturn(0L);
+
+        ContadorDashboardFiscalResponse dashboard =
+                service.dashboardContabil(1L, null, null);
+
+        assertThat(dashboard.receitaBruta())
+                .isEqualByComparingTo("30000.00");
+        assertThat(dashboard.despesasRegistradas())
+                .isEqualByComparingTo("12000.00");
+        assertThat(dashboard.resultadoFinanceiro())
+                .isEqualByComparingTo("18000.00");
+        assertThat(dashboard.tributoEstimado())
+                .isEqualByComparingTo("0.00");
     }
 }
