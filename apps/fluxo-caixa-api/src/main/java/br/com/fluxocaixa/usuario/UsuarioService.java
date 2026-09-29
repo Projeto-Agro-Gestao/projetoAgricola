@@ -93,12 +93,12 @@ public class UsuarioService {
                 PapelUsuario.PRODUTOR
         );
         usuario.configurarAcesso(
-                false,
-                TipoAcessoUsuario.NORMAL,
+                true,
+                TipoAcessoUsuario.VITALICIO,
                 null
         );
         usuario.atualizarPagamento(
-                StatusPagamento.TESTE,
+                StatusPagamento.ISENTO,
                 null
         );
 

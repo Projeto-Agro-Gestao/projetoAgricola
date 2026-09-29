@@ -91,12 +91,12 @@ public class AdminService {
         usuario.alterarPapel(request.papel());
         usuario.configurarAcesso(
                 true,
-                TipoAcessoUsuario.NORMAL,
+                TipoAcessoUsuario.VITALICIO,
                 null
         );
         usuario.atualizarPagamento(
-                StatusPagamento.TESTE,
-                usuario.getDataVencimentoPagamento()
+                StatusPagamento.ISENTO,
+                null
         );
         provisionamentoService.garantirEstruturaOperacional(usuario);
 
