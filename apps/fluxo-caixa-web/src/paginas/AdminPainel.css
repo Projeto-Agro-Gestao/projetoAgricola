@@ -247,6 +247,38 @@
     gap: 8px;
 }
 
+.admin-usuario-identidade {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.admin-usuario-identidade strong {
+    line-height: 1.25;
+}
+
+.admin-perfil {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    padding: 0 9px;
+    border: 1px solid #c7d9bf;
+    border-radius: 999px;
+    background: #f2f8ee;
+    color: #315331;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.admin-perfil-admin {
+    border-color: #2f8300;
+    background: #e7f8da;
+    color: #235f00;
+}
+
 .admin-acesso-info {
     display: grid;
     flex-basis: 100%;

@@ -104,6 +104,40 @@ public class AdminService {
     }
 
     @Transactional
+    public AdminUsuarioResponse atualizarPapel(
+            Long usuarioId,
+            AtualizarPapelUsuarioRequest request) {
+
+        validarAdministrador();
+
+        Usuario usuario = buscarUsuario(usuarioId);
+        PapelUsuario novoPapel = request.papel();
+
+        if (usuario.getPapel() == PapelUsuario.SUPER_ADMIN
+                || novoPapel == PapelUsuario.SUPER_ADMIN) {
+            throw new IllegalArgumentException(
+                    "O perfil SUPER_ADMIN nao pode ser alterado por esta rotina."
+            );
+        }
+
+        if (novoPapel != PapelUsuario.ADMINISTRADOR
+                && novoPapel != PapelUsuario.PRODUTOR
+                && novoPapel != PapelUsuario.CONTADOR) {
+            throw new IllegalArgumentException(
+                    "Informe PRODUTOR, CONTADOR ou ADMINISTRADOR."
+            );
+        }
+
+        usuario.alterarPapel(novoPapel);
+
+        if (novoPapel != PapelUsuario.ADMINISTRADOR) {
+            provisionamentoService.garantirEstruturaOperacional(usuario);
+        }
+
+        return montarResponse(usuario);
+    }
+
+    @Transactional
     public AdminUsuarioResponse atualizarPagamento(
             Long usuarioId,
             AtualizarPagamentoUsuarioRequest request) {

@@ -61,6 +61,21 @@ public class AdminController {
         );
     }
 
+    @PatchMapping("/usuarios/{usuarioId}/papel")
+    public ResponseEntity<AdminUsuarioResponse>
+    atualizarPapel(
+            @PathVariable Long usuarioId,
+            @Valid @RequestBody
+            AtualizarPapelUsuarioRequest request) {
+
+        return ResponseEntity.ok(
+                adminService.atualizarPapel(
+                        usuarioId,
+                        request
+                )
+        );
+    }
+
     @PatchMapping("/usuarios/{usuarioId}/pagamento")
     public ResponseEntity<AdminUsuarioResponse>
     atualizarPagamento(

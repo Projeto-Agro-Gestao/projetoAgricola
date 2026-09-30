@@ -102,6 +102,27 @@ function formatarTipoAcesso(valor) {
     return TIPOS_ACESSO[valor] ?? 'Normal'
 }
 
+function isAdministradorUsuario(usuario) {
+    return usuario?.papel === 'ADMINISTRADOR' ||
+        usuario?.papel === 'SUPER_ADMIN'
+}
+
+function formatarPerfilUsuario(usuario) {
+    if (usuario?.papel === 'SUPER_ADMIN') {
+        return 'Super admin'
+    }
+
+    if (usuario?.papel === 'ADMINISTRADOR') {
+        return 'Administrador'
+    }
+
+    if (usuario?.papel === 'CONTADOR') {
+        return 'Cliente contador'
+    }
+
+    return 'Cliente'
+}
+
 function formatarDataHora(dataHora) {
     if (!dataHora) {
         return '-'
@@ -343,6 +364,19 @@ function AdminPainel() {
         await salvarAlteracao(
             usuario.id,
             `${API_URL}/admin/usuarios/${usuario.id}/aprovar`,
+            {
+                papel,
+            },
+        )
+    }
+
+    async function alternarPapelAdministrativo(usuario) {
+        const administrador = isAdministradorUsuario(usuario)
+        const papel = administrador ? 'PRODUTOR' : 'ADMINISTRADOR'
+
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/papel`,
             {
                 papel,
             },
@@ -629,9 +663,26 @@ function AdminPainel() {
                                 {usuariosFiltrados.map((usuario) => (
                                     <tr key={usuario.id}>
                                         <td>
-                                            <strong>
-                                                {usuario.nome}
-                                            </strong>
+                                            <div className="admin-usuario-identidade">
+                                                <strong>
+                                                    {usuario.nome}
+                                                </strong>
+
+                                                <span
+                                                    className={
+                                                        isAdministradorUsuario(
+                                                            usuario,
+                                                        )
+                                                            ? 'admin-perfil admin-perfil-admin'
+                                                            : 'admin-perfil'
+                                                    }
+                                                >
+                                                    {formatarPerfilUsuario(
+                                                        usuario,
+                                                    )}
+                                                </span>
+                                            </div>
+
                                             <span>
                                                 {usuario.email}
                                             </span>
@@ -781,6 +832,35 @@ function AdminPainel() {
                                             >
                                                 Editar
                                             </button>
+
+                                            {usuario.papel !==
+                                                'SUPER_ADMIN' && (
+                                                <button
+                                                    className={
+                                                        isAdministradorUsuario(
+                                                            usuario,
+                                                        )
+                                                            ? 'admin-botao-secundario'
+                                                            : 'admin-botao-primario'
+                                                    }
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    onClick={() =>
+                                                        alternarPapelAdministrativo(
+                                                            usuario,
+                                                        )
+                                                    }
+                                                    type="button"
+                                                >
+                                                    {isAdministradorUsuario(
+                                                        usuario,
+                                                    )
+                                                        ? 'Tornar cliente'
+                                                        : 'Tornar administrador'}
+                                                </button>
+                                            )}
 
                                             {usuario.situacao ===
                                                 'PENDENTE_APROVACAO' && (
