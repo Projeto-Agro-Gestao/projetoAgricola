@@ -1,21 +1,74 @@
-import { useState } from 'react'
 import { Link } from 'react-router'
+import {
+    motion,
+    useReducedMotion,
+} from 'motion/react'
 import {
     IconeAlerta,
     IconeCalendario,
     IconeCamadas,
     IconeCategoria,
+    IconeChat,
     IconeCheck,
     IconeDocumento,
-    IconeFechar,
+    IconeEmail,
+    IconeEngrenagem,
     IconeFolha,
     IconeLista,
-    IconeMenu,
+    IconePlanilha,
     IconeSetaDireita,
 } from './componentes/Icones.jsx'
+import CabecalhoPublico from './componentes/CabecalhoPublico.jsx'
+import RodapePublico from './componentes/RodapePublico.jsx'
 import Revelar from './componentes/Revelar.jsx'
 import InstalarApp from './componentes/InstalarApp.jsx'
 import './App.css'
+
+const itensOrbita = [
+    { icone: <IconeChat />, rotulo: 'WhatsApp', cor: '#22c55e' },
+    { icone: <IconePlanilha />, rotulo: 'Planilhas', cor: '#16a34a' },
+    { icone: <IconeEmail />, rotulo: 'E-mails', cor: '#3b82f6' },
+    {
+        icone: <IconeEngrenagem className="publica-orbita-girar" />,
+        rotulo: (
+                            <>
+                                Organização
+                                <br />
+                                manual
+                            </>
+                        ),
+        cor: '#4b5563',
+    },
+    {
+        icone: <IconeDocumento />,
+        rotulo: (
+                            <>
+                                Notas &
+                                <br />
+                                Recibos
+                            </>
+                        ),
+        cor: '#f59e0b',
+    },
+]
+
+const LinkAnimado = motion.create(Link)
+
+const heroiContainer = {
+    oculto: {},
+    visivel: {
+        transition: { staggerChildren: 0.12, delayChildren: 0.15 },
+    },
+}
+
+const heroiItem = {
+    oculto: { opacity: 0, y: 28 },
+    visivel: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    },
+}
 
 const recursos = [
     {
@@ -51,112 +104,63 @@ const recursos = [
 ]
 
 function PaginaInicial() {
-    const [menuAberto, setMenuAberto] = useState(false)
-
-    function fecharMenu() {
-        setMenuAberto(false)
-    }
+    const reduzirMovimento = useReducedMotion()
 
     return (
         <div className="publica">
-            <header className="publica-cabecalho">
-                <Link className="publica-marca" to="/">
-                    <span className="publica-marca-icone">
-                        <IconeFolha />
-                    </span>
-                    <span>AgroGestao</span>
-                </Link>
-
-                <nav className="publica-menu" aria-label="Principal">
-                    <a href="#produtores">Para produtores</a>
-                    <a href="#contadores">Para contadores</a>
-                    <a href="#como-funciona">Como funciona</a>
-                    <a href="#recursos">Recursos</a>
-                </nav>
-
-                <div className="publica-acoes">
-                    <Link className="publica-entrar" to="/login">
-                        Entrar
-                    </Link>
-
-                    <Link className="publica-botao publica-botao-pequeno" to="/cadastro">
-                        Quero conhecer
-                    </Link>
-
-                    <button
-                        aria-expanded={menuAberto}
-                        aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
-                        className="publica-menu-mobile-botao"
-                        onClick={() => setMenuAberto((valorAtual) => !valorAtual)}
-                        type="button"
-                    >
-                        {menuAberto ? <IconeFechar /> : <IconeMenu />}
-                    </button>
-                </div>
-
-                {menuAberto && (
-                    <nav className="publica-menu-mobile" aria-label="Menu mobile">
-                        <a href="#produtores" onClick={fecharMenu}>
-                            Para produtores
-                        </a>
-                        <a href="#contadores" onClick={fecharMenu}>
-                            Para contadores
-                        </a>
-                        <a href="#como-funciona" onClick={fecharMenu}>
-                            Como funciona
-                        </a>
-                        <a href="#recursos" onClick={fecharMenu}>
-                            Recursos
-                        </a>
-                    </nav>
-                )}
-            </header>
+            <CabecalhoPublico />
 
             <main>
                 <section className="publica-hero">
-                    <div className="publica-hero-texto">
-                        <span className="publica-etiqueta">
+                    <motion.div
+                        animate="visivel"
+                        className="publica-hero-texto"
+                        initial={reduzirMovimento ? 'visivel' : 'oculto'}
+                        variants={heroiContainer}
+                    >
+                        <motion.span
+                            className="publica-etiqueta"
+                            variants={heroiItem}
+                        >
                             Gestao financeira rural para produtores e contadores
-                        </span>
+                        </motion.span>
 
-                        <h1>
+                        <motion.h1 variants={heroiItem}>
                             Produtor organizado.
                             <br />
                             {' '}
-                            Contador com tudo na mao.
-                        </h1>
+                            Contador com tudo na mão.
+                        </motion.h1>
 
-                        <p>
+                        <motion.p variants={heroiItem}>
                             Conecte produtor rural e escritorio contabil durante
                             todo o ano. Movimentacoes, documentos, pendencias e
                             informacoes da propriedade em uma unica plataforma.
-                        </p>
+                        </motion.p>
 
-                        <div className="publica-hero-acoes">
-                            <Link className="publica-botao publica-botao-grande" to="/cadastro">
+                        <motion.div
+                            className="publica-hero-acoes"
+                            variants={heroiItem}
+                        >
+                            <LinkAnimado
+                                className="publica-botao publica-botao-grande"
+                                to="/cadastro"
+                                whileHover={reduzirMovimento ? undefined : { y: -2 }}
+                                whileTap={reduzirMovimento ? undefined : { scale: 0.98 }}
+                            >
                                 Quero conhecer a plataforma
                                 <span>
                                     <IconeSetaDireita />
                                 </span>
-                            </Link>
+                            </LinkAnimado>
 
                             <a className="publica-botao-secundario" href="#produtores">
                                 Sou produtor rural
                             </a>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
                     <div className="publica-hero-visual" aria-label="Previa ilustrativa da plataforma">
-                        <div className="publica-flutuante publica-flutuante-a">
-                            <strong>3 documentos pendentes</strong>
-                            <span>visiveis para o contador</span>
-                        </div>
-
-                        <div className="publica-flutuante publica-flutuante-b">
-                            <strong>Produtor atualizado</strong>
-                            <span>movimentacoes enviadas</span>
-                        </div>
-
                         <div className="publica-app-mockup">
                             <div className="publica-app-topo">
                                 <span>Carteira rural</span>
@@ -208,21 +212,8 @@ function PaginaInicial() {
                     </div>
                 </section>
 
-                <section className="publica-faixa-confianca">
-                    <span>Feito para a rotina financeira do produtor rural.</span>
-                    <div>
-                        <b>Agricultura</b>
-                        <b>Pecuaria</b>
-                        <b>Receitas</b>
-                        <b>Despesas</b>
-                        <b>Documentos</b>
-                        <b>Contadores</b>
-                    </div>
-                </section>
-
                 <section className="publica-problema">
                     <Revelar className="publica-secao-editorial">
-                        <span className="publica-etiqueta">O problema</span>
                         <h2>Hoje, produtor e contador ainda trabalham separados.</h2>
                         <p>
                             O produtor registra informacoes de um lado, guarda
@@ -233,14 +224,40 @@ function PaginaInicial() {
                         </p>
                     </Revelar>
 
-                    <Revelar className="publica-fluxo-antigo">
-                        <span>Produtor</span>
-                        <i>WhatsApp</i>
-                        <i>Planilhas</i>
-                        <i>Fotos</i>
-                        <i>E-mails</i>
-                        <span>Contador</span>
-                        <strong>Organizacao manual</strong>
+                    <Revelar className="publica-orbita" aria-label="Canais espalhados entre produtor e contador">
+                        <div className="publica-orbita-anel" aria-hidden="true" />
+
+                        <div className="publica-orbita-centro">
+                            <div className="publica-orbita-figura publica-orbita-flutuar-a">
+                                <span className="publica-avatar publica-avatar-produtor">
+                                    <IconeFolha />
+                                </span>
+                                <b>Produtor</b>
+                            </div>
+
+                            <div className="publica-orbita-figura publica-orbita-flutuar-b">
+                                <span className="publica-avatar publica-avatar-contador">
+                                    <IconeDocumento />
+                                </span>
+                                <b>Contador</b>
+                            </div>
+                        </div>
+
+                        {itensOrbita.map((item, indice) => (
+                            <div
+                                aria-hidden="true"
+                                className={`publica-orbita-ponto publica-orbita-atraso-${indice + 1}`}
+                                key={indice}
+                            >
+                                <div
+                                    className="publica-orbita-item"
+                                    style={{ color: item.cor }}
+                                >
+                                    {item.icone}
+                                    <small style={{ color: item.cor }}>{item.rotulo}</small>
+                                </div>
+                            </div>
+                        ))}
                     </Revelar>
                 </section>
 
@@ -401,8 +418,8 @@ function PaginaInicial() {
                             ['Movimentacoes', 'Registre receitas e despesas uma unica vez.'],
                             ['Documentos', 'Anexe notas, recibos e comprovantes.'],
                             ['Contador', 'Acompanhe pendencias, classificacoes e simulacoes.'],
-                        ].map(([titulo, texto]) => (
-                            <Revelar as="article" key={titulo}>
+                        ].map(([titulo, texto], indice) => (
+                            <Revelar as="article" atraso={indice * 80} key={titulo}>
                                 <span>
                                     <IconeCheck />
                                 </span>
@@ -425,8 +442,8 @@ function PaginaInicial() {
                     </Revelar>
 
                     <div className="publica-recursos-grid">
-                        {recursos.map((recurso) => (
-                            <Revelar as="article" key={recurso.titulo}>
+                        {recursos.map((recurso, indice) => (
+                            <Revelar as="article" atraso={(indice % 2) * 80} key={recurso.titulo}>
                                 <span>{recurso.icone}</span>
                                 <h3>{recurso.titulo}</h3>
                                 <p>{recurso.texto}</p>
@@ -493,29 +510,7 @@ function PaginaInicial() {
                 </section>
             </main>
 
-            <footer className="publica-rodape">
-                <Link className="publica-marca" to="/">
-                    <span className="publica-marca-icone">
-                        <IconeFolha />
-                    </span>
-                    <span>AgroGestao</span>
-                </Link>
-
-                <nav>
-                    <a href="#produtores">Para produtores</a>
-                    <a href="#contadores">Para contadores</a>
-                    <a href="#recursos">Recursos</a>
-                    <a href="#como-funciona">Como funciona</a>
-                    <Link to="/login">Entrar</Link>
-                </nav>
-
-                <p>© 2026 AgroGestao. Todos os direitos reservados.</p>
-
-                <div>
-                    <span>Termos de uso</span>
-                    <span>Politica de privacidade</span>
-                </div>
-            </footer>
+            <RodapePublico />
 
             <InstalarApp />
         </div>

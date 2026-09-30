@@ -22,7 +22,7 @@
     color: var(--muted-foreground);
     font: inherit;
     font-size: 0.78rem;
-    font-weight: 800;
+    font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
     transition:
@@ -46,7 +46,7 @@
                     transparent
             );
     font-size: 0.7rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .alternador-modulos-botao:hover {

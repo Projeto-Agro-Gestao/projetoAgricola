@@ -14,6 +14,7 @@
     "videos:build": "node --env-file-if-exists=videos/.env videos/pos-producao/build.js"
   },
   "dependencies": {
+    "motion": "^13.4.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.3.0"

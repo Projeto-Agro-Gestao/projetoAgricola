@@ -34,7 +34,7 @@
     color: var(--muted-foreground);
     font: inherit;
     font-size: 0.84rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -42,7 +42,7 @@
     margin: 0 0 7px;
     color: var(--primary);
     font-size: 0.76rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
 }
@@ -100,7 +100,7 @@
 .fornecedores-card-topo small {
     color: var(--primary);
     font-size: 0.72rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -145,7 +145,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .fornecedores-indicadores small {
@@ -199,7 +199,7 @@
 
 .fornecedores-grafico-precos header small {
     color: var(--primary);
-    font-weight: 850;
+    font-weight: 600;
     text-align: right;
 }
 
@@ -260,7 +260,7 @@
     color: var(--foreground);
     font: inherit;
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 600;
     text-align: left;
     text-decoration: none;
     cursor: pointer;
@@ -276,7 +276,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .fornecedores-cards-resumo {
@@ -303,7 +303,7 @@
     border-radius: 12px;
     background: var(--secondary);
     color: var(--primary);
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .fornecedores-resumo-card > div {
@@ -347,7 +347,7 @@
 
 .fornecedores-card label {
     font-size: 0.82rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .fornecedores-card input,
@@ -386,7 +386,7 @@
     color: var(--primary);
     font: inherit;
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -462,7 +462,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .fornecedores-cotacoes-lista {
@@ -566,7 +566,7 @@
     padding: 12px;
     border-radius: var(--radius);
     font-size: 0.82rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .fornecedores-alerta.erro {
@@ -635,7 +635,7 @@
     gap: 6px;
     margin-bottom: 10px;
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .fornecedores-modal input,

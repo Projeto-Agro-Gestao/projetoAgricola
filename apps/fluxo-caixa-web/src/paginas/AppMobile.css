@@ -31,7 +31,7 @@
 .app-mobile-topo span {
     color: var(--primary);
     font-size: 0.76rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .app-mobile-topo strong {
@@ -50,7 +50,7 @@
     color: var(--foreground);
     font: inherit;
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .app-mobile-conteudo {
@@ -77,7 +77,7 @@
     margin: 0 0 12px;
     color: var(--muted-foreground);
     font-size: 0.82rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .app-mobile-resumo div {
@@ -109,7 +109,7 @@
     margin: 0 0 7px;
     color: var(--primary);
     font-size: 0.74rem;
-    font-weight: 900;
+    font-weight: 700;
     text-transform: uppercase;
 }
 
@@ -132,7 +132,7 @@
     border: 0;
     border-radius: var(--radius);
     font: inherit;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .app-mobile-tipos button {
@@ -159,7 +159,7 @@
     gap: 8px;
     color: var(--foreground);
     font-size: 0.9rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .app-mobile-campo input,

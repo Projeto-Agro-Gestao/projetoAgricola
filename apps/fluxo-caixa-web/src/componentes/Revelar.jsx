@@ -1,8 +1,7 @@
 import {
-    useEffect,
-    useRef,
-    useState,
-} from 'react'
+    motion,
+    useReducedMotion,
+} from 'motion/react'
 
 function Revelar({
     as: Elemento = 'div',
@@ -11,58 +10,24 @@ function Revelar({
     children,
     ...props
 }) {
-    const ref = useRef(null)
-    const [visivel, setVisivel] = useState(false)
-
-    useEffect(() => {
-        const elemento = ref.current
-
-        if (
-            !elemento ||
-            typeof IntersectionObserver === 'undefined'
-        ) {
-            const temporizador = window.setTimeout(
-                () => setVisivel(true),
-                0,
-            )
-            return () => window.clearTimeout(temporizador)
-        }
-
-        const observador = new IntersectionObserver(
-            (entradas) => {
-                entradas.forEach((entrada) => {
-                    if (entrada.isIntersecting) {
-                        setVisivel(true)
-                        observador.unobserve(entrada.target)
-                    }
-                })
-            },
-            {
-                threshold: 0.15,
-                rootMargin: '0px 0px -8% 0px',
-            },
-        )
-
-        observador.observe(elemento)
-
-        return () => observador.disconnect()
-    }, [])
+    const reduzirMovimento = useReducedMotion()
+    const Componente = motion[Elemento] ?? motion.div
 
     return (
-        <Elemento
-            className={`revelar${
-                visivel ? ' revelar-visivel' : ''
-            }${className ? ` ${className}` : ''}`}
-            ref={ref}
-            style={
-                atraso
-                    ? { transitionDelay: `${atraso}ms` }
-                    : undefined
-            }
+        <Componente
+            className={className}
+            initial={reduzirMovimento ? false : { opacity: 0, y: 24 }}
+            transition={{
+                duration: 0.7,
+                delay: atraso / 1000,
+                ease: [0.16, 1, 0.3, 1],
+            }}
+            viewport={{ once: true, amount: 0.15 }}
+            whileInView={{ opacity: 1, y: 0 }}
             {...props}
         >
             {children}
-        </Elemento>
+        </Componente>
     )
 }
 

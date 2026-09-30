@@ -43,7 +43,7 @@
     background: var(--primary);
     color: var(--primary-foreground);
     font-size: 1.15rem;
-    font-weight: 900;
+    font-weight: 700;
     box-shadow:
             0 10px 25px
             color-mix(
@@ -61,7 +61,7 @@
 .escolha-modulo-marca strong {
     color: var(--foreground);
     font-size: 0.92rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .escolha-modulo-marca small {
@@ -87,7 +87,7 @@
     color: var(--foreground);
     font: inherit;
     font-size: 0.76rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             border-color 160ms ease,
@@ -123,7 +123,7 @@
     margin: 0 0 8px;
     color: var(--primary);
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.04em;
 }
 
@@ -253,7 +253,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 1.45rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .escolha-modulo-contas
@@ -285,7 +285,7 @@
 .escolha-modulo-card-texto > small {
     color: var(--primary);
     font-size: 0.71rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -338,7 +338,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 0.62rem;
-    font-weight: 900;
+    font-weight: 700;
     content: "✓";
 }
 
@@ -353,7 +353,7 @@
     border-top: 1px solid var(--border);
     color: var(--primary);
     font-size: 0.84rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .escolha-modulo-acao > span {

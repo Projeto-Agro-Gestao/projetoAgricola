@@ -43,7 +43,7 @@
     margin: 0 0 10px;
     color: #328d0c;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: 0.1em;
 }
 
@@ -72,7 +72,7 @@
     background: #ffffff;
     color: #328d0c;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: none;
     transition:
             border-color 160ms ease,
@@ -97,7 +97,7 @@
     background: #328d0c;
     color: #ffffff;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: none;
     box-shadow: 0 12px 28px rgba(50, 141, 12, 0.2);
     transition:
@@ -145,7 +145,7 @@
     background: #f3f8f0;
     color: #52664c;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -195,7 +195,7 @@
     padding: 6px 10px;
     border-radius: 999px;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .movimentacoes-tipo.receita {
@@ -209,7 +209,7 @@
 }
 
 .movimentacoes-valor {
-    font-weight: 800;
+    font-weight: 600;
     white-space: nowrap;
 }
 
@@ -245,7 +245,7 @@
     background: #ffffff;
     font-family: inherit;
     font-size: 13px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             background 0.2s ease,
@@ -290,7 +290,7 @@
     color: #355a2c;
     font-family: inherit;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -429,7 +429,7 @@
     color: #267a08;
     font-family: inherit;
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     text-align: left;
 }
@@ -443,7 +443,7 @@
 .movimentacoes-modal-form label {
     color: #10200d;
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .movimentacoes-modal-form select,
@@ -465,7 +465,7 @@
     color: #328d0c;
     font-family: inherit;
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -483,7 +483,7 @@
     border-radius: 8px;
     font-family: inherit;
     font-size: 0.78rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 

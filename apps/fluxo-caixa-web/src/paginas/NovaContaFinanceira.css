@@ -45,7 +45,7 @@
     margin: 0 0 7px;
     color: var(--primary);
     font-size: 0.76rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
 }
@@ -234,7 +234,7 @@
     color: var(--primary);
     font: inherit;
     font-size: 0.7rem;
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
 }
@@ -287,7 +287,7 @@
     margin: 0;
     color: var(--primary);
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .nova-conta-lembrete {
@@ -424,7 +424,7 @@ input[type="number"]:focus {
     color: var(--primary-foreground);
     font: inherit;
     font-size: 0.72rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -444,7 +444,7 @@ input[type="number"]:focus {
     border-radius: var(--radius);
     font: inherit;
     font-size: 0.82rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             border-color 160ms ease,

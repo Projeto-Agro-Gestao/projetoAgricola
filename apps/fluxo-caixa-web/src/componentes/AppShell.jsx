@@ -14,6 +14,8 @@ const ROTAS_PUBLICAS = [
     '/cadastro',
     '/esqueci-senha',
     '/redefinir-senha',
+    '/termos-de-uso',
+    '/politica-de-privacidade',
 ]
 
 function rotaPublica(pathname) {

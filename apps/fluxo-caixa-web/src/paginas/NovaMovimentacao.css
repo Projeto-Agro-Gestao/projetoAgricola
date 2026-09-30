@@ -49,7 +49,7 @@
     margin: 0 0 7px;
     color: var(--primary);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
 }
@@ -217,7 +217,7 @@
     color: var(--primary);
     font: inherit;
     font-size: 0.78rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             color 160ms ease,
@@ -245,7 +245,7 @@
 }
 
 .categoria-ajuda-criacao strong {
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .categoria-ajuda-criacao span {
@@ -306,13 +306,13 @@
 
 .categoria-criar-destaque > span {
     font-size: 1rem;
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1;
 }
 
 .categoria-criar-destaque > strong {
     color: inherit;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .categoria-criar-destaque:hover:not(:disabled) {
@@ -364,7 +364,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 1rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .categoria-sem-opcoes strong {
@@ -389,7 +389,7 @@
     color: var(--primary-foreground);
     font: inherit;
     font-size: 0.74rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition:
@@ -428,7 +428,7 @@
     margin: 0;
     color: var(--foreground);
     font-size: 0.86rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .categoria-criacao-rapida
@@ -457,7 +457,7 @@
     border-radius: calc(var(--radius) * 0.85);
     font: inherit;
     font-size: 0.76rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             border-color 160ms ease,
@@ -521,7 +521,7 @@
 
 .categoria-gerenciar-link a {
     color: var(--primary);
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -593,7 +593,7 @@
     color: var(--primary-foreground);
     font: inherit;
     font-size: 0.87rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     box-shadow:
             0 10px 25px

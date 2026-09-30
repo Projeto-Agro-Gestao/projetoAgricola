@@ -69,7 +69,7 @@
     margin: 0 0 7px;
     color: var(--primary);
     font-size: 0.76rem;
-    font-weight: 850;
+    font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
 }
@@ -104,7 +104,7 @@
     color: var(--primary-foreground);
     font: inherit;
     font-size: 0.82rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     box-shadow:
             0 10px 24px
@@ -177,7 +177,7 @@
     color: var(--destructive);
     font: inherit;
     font-size: 0.75rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     grid-column: 2;
     grid-row: 1 / 3;
@@ -215,7 +215,7 @@
     background: oklch(0.78 0.16 78);
     color: oklch(0.25 0.06 70);
     font-size: 1.05rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .contas-alerta strong {
@@ -236,7 +236,7 @@
     background: var(--foreground);
     color: var(--card);
     font-size: 0.74rem;
-    font-weight: 800;
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -353,7 +353,7 @@
     color: var(--foreground);
     font: inherit;
     font-size: 0.76rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             border-color 160ms ease,
@@ -376,7 +376,7 @@
     border-radius: 8px;
     background: var(--secondary);
     color: var(--primary);
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .contas-atalhos span svg {
@@ -408,7 +408,7 @@
     border-radius: 12px;
     background: var(--secondary);
     color: var(--primary);
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .contas-categoria-card.pagar > span {
@@ -532,7 +532,7 @@
     height: 42px;
     place-items: center;
     border-radius: 12px;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .contas-item-receber {
@@ -572,7 +572,7 @@
     padding: 5px 8px;
     border-radius: 999px;
     font-size: 0.62rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .contas-status-pendente {
@@ -660,7 +660,7 @@
     border-radius: 8px;
     font: inherit;
     font-size: 0.69rem;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
     transition:
             filter 160ms ease,
@@ -814,7 +814,7 @@
     color: var(--primary);
     font: inherit;
     font-size: 0.74rem;
-    font-weight: 850;
+    font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
 }
@@ -858,7 +858,7 @@
     color: var(--foreground);
     font: inherit;
     font-size: 0.76rem;
-    font-weight: 850;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -956,7 +956,7 @@
     border: 0;
     font: inherit;
     font-size: 0.77rem;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition:
             color 160ms ease,

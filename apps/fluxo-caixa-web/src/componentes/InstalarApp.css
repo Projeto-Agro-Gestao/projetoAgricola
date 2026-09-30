@@ -83,7 +83,7 @@
   background: var(--primary);
   color: var(--primary-foreground);
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
 }
 

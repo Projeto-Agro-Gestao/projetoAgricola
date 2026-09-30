@@ -97,7 +97,7 @@ h4,
 h5,
 h6 {
   color: var(--foreground);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 button,

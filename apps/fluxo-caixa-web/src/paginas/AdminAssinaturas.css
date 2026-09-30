@@ -12,7 +12,7 @@
     border: 0;
     color: #2f7d00;
     cursor: pointer;
-    font-weight: 900;
+    font-weight: 700;
     margin-bottom: 26px;
 }
 
@@ -20,7 +20,7 @@
 .admin-assinaturas-config small {
     color: #2f7d00;
     font-size: .78rem;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
 }
@@ -63,7 +63,7 @@
     color: #4c5f4d;
     display: block;
     font-size: .78rem;
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .admin-assinaturas-resumo strong {
@@ -83,7 +83,7 @@
 
 .admin-assinaturas-aviso {
     color: #2f7d00;
-    font-weight: 800;
+    font-weight: 600;
     margin: 22px 0;
     padding: 14px 18px;
 }
@@ -115,7 +115,7 @@
 
 .admin-assinaturas-config label {
     display: grid;
-    font-weight: 800;
+    font-weight: 600;
     gap: 8px;
 }
 
@@ -149,7 +149,7 @@
 .admin-assinaturas-config-fiscal legend {
     color: #2f7d00;
     font-size: .78rem;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: .08em;
     padding: 0 8px;
     text-transform: uppercase;
@@ -180,7 +180,7 @@
     border-radius: 8px;
     color: #2f7d00;
     cursor: pointer;
-    font-weight: 900;
+    font-weight: 700;
     min-height: 42px;
     padding: 0 14px;
 }
@@ -272,7 +272,7 @@
     border-radius: 8px;
     color: #122512;
     display: grid;
-    font-weight: 800;
+    font-weight: 600;
     gap: 4px;
     padding: 10px 12px;
 }
@@ -280,7 +280,7 @@
 .admin-assinaturas-dados small {
     color: #5b6e59;
     font-size: .72rem;
-    font-weight: 850;
+    font-weight: 600;
     text-transform: uppercase;
 }
 

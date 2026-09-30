@@ -81,7 +81,7 @@
 .dashboard-conta-indicador-topo > span {
     color: var(--muted-foreground);
     font-size: 0.76rem;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: 0.02em;
     text-transform: uppercase;
 }
@@ -96,7 +96,7 @@
     color: var(--primary);
     font-size: 0.76rem;
     font-style: normal;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .dashboard-conta-pagar
@@ -183,7 +183,7 @@
     background: var(--secondary);
     color: var(--primary);
     font-size: 1rem;
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .dashboard-contas-alertas > button > div {
@@ -195,7 +195,7 @@
 .dashboard-contas-alertas strong {
     color: var(--foreground);
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 600;
 }
 
 .dashboard-contas-alertas small {

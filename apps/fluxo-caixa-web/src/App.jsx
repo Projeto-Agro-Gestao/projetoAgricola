@@ -35,6 +35,10 @@ const ProdutorColaborativo = lazy(() =>
     import('./paginas/ProdutorColaborativo.jsx'),
 )
 const ContadorCarteira = lazy(() => import('./paginas/ContadorCarteira.jsx'))
+const TermosDeUso = lazy(() => import('./paginas/TermosDeUso.jsx'))
+const PoliticaDePrivacidade = lazy(() =>
+    import('./paginas/PoliticaDePrivacidade.jsx'),
+)
 
 function App() {
     const location = useLocation()
@@ -51,6 +55,16 @@ function App() {
                 <Route
                     path="/"
                     element={<PaginaInicial />}
+                />
+
+                <Route
+                    path="/termos-de-uso"
+                    element={<TermosDeUso />}
+                />
+
+                <Route
+                    path="/politica-de-privacidade"
+                    element={<PoliticaDePrivacidade />}
                 />
 
                 <Route
