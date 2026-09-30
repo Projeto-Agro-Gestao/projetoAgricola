@@ -55,6 +55,18 @@ O modulo colaborativo disponibiliza exportacao CSV de movimentacoes por periodo.
 
 O backend valida acesso por empresa e por vinculo contador-cliente. Empresas nao podem acessar dados umas das outras, e contadores acessam apenas empresas vinculadas ou liberadas por perfil administrativo.
 
+## Cadastro com Google
+
+O cadastro e o login podem usar o Google Identity Services. O frontend recebe o ID token do Google e envia para o backend em `/api/v1/auth/google`; o backend valida a credencial no Google, confere audiencia, emissor, expiracao e e-mail verificado, e somente depois emite o JWT normal do AgroGestao.
+
+Configuracoes externas necessarias:
+
+- `GOOGLE_CLIENT_ID` no backend, com o OAuth Client ID do Google.
+- `VITE_GOOGLE_CLIENT_ID` no frontend, com o mesmo Client ID autorizado para o dominio publicado.
+- No Google Cloud Console, liberar as origens JavaScript da Vercel/local e os dominios usados pelo AgroGestao.
+
+Nenhuma chave secreta do Google deve ser colocada no codigo.
+
 ## Fast follow preparado
 
 A arquitetura deixa caminho para evoluir:

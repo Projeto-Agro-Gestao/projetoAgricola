@@ -173,6 +173,10 @@ public class Usuario {
         return emailVerificado;
     }
 
+    public void marcarEmailVerificado() {
+        this.emailVerificado = true;
+    }
+
     public int getTentativasLogin() {
         return tentativasLogin;
     }

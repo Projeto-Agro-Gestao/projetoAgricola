@@ -16,13 +16,16 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final AutenticacaoService autenticacaoService;
+    private final GoogleAuthService googleAuthService;
 
     public UsuarioController(
             UsuarioService usuarioService,
-            AutenticacaoService autenticacaoService) {
+            AutenticacaoService autenticacaoService,
+            GoogleAuthService googleAuthService) {
 
         this.usuarioService = usuarioService;
         this.autenticacaoService = autenticacaoService;
+        this.googleAuthService = googleAuthService;
     }
 
     @PostMapping("/cadastro")
@@ -45,6 +48,17 @@ public class UsuarioController {
 
         EntrarResponse resposta =
                 autenticacaoService.entrar(request);
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<EntrarResponse> entrarComGoogle(
+            @Valid @RequestBody
+            GoogleAuthRequest request) {
+
+        EntrarResponse resposta =
+                googleAuthService.autenticar(request);
 
         return ResponseEntity.ok(resposta);
     }

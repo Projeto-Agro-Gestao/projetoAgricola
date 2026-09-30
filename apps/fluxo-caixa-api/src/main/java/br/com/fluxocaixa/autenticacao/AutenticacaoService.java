@@ -60,6 +60,16 @@ public class AutenticacaoService {
             throw new CredenciaisInvalidasException();
         }
 
+        return emitirSessao(usuario);
+    }
+
+    @Transactional
+    public EntrarResponse emitirSessao(Usuario usuario) {
+
+        if (!usuario.isAtivo()) {
+            throw new CredenciaisInvalidasException();
+        }
+
         if (!isAdministrador(usuario.getPapel())
                 && !usuario.possuiAcessoValido(
                 java.time.LocalDate.now()

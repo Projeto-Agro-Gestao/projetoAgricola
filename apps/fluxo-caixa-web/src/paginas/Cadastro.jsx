@@ -1,4 +1,6 @@
 import {
+    useEffect,
+    useRef,
     useState,
 } from 'react'
 import {
@@ -7,8 +9,11 @@ import {
 } from 'react-router'
 import {
     API_CADASTRO_URL,
+    API_GOOGLE_AUTH_URL,
     API_LOGIN_URL,
+    GOOGLE_CLIENT_ID,
 } from '../config.js'
+import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
 import './Autenticacao.css'
 
 async function obterMensagemDeErro(
@@ -61,6 +66,12 @@ function armazenarSessao(dados) {
 
 function Cadastro() {
     const navigate = useNavigate()
+    const formularioRef = useRef(null)
+    const cadastroGoogleRef = useRef({
+        agriculturaAtiva: true,
+        pecuariaAtiva: false,
+        carregando: false,
+    })
 
     const [
         mostrarSenha,
@@ -89,6 +100,58 @@ function Cadastro() {
         carregando,
         setCarregando,
     ] = useState(false)
+
+    const [
+        carregandoGoogle,
+        setCarregandoGoogle,
+    ] = useState(false)
+
+    const [
+        googleDisponivel,
+        setGoogleDisponivel,
+    ] = useState(Boolean(GOOGLE_CLIENT_ID))
+
+    useEffect(() => {
+        cadastroGoogleRef.current = {
+            agriculturaAtiva,
+            pecuariaAtiva,
+            carregando:
+                carregando || carregandoGoogle,
+        }
+    }, [
+        agriculturaAtiva,
+        pecuariaAtiva,
+        carregando,
+        carregandoGoogle,
+    ])
+
+    useEffect(() => {
+        if (!GOOGLE_CLIENT_ID) {
+            setGoogleDisponivel(false)
+            return
+        }
+
+        let ativo = true
+
+        renderizarBotaoGoogle({
+            clientId: GOOGLE_CLIENT_ID,
+            elementId: 'google-cadastro-botao',
+            onCredential: async (credential) => {
+                if (ativo) {
+                    await cadastrarComGoogle(credential)
+                }
+            },
+            text: 'signup_with',
+        }).catch(() => {
+            if (ativo) {
+                setGoogleDisponivel(false)
+            }
+        })
+
+        return () => {
+            ativo = false
+        }
+    }, [])
 
     async function criarConta(evento) {
         evento.preventDefault()
@@ -242,6 +305,102 @@ function Cadastro() {
         }
     }
 
+    async function cadastrarComGoogle(credential) {
+        const estado = cadastroGoogleRef.current
+
+        if (estado.carregando) {
+            return
+        }
+
+        setErro('')
+        setMensagem('')
+
+        const formulario = formularioRef.current
+
+        if (!formulario) {
+            setErro('Nao foi possivel ler os dados do cadastro.')
+            return
+        }
+
+        const dadosFormulario = new FormData(formulario)
+        const nomeEmpresa = String(
+            dadosFormulario.get('propriedade') ?? '',
+        ).trim()
+        const telefone = String(
+            dadosFormulario.get('telefone') ?? '',
+        ).trim()
+
+        if (!nomeEmpresa) {
+            setErro(
+                'Digite o nome da propriedade antes de cadastrar com Google.',
+            )
+            return
+        }
+
+        if (!estado.agriculturaAtiva && !estado.pecuariaAtiva) {
+            setErro(
+                'Escolha Agricultura (plantacao), Pecuaria (animais) ou as duas atividades.',
+            )
+            return
+        }
+
+        setCarregandoGoogle(true)
+
+        try {
+            const resposta = await fetch(API_GOOGLE_AUTH_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type':
+                        'application/json; charset=utf-8',
+                },
+                body: JSON.stringify({
+                    credential,
+                    nomeEmpresa,
+                    telefone: telefone || null,
+                    agriculturaAtiva:
+                        estado.agriculturaAtiva,
+                    pecuariaAtiva:
+                        estado.pecuariaAtiva,
+                }),
+            })
+
+            if (!resposta.ok) {
+                const mensagemErro =
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel cadastrar com Google.',
+                    )
+
+                throw new Error(mensagemErro)
+            }
+
+            const dadosLogin = await resposta.json()
+
+            if (
+                !dadosLogin?.token ||
+                !dadosLogin?.usuario?.empresaId
+            ) {
+                throw new Error(
+                    'O servidor retornou um login invalido.',
+                )
+            }
+
+            armazenarSessao(dadosLogin)
+
+            navigate('/dashboard', {
+                replace: true,
+            })
+        } catch (erroDaRequisicao) {
+            setErro(
+                erroDaRequisicao instanceof Error
+                    ? erroDaRequisicao.message
+                    : 'Nao foi possivel cadastrar com Google.',
+            )
+        } finally {
+            setCarregandoGoogle(false)
+        }
+    }
+
     return (
         <main className="autenticacao">
             <section className="autenticacao-apresentacao">
@@ -318,6 +477,7 @@ function Cadastro() {
                     <form
                         className="autenticacao-formulario"
                         onSubmit={criarConta}
+                        ref={formularioRef}
                     >
                         <div className="autenticacao-campo">
                             <label htmlFor="nomeProdutor">
@@ -533,7 +693,10 @@ function Cadastro() {
 
                         <button
                             className="autenticacao-botao"
-                            disabled={carregando}
+                            disabled={
+                                carregando ||
+                                carregandoGoogle
+                            }
                             type="submit"
                         >
                             <span>→</span>
@@ -543,6 +706,32 @@ function Cadastro() {
                                 : 'Criar conta'}
                         </button>
                     </form>
+
+                    <div className="autenticacao-divisor">
+                        <span>ou</span>
+                    </div>
+
+                    <div className="autenticacao-google-area">
+                        {googleDisponivel ? (
+                            <div
+                                id="google-cadastro-botao"
+                            />
+                        ) : (
+                            <button
+                                className="autenticacao-google-placeholder"
+                                disabled
+                                type="button"
+                            >
+                                Cadastrar com Google indisponivel
+                            </button>
+                        )}
+
+                        {carregandoGoogle && (
+                            <p>
+                                Validando conta Google...
+                            </p>
+                        )}
+                    </div>
 
                     <p className="autenticacao-alternativa">
                         Já possui conta?{' '}

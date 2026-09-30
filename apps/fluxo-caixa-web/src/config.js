@@ -12,8 +12,14 @@ export const API_LOGIN_URL =
 export const API_CADASTRO_URL =
     `${API_BASE_URL}/auth/cadastro`
 
+export const API_GOOGLE_AUTH_URL =
+    `${API_BASE_URL}/auth/google`
+
 export const API_ESQUECI_SENHA_URL =
     `${API_BASE_URL}/auth/esqueci-senha`
 
 export const API_REDEFINIR_SENHA_URL =
     `${API_BASE_URL}/auth/redefinir-senha`
+
+export const GOOGLE_CLIENT_ID =
+    import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || ''

@@ -3,8 +3,39 @@ import {
     useState,
 } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { API_LOGIN_URL } from '../config.js'
+import {
+    API_GOOGLE_AUTH_URL,
+    API_LOGIN_URL,
+    GOOGLE_CLIENT_ID,
+} from '../config.js'
+import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
 import './Autenticacao.css'
+
+function armazenarSessao(dados) {
+    const expiraEm =
+        Date.now() +
+        Number(dados.expiraEmSegundos ?? 3600) * 1000
+
+    localStorage.setItem(
+        'agrogestao_token',
+        dados.token,
+    )
+
+    localStorage.setItem(
+        'agrogestao_tipo_token',
+        dados.tipo ?? 'Bearer',
+    )
+
+    localStorage.setItem(
+        'agrogestao_usuario',
+        JSON.stringify(dados.usuario),
+    )
+
+    localStorage.setItem(
+        'agrogestao_token_expira_em',
+        String(expiraEm),
+    )
+}
 
 function Login() {
     const navigate = useNavigate()
@@ -15,6 +46,9 @@ function Login() {
     const [lembrarAcesso, setLembrarAcesso] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
+    const [carregandoGoogle, setCarregandoGoogle] = useState(false)
+    const [googleDisponivel, setGoogleDisponivel] =
+        useState(Boolean(GOOGLE_CLIENT_ID))
 
     useEffect(() => {
         const emailLembrado = localStorage.getItem(
@@ -24,6 +58,33 @@ function Login() {
         if (emailLembrado) {
             setEmail(emailLembrado)
             setLembrarAcesso(true)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!GOOGLE_CLIENT_ID) {
+            setGoogleDisponivel(false)
+            return
+        }
+
+        let ativo = true
+
+        renderizarBotaoGoogle({
+            clientId: GOOGLE_CLIENT_ID,
+            elementId: 'google-login-botao',
+            onCredential: async (credential) => {
+                if (ativo) {
+                    await entrarComGoogle(credential)
+                }
+            },
+        }).catch(() => {
+            if (ativo) {
+                setGoogleDisponivel(false)
+            }
+        })
+
+        return () => {
+            ativo = false
         }
     }, [])
 
@@ -63,29 +124,7 @@ function Login() {
                 )
             }
 
-            const expiraEm =
-                Date.now() +
-                Number(dados.expiraEmSegundos ?? 3600) * 1000
-
-            localStorage.setItem(
-                'agrogestao_token',
-                dados.token,
-            )
-
-            localStorage.setItem(
-                'agrogestao_tipo_token',
-                dados.tipo ?? 'Bearer',
-            )
-
-            localStorage.setItem(
-                'agrogestao_usuario',
-                JSON.stringify(dados.usuario),
-            )
-
-            localStorage.setItem(
-                'agrogestao_token_expira_em',
-                String(expiraEm),
-            )
+            armazenarSessao(dados)
 
             if (lembrarAcesso) {
                 localStorage.setItem(
@@ -115,6 +154,65 @@ function Login() {
             )
         } finally {
             setCarregando(false)
+        }
+    }
+
+    async function entrarComGoogle(credential) {
+        if (carregando || carregandoGoogle) {
+            return
+        }
+
+        setMensagem('')
+        setCarregandoGoogle(true)
+
+        try {
+            const resposta = await fetch(API_GOOGLE_AUTH_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type':
+                        'application/json; charset=utf-8',
+                },
+                body: JSON.stringify({
+                    credential,
+                }),
+            })
+
+            const dados = await resposta
+                .json()
+                .catch(() => null)
+
+            if (!resposta.ok) {
+                throw new Error(
+                    dados?.mensagem ??
+                    'Nao foi possivel entrar com Google. Se ainda nao tiver conta, cadastre-se primeiro.',
+                )
+            }
+
+            if (!dados?.token || !dados?.usuario?.empresaId) {
+                throw new Error(
+                    'O servidor retornou uma resposta de login invalida',
+                )
+            }
+
+            armazenarSessao(dados)
+
+            navigate(
+                dados.usuario.papel === 'ADMINISTRADOR' ||
+                    dados.usuario.papel === 'SUPER_ADMIN'
+                    ? '/admin'
+                    : '/dashboard',
+                {
+                    replace: true,
+                },
+            )
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel entrar com Google',
+            )
+        } finally {
+            setCarregandoGoogle(false)
         }
     }
 
@@ -267,7 +365,10 @@ function Login() {
 
                         <button
                             className="autenticacao-botao"
-                            disabled={carregando}
+                            disabled={
+                                carregando ||
+                                carregandoGoogle
+                            }
                             type="submit"
                         >
                             <span>→</span>
@@ -277,6 +378,28 @@ function Login() {
                                 : 'Entrar'}
                         </button>
                     </form>
+
+                    <div className="autenticacao-divisor">
+                        <span>ou</span>
+                    </div>
+
+                    <div className="autenticacao-google-area">
+                        {googleDisponivel ? (
+                            <div id="google-login-botao" />
+                        ) : (
+                            <button
+                                className="autenticacao-google-placeholder"
+                                disabled
+                                type="button"
+                            >
+                                Entrar com Google indisponivel
+                            </button>
+                        )}
+
+                        {carregandoGoogle && (
+                            <p>Validando conta Google...</p>
+                        )}
+                    </div>
 
                     <p className="autenticacao-alternativa">
                         <Link to="/esqueci-senha">
