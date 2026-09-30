@@ -29,6 +29,10 @@ const FILTROS_USUARIOS = [
     { valor: 'ATRASADOS', rotulo: 'Atrasados' },
     { valor: 'SEM_PAGAR', rotulo: 'Sem pagar' },
     { valor: 'SEM_USO', rotulo: 'Sem uso' },
+    { valor: 'ADMINISTRADORES', rotulo: 'Administradores' },
+    { valor: 'CLIENTES', rotulo: 'Clientes' },
+    { valor: 'PRODUTORES', rotulo: 'Produtores' },
+    { valor: 'CONTADORES', rotulo: 'Contadores' },
 ]
 
 function obterSessao() {
@@ -162,6 +166,8 @@ function AdminPainel() {
     const [filtroUsuarios, setFiltroUsuarios] = useState('TODOS')
     const [usuarioEmEdicao, setUsuarioEmEdicao] =
         useState(null)
+    const [confirmacaoPapel, setConfirmacaoPapel] =
+        useState(null)
     const [formularioEdicao, setFormularioEdicao] =
         useState({
             nomeEmpresa: '',
@@ -238,7 +244,15 @@ function AdminPainel() {
                 (filtroUsuarios === 'SEM_PAGAR' &&
                     usuario.statusPagamento === 'TESTE') ||
                 (filtroUsuarios === 'SEM_USO' &&
-                    usuario.situacao === 'SEM_USO')
+                    usuario.situacao === 'SEM_USO') ||
+                (filtroUsuarios === 'ADMINISTRADORES' &&
+                    isAdministradorUsuario(usuario)) ||
+                (filtroUsuarios === 'CLIENTES' &&
+                    !isAdministradorUsuario(usuario)) ||
+                (filtroUsuarios === 'PRODUTORES' &&
+                    usuario.papel === 'PRODUTOR') ||
+                (filtroUsuarios === 'CONTADORES' &&
+                    usuario.papel === 'CONTADOR')
 
             return atendeBusca && atendeFiltro
         })
@@ -386,9 +400,23 @@ function AdminPainel() {
         )
     }
 
-    async function alternarPapelAdministrativo(usuario) {
+    function alternarPapelAdministrativo(usuario) {
         const administrador = isAdministradorUsuario(usuario)
         const papel = administrador ? 'PRODUTOR' : 'ADMINISTRADOR'
+
+        setConfirmacaoPapel({
+            usuario,
+            papel,
+            administrador,
+        })
+    }
+
+    async function confirmarAlteracaoPapel() {
+        if (!confirmacaoPapel) {
+            return
+        }
+
+        const { usuario, papel, administrador } = confirmacaoPapel
 
         await salvarAlteracao(
             usuario.id,
@@ -397,7 +425,11 @@ function AdminPainel() {
                 papel,
             },
             'papel',
+            administrador
+                ? 'Acesso de administrador removido com sucesso.'
+                : 'Usuario promovido a administrador com sucesso.',
         )
+        setConfirmacaoPapel(null)
     }
 
     async function salvarAlteracao(
@@ -405,6 +437,7 @@ function AdminPainel() {
         url,
         corpo,
         contexto = '',
+        mensagemSucesso = 'Alteração salva com sucesso.',
     ) {
         if (!sessao) {
             return
@@ -444,7 +477,7 @@ function AdminPainel() {
                 ),
             )
 
-            setMensagem('Alteração salva com sucesso.')
+            setMensagem(mensagemSucesso)
         } catch (erro) {
             setMensagem(
                 erro instanceof Error
@@ -879,9 +912,11 @@ function AdminPainel() {
                                                     }
                                                     type="button"
                                                 >
-                                                    {isAdministradorUsuario(
-                                                        usuario,
-                                                    )
+                                                    {salvandoId === usuario.id
+                                                        ? 'Atualizando...'
+                                                        : isAdministradorUsuario(
+                                                            usuario,
+                                                        )
                                                         ? 'Tornar cliente'
                                                         : 'Tornar administrador'}
                                                 </button>
@@ -1173,6 +1208,92 @@ function AdminPainel() {
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {confirmacaoPapel && (
+                <div
+                    className="admin-modal-fundo"
+                    role="presentation"
+                >
+                    <div
+                        aria-modal="true"
+                        className="admin-modal"
+                        role="dialog"
+                    >
+                        <div className="admin-modal-topo">
+                            <div>
+                                <span>Perfil do usuario</span>
+                                <h2>
+                                    {confirmacaoPapel.administrador
+                                        ? 'Remover acesso de administrador?'
+                                        : 'Tornar usuario administrador?'}
+                                </h2>
+                            </div>
+
+                            <button
+                                className="admin-modal-fechar"
+                                disabled={
+                                    salvandoId ===
+                                    confirmacaoPapel.usuario.id
+                                }
+                                onClick={() =>
+                                    setConfirmacaoPapel(null)
+                                }
+                                type="button"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+
+                        <p>
+                            {confirmacaoPapel.administrador
+                                ? 'Tem certeza que deseja remover o acesso de administrador deste usuario?'
+                                : 'Tem certeza que deseja tornar este usuario um administrador?'}
+                        </p>
+
+                        <p>
+                            Administradores possuem acesso ampliado as
+                            funcoes de gestao do AgroGestao.
+                        </p>
+
+                        <div className="admin-modal-acoes">
+                            <button
+                                className="admin-botao-secundario"
+                                disabled={
+                                    salvandoId ===
+                                    confirmacaoPapel.usuario.id
+                                }
+                                onClick={() =>
+                                    setConfirmacaoPapel(null)
+                                }
+                                type="button"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                className={
+                                    confirmacaoPapel.administrador
+                                        ? 'admin-botao-perigo'
+                                        : 'admin-botao-primario'
+                                }
+                                disabled={
+                                    salvandoId ===
+                                    confirmacaoPapel.usuario.id
+                                }
+                                onClick={confirmarAlteracaoPapel}
+                                type="button"
+                            >
+                                {salvandoId ===
+                                confirmacaoPapel.usuario.id
+                                    ? 'Atualizando...'
+                                    : confirmacaoPapel.administrador
+                                        ? 'Tornar cliente'
+                                        : 'Tornar administrador'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>

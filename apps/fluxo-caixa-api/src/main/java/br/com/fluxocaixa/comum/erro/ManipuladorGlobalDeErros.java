@@ -2,6 +2,7 @@ package br.com.fluxocaixa.comum.erro;
 
 import br.com.fluxocaixa.admin.AcessoAdministrativoNegadoException;
 import br.com.fluxocaixa.admin.AcessoUsuarioBloqueadoException;
+import br.com.fluxocaixa.admin.RegraAdministrativaException;
 import br.com.fluxocaixa.autenticacao.CredenciaisInvalidasException;
 import br.com.fluxocaixa.categoria.CategoriaComMovimentacoesException;
 import br.com.fluxocaixa.categoria.CategoriaJaCadastradaException;
@@ -114,6 +115,21 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.FORBIDDEN,
                 "Acesso administrativo negado",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(RegraAdministrativaException.class)
+    public ResponseEntity<ErroResposta>
+    tratarRegraAdministrativa(
+            RegraAdministrativaException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.CONFLICT,
+                "OperaÃ§Ã£o administrativa nÃ£o permitida",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()

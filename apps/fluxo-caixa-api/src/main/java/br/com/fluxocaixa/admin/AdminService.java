@@ -1,6 +1,8 @@
 package br.com.fluxocaixa.admin;
 
 import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
+import br.com.fluxocaixa.colaboracao.AuditoriaAgro;
+import br.com.fluxocaixa.colaboracao.AuditoriaAgroRepository;
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
 import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
@@ -8,6 +10,8 @@ import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioProvisionamentoService;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,25 +25,38 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 public class AdminService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AdminService.class);
+
+    private static final Set<PapelUsuario> PAPEIS_ADMINISTRATIVOS =
+            Set.of(
+                    PapelUsuario.ADMINISTRADOR,
+                    PapelUsuario.SUPER_ADMIN
+            );
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAcessoRepository usuarioAcessoRepository;
     private final CategoriaSugeridaService categoriaSugeridaService;
     private final UsuarioProvisionamentoService provisionamentoService;
+    private final AuditoriaAgroRepository auditoriaRepository;
 
     public AdminService(
             UsuarioRepository usuarioRepository,
             UsuarioAcessoRepository usuarioAcessoRepository,
             CategoriaSugeridaService categoriaSugeridaService,
-            UsuarioProvisionamentoService provisionamentoService) {
+            UsuarioProvisionamentoService provisionamentoService,
+            AuditoriaAgroRepository auditoriaRepository) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
         this.categoriaSugeridaService = categoriaSugeridaService;
         this.provisionamentoService = provisionamentoService;
+        this.auditoriaRepository = auditoriaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -108,10 +125,11 @@ public class AdminService {
             Long usuarioId,
             AtualizarPapelUsuarioRequest request) {
 
-        validarAdministrador();
+        Usuario executor = buscarAdministradorAutenticado();
 
         Usuario usuario = buscarUsuario(usuarioId);
         PapelUsuario novoPapel = request.papel();
+        PapelUsuario papelAnterior = usuario.getPapel();
 
         if (usuario.getPapel() == PapelUsuario.SUPER_ADMIN
                 || novoPapel == PapelUsuario.SUPER_ADMIN) {
@@ -128,11 +146,46 @@ public class AdminService {
             );
         }
 
+        validarAlteracaoSeguraDePapel(
+                executor,
+                usuario,
+                novoPapel
+        );
+
+        if (papelAnterior == novoPapel) {
+            return montarResponse(usuario);
+        }
+
         usuario.alterarPapel(novoPapel);
 
-        if (novoPapel != PapelUsuario.ADMINISTRADOR) {
+        if (!isAdministrador(novoPapel)) {
             provisionamentoService.garantirEstruturaOperacional(usuario);
+        } else {
+            usuario.configurarAcesso(
+                    true,
+                    TipoAcessoUsuario.VITALICIO,
+                    null
+            );
+            usuario.atualizarPagamento(
+                    StatusPagamento.ISENTO,
+                    null
+            );
         }
+
+        registrarAuditoriaAlteracaoPapel(
+                executor,
+                usuario,
+                papelAnterior,
+                novoPapel
+        );
+
+        log.info(
+                "UserRoleChanged executorId={} targetUserId={} oldRole={} newRole={}",
+                executor.getId(),
+                usuario.getId(),
+                papelAnterior,
+                novoPapel
+        );
 
         return montarResponse(usuario);
     }
@@ -326,6 +379,10 @@ public class AdminService {
     }
 
     private void validarAdministrador() {
+        buscarAdministradorAutenticado();
+    }
+
+    private Usuario buscarAdministradorAutenticado() {
 
         Authentication authentication =
                 SecurityContextHolder.getContext()
@@ -336,11 +393,79 @@ public class AdminService {
                 || !isAdministrador(jwt.getClaimAsString("papel"))) {
             throw new AcessoAdministrativoNegadoException();
         }
+
+        Number usuarioIdClaim = jwt.getClaim("usuarioId");
+
+        if (usuarioIdClaim == null) {
+            throw new AcessoAdministrativoNegadoException();
+        }
+
+        Long usuarioId = usuarioIdClaim.longValue();
+
+        return usuarioRepository.findById(usuarioId)
+                .filter(Usuario::isAtivo)
+                .filter(usuario -> isAdministrador(usuario.getPapel()))
+                .orElseThrow(AcessoAdministrativoNegadoException::new);
     }
 
     private boolean isAdministrador(String papel) {
         return PapelUsuario.ADMINISTRADOR.name().equals(papel)
                 || PapelUsuario.SUPER_ADMIN.name().equals(papel);
+    }
+
+    private boolean isAdministrador(PapelUsuario papel) {
+        return papel == PapelUsuario.ADMINISTRADOR
+                || papel == PapelUsuario.SUPER_ADMIN;
+    }
+
+    private void validarAlteracaoSeguraDePapel(
+            Usuario executor,
+            Usuario alvo,
+            PapelUsuario novoPapel) {
+
+        if (executor.getId().equals(alvo.getId())
+                && !isAdministrador(novoPapel)) {
+            throw new RegraAdministrativaException(
+                    "Voce nao pode remover o proprio acesso administrativo por esta rotina."
+            );
+        }
+
+        if (isAdministrador(alvo.getPapel())
+                && !isAdministrador(novoPapel)) {
+            long administradoresRestantes =
+                    usuarioRepository
+                            .countByPapelInAndAtivoTrueAndIdNot(
+                                    PAPEIS_ADMINISTRATIVOS,
+                                    alvo.getId()
+                            );
+
+            if (administradoresRestantes == 0) {
+                throw new RegraAdministrativaException(
+                        "Nao e permitido remover o ultimo administrador ativo do sistema."
+                );
+            }
+        }
+    }
+
+    private void registrarAuditoriaAlteracaoPapel(
+            Usuario executor,
+            Usuario alvo,
+            PapelUsuario papelAnterior,
+            PapelUsuario novoPapel) {
+
+        auditoriaRepository.save(
+                new AuditoriaAgro(
+                        alvo.getEmpresa(),
+                        executor,
+                        "USUARIO_PAPEL_ALTERADO",
+                        "USUARIO",
+                        alvo.getId(),
+                        "executorId=" + executor.getId()
+                                + "; targetUserId=" + alvo.getId()
+                                + "; oldRole=" + papelAnterior
+                                + "; newRole=" + novoPapel
+                )
+        );
     }
 
     private String normalizarEmail(String email) {
