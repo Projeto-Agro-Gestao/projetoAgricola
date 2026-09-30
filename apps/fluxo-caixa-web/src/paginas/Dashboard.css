@@ -51,6 +51,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
+    max-width: min(720px, 100%);
 }
 
 .dashboard-voltar {

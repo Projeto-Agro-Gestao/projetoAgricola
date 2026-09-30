@@ -2,27 +2,39 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
-    padding: 4px;
+    gap: 6px;
+    padding: 6px;
     border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--secondary);
+    border-radius: 14px;
+    background:
+            color-mix(
+                    in oklch,
+                    var(--secondary) 74%,
+                    var(--card)
+            );
+    box-shadow:
+            0 14px 34px
+            color-mix(
+                    in oklch,
+                    var(--foreground) 7%,
+                    transparent
+            );
 }
 
 .alternador-modulos-botao {
     display: inline-flex;
-    min-height: 38px;
+    min-height: 40px;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 8px 13px;
-    border: 0;
-    border-radius: 9px;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
     background: transparent;
     color: var(--muted-foreground);
     font: inherit;
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.76rem;
+    font-weight: 800;
     white-space: nowrap;
     cursor: pointer;
     transition:
@@ -34,22 +46,33 @@
 
 .alternador-modulos-botao span {
     display: inline-grid;
-    min-width: 22px;
-    height: 22px;
-    padding: 0 4px;
+    width: 24px;
+    height: 24px;
     place-items: center;
-    border-radius: 7px;
+    border-radius: 8px;
     background:
             color-mix(
                     in oklch,
-                    var(--card) 75%,
+                    var(--card) 86%,
                     transparent
             );
-    font-size: 0.7rem;
-    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.68rem;
+    font-weight: 900;
 }
 
 .alternador-modulos-botao:hover {
+    border-color: color-mix(
+            in oklch,
+            var(--primary) 22%,
+            transparent
+    );
+    background:
+            color-mix(
+                    in oklch,
+                    var(--card) 72%,
+                    transparent
+            );
     color: var(--primary);
     transform: translateY(-1px);
 }
@@ -57,6 +80,12 @@
 .alternador-modulos-botao.ativo {
     background: var(--card);
     color: var(--primary);
+    border-color:
+            color-mix(
+                    in oklch,
+                    var(--primary) 18%,
+                    var(--border)
+            );
     box-shadow:
             0 5px 14px
             color-mix(

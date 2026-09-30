@@ -11,21 +11,21 @@ function AlternadorModulos() {
     const itens = [
         {
             ativo: location.pathname === '/dashboard',
-            icone: 'Inicio',
+            icone: 'In',
             rota: '/dashboard',
-            texto: 'Tela principal',
+            texto: 'Inicio',
         },
         {
             ativo: location.pathname.startsWith('/dashboard/financeiro'),
             icone: 'R$',
             rota: '/dashboard/financeiro',
-            texto: 'Controle financeiro',
+            texto: 'Financeiro',
         },
         {
             ativo: location.pathname.startsWith('/dashboard/contas'),
-            icone: 'Contas',
+            icone: 'Ct',
             rota: '/dashboard/contas',
-            texto: 'Contas a pagar e receber',
+            texto: 'Contas',
         },
         {
             ativo: location.pathname.startsWith('/dashboard/fornecedores'),
@@ -35,15 +35,15 @@ function AlternadorModulos() {
         },
         {
             ativo: location.pathname.startsWith('/dashboard/produtor'),
-            icone: 'Produtor',
+            icone: 'Pr',
             rota: '/dashboard/produtor',
-            texto: 'Inicio do produtor',
+            texto: 'Produtor',
         },
         {
             ativo: location.pathname.startsWith('/contador'),
-            icone: 'Contador',
+            icone: 'Co',
             rota: '/contador',
-            texto: 'Area do contador',
+            texto: 'Contador',
         },
     ]
 

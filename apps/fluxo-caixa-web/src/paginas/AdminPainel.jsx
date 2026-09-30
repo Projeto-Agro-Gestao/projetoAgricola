@@ -486,11 +486,6 @@ function AdminPainel() {
         }
     }
 
-    function sair() {
-        limparSessao()
-        navigate('/login', { replace: true })
-    }
-
     function abrirSistema() {
         navigate('/dashboard')
     }
@@ -531,13 +526,6 @@ function AdminPainel() {
                         Plano e pagamentos
                     </button>
 
-                    <button
-                        className="admin-botao-secundario"
-                        onClick={sair}
-                        type="button"
-                    >
-                        Sair da conta
-                    </button>
                 </div>
             </header>
 

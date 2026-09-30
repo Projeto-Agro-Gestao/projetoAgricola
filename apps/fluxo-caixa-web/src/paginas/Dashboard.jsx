@@ -825,14 +825,6 @@ function Dashboard() {
         }
     }
 
-    function sair() {
-        limparSessao()
-
-        navigate('/login', {
-            replace: true,
-        })
-    }
-
     if (!sessao) {
         return null
     }
@@ -910,14 +902,6 @@ function Dashboard() {
 
                     <div className="dashboard-cabecalho-acoes">
                         <AlternadorModulos />
-
-                        <button
-                            className="dashboard-voltar"
-                            onClick={sair}
-                            type="button"
-                        >
-                            Sair da conta
-                        </button>
                     </div>
                 </header>
 

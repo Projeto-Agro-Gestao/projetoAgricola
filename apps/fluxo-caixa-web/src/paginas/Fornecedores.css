@@ -28,14 +28,25 @@
 
 .fornecedores-cabecalho > button {
     justify-self: start;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--muted-foreground);
+    min-height: 40px;
+    padding: 0 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--primary);
     font: inherit;
-    font-size: 0.84rem;
-    font-weight: 600;
+    font-size: 0.76rem;
+    font-weight: 800;
     cursor: pointer;
+    transition:
+            border-color var(--motion-base) var(--ease-out),
+            color var(--motion-base) var(--ease-out),
+            transform var(--motion-base) var(--ease-out);
+}
+
+.fornecedores-cabecalho > button:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
 }
 
 .fornecedores-cabecalho p {

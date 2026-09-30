@@ -76,7 +76,6 @@
     justify-content: flex-end;
 }
 
-.escolha-modulo-sair,
 .escolha-modulo-admin,
 .escolha-modulo-perfil {
     min-height: 41px;
@@ -101,7 +100,6 @@
     color: var(--primary-foreground);
 }
 
-.escolha-modulo-sair:hover,
 .escolha-modulo-admin:hover,
 .escolha-modulo-perfil:hover {
     border-color: var(--primary);
@@ -420,10 +418,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .escolha-modulo-sair {
-        padding: 0 11px;
     }
 
     .escolha-modulo-apresentacao {

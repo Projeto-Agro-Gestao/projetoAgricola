@@ -1,43 +1,62 @@
 .app-shell {
     position: fixed;
-    right: 18px;
-    top: 18px;
+    right: 16px;
+    top: 16px;
     z-index: 50;
     display: flex;
-    gap: 8px;
-    padding: 8px;
-    border: 1px solid #cfe3c4;
-    border-radius: 8px;
-    background: rgba(250, 255, 247, 0.96);
-    box-shadow: 0 12px 34px rgba(39, 86, 22, 0.14);
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background:
+        color-mix(in oklch, var(--card) 94%, transparent);
+    box-shadow:
+        0 14px 36px
+        color-mix(in oklch, var(--foreground) 11%, transparent);
+    backdrop-filter: blur(12px);
 }
 
 .app-shell button {
-    min-height: 42px;
-    border: 1px solid #b8d8aa;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #275616;
+    min-height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--foreground);
     cursor: pointer;
-    font-weight: 600;
-    padding: 0 14px;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 850;
+    padding: 0 13px;
+    transition:
+        background var(--motion-base) var(--ease-out),
+        border-color var(--motion-base) var(--ease-out),
+        color var(--motion-base) var(--ease-out),
+        transform var(--motion-base) var(--ease-out),
+        box-shadow var(--motion-base) var(--ease-out);
 }
 
 .app-shell button:hover {
-    border-color: #348b00;
-    color: #348b00;
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
 }
 
 .app-shell .app-shell-sair {
-    background: #348b00;
-    border-color: #348b00;
-    color: #ffffff;
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow:
+        0 10px 24px
+        color-mix(in oklch, var(--primary) 20%, transparent);
 }
 
 .app-shell .app-shell-sair:hover {
-    background: #2a7000;
-    border-color: #2a7000;
-    color: #ffffff;
+    background:
+        color-mix(in oklch, var(--primary) 88%, black);
+    border-color:
+        color-mix(in oklch, var(--primary) 88%, black);
+    color: var(--primary-foreground);
 }
 
 @media (max-width: 720px) {
@@ -45,6 +64,7 @@
         left: 12px;
         right: 12px;
         top: 12px;
+        justify-content: stretch;
     }
 
     .app-shell button {
@@ -65,22 +85,22 @@
 
 .app-shell-modal {
     width: min(440px, 100%);
-    border: 1px solid #cfe3c4;
-    border-radius: 8px;
-    background: #fbfff7;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
     box-shadow: 0 24px 70px rgba(17, 42, 9, 0.28);
     padding: 24px;
 }
 
 .app-shell-modal h2 {
     margin: 0 0 10px;
-    color: #081807;
+    color: var(--foreground);
     font-size: 1.35rem;
 }
 
 .app-shell-modal p {
     margin: 0 0 20px;
-    color: #50614a;
+    color: var(--muted-foreground);
     line-height: 1.5;
 }
 

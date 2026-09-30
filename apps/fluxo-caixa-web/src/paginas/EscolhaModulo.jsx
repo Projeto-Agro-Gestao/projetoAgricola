@@ -92,14 +92,6 @@ function EscolhaModulo() {
         navigate('/app')
     }
 
-    function sair() {
-        limparSessao()
-
-        navigate('/login', {
-            replace: true,
-        })
-    }
-
     if (!sessao) {
         return null
     }
@@ -164,13 +156,6 @@ function EscolhaModulo() {
                             App simples
                         </button>
 
-                        <button
-                            className="escolha-modulo-sair"
-                            onClick={sair}
-                            type="button"
-                        >
-                            Sair da conta
-                        </button>
                     </div>
                 </header>
 

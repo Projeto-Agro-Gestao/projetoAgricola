@@ -112,6 +112,44 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  border-radius: var(--radius);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid
+          color-mix(in oklch, var(--ring) 36%, transparent);
+  outline-offset: 2px;
+}
+
+:where(
+  .dashboard-botao,
+  .dashboard-voltar,
+  .contas-botao,
+  .admin-botao-primario,
+  .admin-botao-secundario,
+  .admin-botao-perigo,
+  .escolha-modulo-admin,
+  .escolha-modulo-perfil,
+  .fornecedores-botao,
+  .produtor-botao,
+  .contador-botao
+) {
+  min-height: 42px;
+  border-radius: var(--radius);
+  font-weight: 800;
+  transition:
+          background var(--motion-base) var(--ease-out),
+          border-color var(--motion-base) var(--ease-out),
+          color var(--motion-base) var(--ease-out),
+          box-shadow var(--motion-base) var(--ease-out),
+          transform var(--motion-base) var(--ease-out);
+}
+
 a {
   color: inherit;
 }
