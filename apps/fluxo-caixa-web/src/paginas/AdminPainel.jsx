@@ -68,6 +68,25 @@ async function obterMensagemDeErro(resposta) {
     return dados?.mensagem ?? 'Não foi possível concluir a ação'
 }
 
+async function obterMensagemDeErroAdmin(
+    resposta,
+    contexto = '',
+) {
+    const mensagem = await obterMensagemDeErro(resposta)
+
+    if (
+        contexto === 'papel' &&
+        (
+            resposta.status === 404 ||
+            mensagem.includes('inesperado')
+        )
+    ) {
+        return 'A tela ja recebeu a opcao de alterar perfil, mas o backend publicado ainda nao terminou de atualizar esta rota. Aguarde o deploy do Render e tente novamente.'
+    }
+
+    return mensagem
+}
+
 function formatarStatus(valor) {
     return {
         EM_DIA: 'Em dia',
@@ -380,10 +399,16 @@ function AdminPainel() {
             {
                 papel,
             },
+            'papel',
         )
     }
 
-    async function salvarAlteracao(usuarioId, url, corpo) {
+    async function salvarAlteracao(
+        usuarioId,
+        url,
+        corpo,
+        contexto = '',
+    ) {
         if (!sessao) {
             return
         }
@@ -405,7 +430,10 @@ function AdminPainel() {
 
             if (!resposta.ok) {
                 throw new Error(
-                    await obterMensagemDeErro(resposta),
+                    await obterMensagemDeErroAdmin(
+                        resposta,
+                        contexto,
+                    ),
                 )
             }
 
