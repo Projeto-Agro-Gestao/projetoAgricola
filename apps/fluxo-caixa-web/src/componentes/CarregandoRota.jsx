@@ -5,10 +5,14 @@ function CarregandoRota() {
             className="rota-carregando"
             role="status"
         >
-            <span
+            <div
                 aria-hidden="true"
-                className="rota-carregando-girando girando"
-            />
+                className="dots-container"
+            >
+                <span className="dot" />
+                <span className="dot" />
+                <span className="dot" />
+            </div>
 
             <span className="rota-carregando-texto">
                 Carregando…
