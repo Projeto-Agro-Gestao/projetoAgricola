@@ -31,14 +31,17 @@ public class FornecedorController {
 
     private final FornecedorService fornecedorService;
     private final FornecedorRelatorioService fornecedorRelatorioService;
+    private final ReceitaFederalCnpjService receitaFederalCnpjService;
 
     public FornecedorController(
             FornecedorService fornecedorService,
-            FornecedorRelatorioService fornecedorRelatorioService) {
+            FornecedorRelatorioService fornecedorRelatorioService,
+            ReceitaFederalCnpjService receitaFederalCnpjService) {
 
         this.fornecedorService = fornecedorService;
         this.fornecedorRelatorioService =
                 fornecedorRelatorioService;
+        this.receitaFederalCnpjService = receitaFederalCnpjService;
     }
 
     @PostMapping
@@ -79,6 +82,18 @@ public class FornecedorController {
 
         return ResponseEntity.ok(
                 fornecedorService.listarLixeira(empresaId)
+        );
+    }
+
+    @GetMapping("/consulta-cnpj/{cnpj}")
+    public ResponseEntity<ConsultaCnpjFornecedorResponse> consultarCnpj(
+            @PathVariable Long empresaId,
+            @PathVariable String cnpj) {
+
+        fornecedorService.verificarAcessoEmpresa(empresaId);
+
+        return ResponseEntity.ok(
+                receitaFederalCnpjService.consultar(cnpj)
         );
     }
 

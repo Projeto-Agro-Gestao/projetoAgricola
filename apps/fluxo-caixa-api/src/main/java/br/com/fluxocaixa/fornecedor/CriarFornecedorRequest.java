@@ -24,6 +24,15 @@ public record CriarFornecedorRequest(
         @Size(max = 180)
         String razaoSocial,
 
+        @Size(max = 40)
+        String inscricaoMunicipal,
+
+        @Size(max = 40)
+        String inscricaoEstadual,
+
+        @Size(max = 80)
+        String regimeTributario,
+
         TipoPessoaFornecedor tipoPessoa,
 
         @Size(max = 20)

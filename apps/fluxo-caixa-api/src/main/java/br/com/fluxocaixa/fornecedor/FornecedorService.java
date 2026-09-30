@@ -75,6 +75,18 @@ public class FornecedorService {
                 request.nome()
         );
         String documento = normalizarDocumento(request.documento());
+        validarCadastroFiscal(
+                request.tipoPessoa(),
+                documento,
+                request.razaoSocial(),
+                request.cep(),
+                request.logradouro(),
+                request.numero(),
+                request.bairro(),
+                request.municipio(),
+                request.uf(),
+                request.pais()
+        );
 
         if (
                 fornecedorRepository
@@ -101,6 +113,7 @@ public class FornecedorService {
 
         Fornecedor fornecedor = new Fornecedor(
                 empresa,
+                proximoCodigoCadastro(empresaId),
                 nome,
                 normalizarTextoOpcional(request.telefone()),
                 normalizarTextoOpcional(request.observacao())
@@ -130,6 +143,11 @@ public class FornecedorService {
                 .stream()
                 .map(FornecedorResponse::de)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void verificarAcessoEmpresa(Long empresaId) {
+        verificarEmpresa(empresaId);
     }
 
     @Transactional(readOnly = true)
@@ -790,6 +808,18 @@ public class FornecedorService {
                 );
         String nome = normalizarTextoObrigatorio(request.nome());
         String documento = normalizarDocumento(request.documento());
+        validarCadastroFiscal(
+                request.tipoPessoa(),
+                documento,
+                request.razaoSocial(),
+                request.cep(),
+                request.logradouro(),
+                request.numero(),
+                request.bairro(),
+                request.municipio(),
+                request.uf(),
+                request.pais()
+        );
 
         if (documento != null
                 && fornecedorRepository
@@ -1226,6 +1256,77 @@ public class FornecedorService {
         }
     }
 
+    private Long proximoCodigoCadastro(Long empresaId) {
+        Long maiorCodigo =
+                fornecedorRepository.buscarMaiorCodigoCadastroPorEmpresa(
+                        empresaId
+                );
+
+        return maiorCodigo + 1;
+    }
+
+    private void validarCadastroFiscal(
+            TipoPessoaFornecedor tipoPessoa,
+            String documento,
+            String razaoSocial,
+            String cep,
+            String logradouro,
+            String numero,
+            String bairro,
+            String municipio,
+            String uf,
+            String pais) {
+
+        if (tipoPessoa == null) {
+            throw new IllegalArgumentException(
+                    "Informe o tipo do fornecedor"
+            );
+        }
+
+        if (documento == null) {
+            throw new IllegalArgumentException(
+                    "Informe o CPF/CNPJ do fornecedor"
+            );
+        }
+
+        int tamanhoDocumento = documento.length();
+
+        if (tipoPessoa == TipoPessoaFornecedor.FISICA
+                && tamanhoDocumento != 11) {
+            throw new IllegalArgumentException(
+                    "CPF deve conter 11 digitos"
+            );
+        }
+
+        if (tipoPessoa == TipoPessoaFornecedor.JURIDICA
+                && tamanhoDocumento != 14) {
+            throw new IllegalArgumentException(
+                    "CNPJ deve conter 14 digitos"
+            );
+        }
+
+        validarTextoObrigatorio(
+                razaoSocial,
+                "Informe a razao social"
+        );
+        validarTextoObrigatorio(cep, "Informe o CEP");
+        validarTextoObrigatorio(logradouro, "Informe o endereco");
+        validarTextoObrigatorio(numero, "Informe o numero");
+        validarTextoObrigatorio(bairro, "Informe o bairro");
+        validarTextoObrigatorio(municipio, "Informe a cidade");
+        validarTextoObrigatorio(uf, "Informe a UF");
+        validarTextoObrigatorio(pais, "Informe o pais");
+    }
+
+    private void validarTextoObrigatorio(
+            String texto,
+            String mensagem) {
+
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException(mensagem);
+        }
+    }
+
     private void aplicarCadastroProfissional(
             Fornecedor fornecedor,
             String nome,
@@ -1235,7 +1336,10 @@ public class FornecedorService {
         fornecedor.atualizarCadastroProfissional(
                 nome,
                 normalizarTextoOpcional(request.nomeFantasia()),
-                normalizarTextoOpcional(request.razaoSocial()),
+                normalizarTextoObrigatorio(request.razaoSocial()),
+                normalizarTextoOpcional(request.inscricaoMunicipal()),
+                normalizarTextoOpcional(request.inscricaoEstadual()),
+                normalizarTextoOpcional(request.regimeTributario()),
                 request.tipoPessoa(),
                 documento,
                 normalizarTextoOpcional(request.telefone()),
@@ -1245,17 +1349,14 @@ public class FornecedorService {
                 normalizarTextoOpcional(request.site()),
                 normalizarTextoOpcional(request.observacao()),
                 request.ativo() == null || request.ativo(),
-                normalizarTextoOpcional(request.cep()),
-                normalizarTextoOpcional(request.logradouro()),
-                normalizarTextoOpcional(request.numero()),
+                normalizarTextoObrigatorio(request.cep()),
+                normalizarTextoObrigatorio(request.logradouro()),
+                normalizarTextoObrigatorio(request.numero()),
                 normalizarTextoOpcional(request.complemento()),
-                normalizarTextoOpcional(request.bairro()),
-                normalizarTextoOpcional(request.municipio()),
-                normalizarUf(request.uf()),
-                normalizarTextoOpcionalOuPadrao(
-                        request.pais(),
-                        "Brasil"
-                ),
+                normalizarTextoObrigatorio(request.bairro()),
+                normalizarTextoObrigatorio(request.municipio()),
+                normalizarUfObrigatoria(request.uf()),
+                normalizarTextoObrigatorio(request.pais()),
                 request.prazoMedioEntregaDias(),
                 normalizarTextoOpcional(request.formasPagamento()),
                 normalizarTextoOpcional(request.prazoPagamento()),
@@ -1274,7 +1375,10 @@ public class FornecedorService {
         fornecedor.atualizarCadastroProfissional(
                 nome,
                 normalizarTextoOpcional(request.nomeFantasia()),
-                normalizarTextoOpcional(request.razaoSocial()),
+                normalizarTextoObrigatorio(request.razaoSocial()),
+                normalizarTextoOpcional(request.inscricaoMunicipal()),
+                normalizarTextoOpcional(request.inscricaoEstadual()),
+                normalizarTextoOpcional(request.regimeTributario()),
                 request.tipoPessoa(),
                 documento,
                 normalizarTextoOpcional(request.telefone()),
@@ -1284,17 +1388,14 @@ public class FornecedorService {
                 normalizarTextoOpcional(request.site()),
                 normalizarTextoOpcional(request.observacao()),
                 request.ativo() == null || request.ativo(),
-                normalizarTextoOpcional(request.cep()),
-                normalizarTextoOpcional(request.logradouro()),
-                normalizarTextoOpcional(request.numero()),
+                normalizarTextoObrigatorio(request.cep()),
+                normalizarTextoObrigatorio(request.logradouro()),
+                normalizarTextoObrigatorio(request.numero()),
                 normalizarTextoOpcional(request.complemento()),
-                normalizarTextoOpcional(request.bairro()),
-                normalizarTextoOpcional(request.municipio()),
-                normalizarUf(request.uf()),
-                normalizarTextoOpcionalOuPadrao(
-                        request.pais(),
-                        "Brasil"
-                ),
+                normalizarTextoObrigatorio(request.bairro()),
+                normalizarTextoObrigatorio(request.municipio()),
+                normalizarUfObrigatoria(request.uf()),
+                normalizarTextoObrigatorio(request.pais()),
                 request.prazoMedioEntregaDias(),
                 normalizarTextoOpcional(request.formasPagamento()),
                 normalizarTextoOpcional(request.prazoPagamento()),
@@ -1776,6 +1877,10 @@ public class FornecedorService {
         return normalizada == null
                 ? null
                 : normalizada.toUpperCase();
+    }
+
+    private String normalizarUfObrigatoria(String uf) {
+        return normalizarTextoObrigatorio(uf).toUpperCase();
     }
 
     private String idadePreco(LocalDate data) {

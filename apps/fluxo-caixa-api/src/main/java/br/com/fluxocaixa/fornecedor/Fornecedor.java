@@ -34,11 +34,23 @@ public class Fornecedor {
     @Column(nullable = false, length = 150)
     private String nome;
 
+    @Column(name = "codigo_cadastro", nullable = false)
+    private Long codigoCadastro;
+
     @Column(name = "nome_fantasia", length = 150)
     private String nomeFantasia;
 
     @Column(name = "razao_social", length = 180)
     private String razaoSocial;
+
+    @Column(name = "inscricao_municipal", length = 40)
+    private String inscricaoMunicipal;
+
+    @Column(name = "inscricao_estadual", length = 40)
+    private String inscricaoEstadual;
+
+    @Column(name = "regime_tributario", length = 80)
+    private String regimeTributario;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_pessoa", length = 20)
@@ -133,11 +145,13 @@ public class Fornecedor {
 
     public Fornecedor(
             Empresa empresa,
+            Long codigoCadastro,
             String nome,
             String telefone,
             String observacao) {
 
         this.empresa = empresa;
+        this.codigoCadastro = codigoCadastro;
         this.nome = nome;
         this.nomeFantasia = nome;
         this.telefone = telefone;
@@ -160,6 +174,9 @@ public class Fornecedor {
             String nome,
             String nomeFantasia,
             String razaoSocial,
+            String inscricaoMunicipal,
+            String inscricaoEstadual,
+            String regimeTributario,
             TipoPessoaFornecedor tipoPessoa,
             String documento,
             String telefone,
@@ -187,6 +204,9 @@ public class Fornecedor {
         this.nome = nome;
         this.nomeFantasia = nomeFantasia;
         this.razaoSocial = razaoSocial;
+        this.inscricaoMunicipal = inscricaoMunicipal;
+        this.inscricaoEstadual = inscricaoEstadual;
+        this.regimeTributario = regimeTributario;
         this.tipoPessoa = tipoPessoa;
         this.documento = documento;
         this.telefone = telefone;
@@ -234,12 +254,28 @@ public class Fornecedor {
         return nome;
     }
 
+    public Long getCodigoCadastro() {
+        return codigoCadastro;
+    }
+
     public String getNomeFantasia() {
         return nomeFantasia;
     }
 
     public String getRazaoSocial() {
         return razaoSocial;
+    }
+
+    public String getInscricaoMunicipal() {
+        return inscricaoMunicipal;
+    }
+
+    public String getInscricaoEstadual() {
+        return inscricaoEstadual;
+    }
+
+    public String getRegimeTributario() {
+        return regimeTributario;
     }
 
     public TipoPessoaFornecedor getTipoPessoa() {

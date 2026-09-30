@@ -377,6 +377,11 @@
     padding: 0 13px;
 }
 
+.fornecedores-card input[readonly] {
+    color: var(--muted-foreground);
+    background: color-mix(in oklch, var(--muted) 65%, var(--card));
+}
+
 .fornecedores-card select {
     min-height: 46px;
     padding: 0 13px;
@@ -421,6 +426,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.fornecedores-acoes-inline {
+    justify-content: flex-end;
 }
 
 .fornecedores-itens,

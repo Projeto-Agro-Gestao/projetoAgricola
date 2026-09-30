@@ -97,10 +97,14 @@ function criarFornecedorFormVazio() {
     return {
         id: null,
         nome: '',
+        codigoCadastro: '',
         nomeFantasia: '',
         razaoSocial: '',
         tipoPessoa: 'JURIDICA',
         documento: '',
+        inscricaoMunicipal: '',
+        inscricaoEstadual: '',
+        regimeTributario: '',
         telefone: '',
         telefoneWhatsapp: '',
         email: '',
@@ -167,6 +171,7 @@ function Fornecedores() {
     const [mostrarLixeira, setMostrarLixeira] = useState(false)
     const [carregando, setCarregando] = useState(true)
     const [salvando, setSalvando] = useState(false)
+    const [consultandoCnpj, setConsultandoCnpj] = useState(false)
     const [erro, setErro] = useState('')
     const [sucesso, setSucesso] = useState('')
     const [confirmacao, setConfirmacao] = useState(null)
@@ -543,9 +548,72 @@ function Fornecedores() {
         const nome = fornecedorForm.nome
             .trim()
             .replace(/\s+/g, ' ')
+        const documento = fornecedorForm.documento
+            .replace(/\D/g, '')
+        const camposObrigatorios = [
+            [
+                documento,
+                'Informe o CPF/CNPJ do fornecedor.',
+            ],
+            [
+                fornecedorForm.razaoSocial,
+                'Informe a razao social.',
+            ],
+            [
+                fornecedorForm.cep,
+                'Informe o CEP.',
+            ],
+            [
+                fornecedorForm.logradouro,
+                'Informe o endereco.',
+            ],
+            [
+                fornecedorForm.numero,
+                'Informe o numero.',
+            ],
+            [
+                fornecedorForm.bairro,
+                'Informe o bairro.',
+            ],
+            [
+                fornecedorForm.municipio,
+                'Informe a cidade.',
+            ],
+            [
+                fornecedorForm.uf,
+                'Informe a UF.',
+            ],
+            [
+                fornecedorForm.pais,
+                'Informe o pais.',
+            ],
+        ]
 
         if (!nome) {
             setErro('Informe o nome do fornecedor.')
+            return
+        }
+
+        for (const [valor, mensagem] of camposObrigatorios) {
+            if (!String(valor ?? '').trim()) {
+                setErro(mensagem)
+                return
+            }
+        }
+
+        if (
+            fornecedorForm.tipoPessoa === 'FISICA'
+            && documento.length !== 11
+        ) {
+            setErro('CPF deve conter 11 digitos.')
+            return
+        }
+
+        if (
+            fornecedorForm.tipoPessoa === 'JURIDICA'
+            && documento.length !== 14
+        ) {
+            setErro('CNPJ deve conter 14 digitos.')
             return
         }
 
@@ -560,9 +628,14 @@ function Fornecedores() {
                     fornecedorForm.nomeFantasia.trim() || null,
                 razaoSocial:
                     fornecedorForm.razaoSocial.trim() || null,
+                inscricaoMunicipal:
+                    fornecedorForm.inscricaoMunicipal.trim() || null,
+                inscricaoEstadual:
+                    fornecedorForm.inscricaoEstadual.trim() || null,
+                regimeTributario:
+                    fornecedorForm.regimeTributario.trim() || null,
                 tipoPessoa: fornecedorForm.tipoPessoa || null,
-                documento:
-                    fornecedorForm.documento.trim() || null,
+                documento,
                 telefone: fornecedorForm.telefone.trim() || null,
                 telefoneWhatsapp:
                     fornecedorForm.telefoneWhatsapp.trim() || null,
@@ -610,6 +683,82 @@ function Fornecedores() {
         )
 
         setFornecedorForm(criarFornecedorFormVazio())
+    }
+
+    async function consultarCnpjFornecedor() {
+        const cnpj = fornecedorForm.documento.replace(/\D/g, '')
+
+        if (fornecedorForm.tipoPessoa !== 'JURIDICA') {
+            setErro('A consulta automatica esta disponivel para CNPJ.')
+            return
+        }
+
+        if (cnpj.length !== 14) {
+            setErro('Informe um CNPJ com 14 digitos para consultar.')
+            return
+        }
+
+        try {
+            setConsultandoCnpj(true)
+            setErro('')
+            setSucesso('')
+
+            const resposta = await requisitar(
+                `/fornecedores/consulta-cnpj/${encodeURIComponent(cnpj)}`,
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel consultar o CNPJ.',
+                    ),
+                )
+            }
+
+            const dados = await resposta.json()
+
+            setFornecedorForm((formAtual) => ({
+                ...formAtual,
+                documento: dados.cnpj ?? formAtual.documento,
+                nome: dados.nomeFantasia
+                    || dados.razaoSocial
+                    || formAtual.nome,
+                nomeFantasia:
+                    dados.nomeFantasia ?? formAtual.nomeFantasia,
+                razaoSocial:
+                    dados.razaoSocial ?? formAtual.razaoSocial,
+                inscricaoMunicipal:
+                    dados.inscricaoMunicipal
+                    ?? formAtual.inscricaoMunicipal,
+                inscricaoEstadual:
+                    dados.inscricaoEstadual
+                    ?? formAtual.inscricaoEstadual,
+                regimeTributario:
+                    dados.regimeTributario
+                    ?? formAtual.regimeTributario,
+                cep: dados.cep ?? formAtual.cep,
+                logradouro:
+                    dados.logradouro ?? formAtual.logradouro,
+                numero: dados.numero ?? formAtual.numero,
+                complemento:
+                    dados.complemento ?? formAtual.complemento,
+                bairro: dados.bairro ?? formAtual.bairro,
+                municipio:
+                    dados.municipio ?? formAtual.municipio,
+                uf: dados.uf ?? formAtual.uf,
+                pais: dados.pais ?? formAtual.pais,
+            }))
+            setSucesso('Dados do CNPJ preenchidos para revisao.')
+        } catch (erroDaConsulta) {
+            setErro(
+                erroDaConsulta instanceof Error
+                    ? erroDaConsulta.message
+                    : 'Nao foi possivel consultar o CNPJ.',
+            )
+        } finally {
+            setConsultandoCnpj(false)
+        }
     }
 
     async function salvarCategoriaProduto(evento) {
@@ -1152,6 +1301,19 @@ function Fornecedores() {
                         </div>
 
                         <form onSubmit={salvarFornecedor}>
+                            <label>
+                                Codigo do fornecedor
+                                <input
+                                    readOnly
+                                    type="text"
+                                    value={
+                                        fornecedorForm.codigoCadastro
+                                            ? `#${fornecedorForm.codigoCadastro}`
+                                            : 'Gerado automaticamente ao salvar'
+                                    }
+                                />
+                            </label>
+
                             <label htmlFor="nomeFornecedor">
                                 Nome do fornecedor *
                             </label>
@@ -1172,7 +1334,7 @@ function Fornecedores() {
 
                             <div className="fornecedores-grade-form">
                                 <label>
-                                    Tipo
+                                    Tipo do fornecedor *
                                     <select
                                         onChange={(evento) =>
                                             setFornecedorForm({
@@ -1182,14 +1344,19 @@ function Fornecedores() {
                                             })
                                         }
                                         value={fornecedorForm.tipoPessoa}
+                                        required
                                     >
-                                        <option value="JURIDICA">PJ</option>
-                                        <option value="FISICA">PF</option>
+                                        <option value="FISICA">
+                                            Pessoa Fisica
+                                        </option>
+                                        <option value="JURIDICA">
+                                            Pessoa Juridica
+                                        </option>
                                     </select>
                                 </label>
 
                                 <label>
-                                    CPF/CNPJ
+                                    CPF/CNPJ *
                                     <input
                                         maxLength="20"
                                         onChange={(evento) =>
@@ -1200,15 +1367,30 @@ function Fornecedores() {
                                             })
                                         }
                                         placeholder="Evita cadastro duplicado"
+                                        required
                                         type="text"
                                         value={fornecedorForm.documento}
                                     />
                                 </label>
                             </div>
 
+                            {fornecedorForm.tipoPessoa === 'JURIDICA' && (
+                                <div className="fornecedores-acoes-form fornecedores-acoes-inline">
+                                    <button
+                                        disabled={consultandoCnpj}
+                                        onClick={consultarCnpjFornecedor}
+                                        type="button"
+                                    >
+                                        {consultandoCnpj
+                                            ? 'Consultando CNPJ...'
+                                            : 'Buscar dados do CNPJ'}
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="fornecedores-grade-form">
                                 <label>
-                                    Razao social
+                                    Razao social *
                                     <input
                                         maxLength="180"
                                         onChange={(evento) =>
@@ -1218,6 +1400,7 @@ function Fornecedores() {
                                                     evento.target.value,
                                             })
                                         }
+                                        required
                                         type="text"
                                         value={fornecedorForm.razaoSocial}
                                     />
@@ -1236,6 +1419,60 @@ function Fornecedores() {
                                         }
                                         type="text"
                                         value={fornecedorForm.nomeFantasia}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    Insc. municipal
+                                    <input
+                                        maxLength="40"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                inscricaoMunicipal:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={
+                                            fornecedorForm.inscricaoMunicipal
+                                        }
+                                    />
+                                </label>
+
+                                <label>
+                                    Insc. estadual
+                                    <input
+                                        maxLength="40"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                inscricaoEstadual:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={
+                                            fornecedorForm.inscricaoEstadual
+                                        }
+                                    />
+                                </label>
+
+                                <label>
+                                    Regime tributario
+                                    <input
+                                        maxLength="80"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                regimeTributario:
+                                                    evento.target.value,
+                                            })
+                                        }
+                                        type="text"
+                                        value={fornecedorForm.regimeTributario}
                                     />
                                 </label>
                             </div>
@@ -1292,7 +1529,7 @@ function Fornecedores() {
 
                             <div className="fornecedores-grade-form">
                                 <label>
-                                    CEP
+                                    CEP *
                                     <input
                                         maxLength="12"
                                         onChange={(evento) =>
@@ -1301,13 +1538,14 @@ function Fornecedores() {
                                                 cep: evento.target.value,
                                             })
                                         }
+                                        required
                                         type="text"
                                         value={fornecedorForm.cep}
                                     />
                                 </label>
 
                                 <label>
-                                    Cidade
+                                    Cidade *
                                     <input
                                         maxLength="100"
                                         onChange={(evento) =>
@@ -1317,13 +1555,14 @@ function Fornecedores() {
                                                     evento.target.value,
                                             })
                                         }
+                                        required
                                         type="text"
                                         value={fornecedorForm.municipio}
                                     />
                                 </label>
 
                                 <label>
-                                    UF
+                                    UF *
                                     <input
                                         maxLength="2"
                                         onChange={(evento) =>
@@ -1332,13 +1571,14 @@ function Fornecedores() {
                                                 uf: evento.target.value,
                                             })
                                         }
+                                        required
                                         type="text"
                                         value={fornecedorForm.uf}
                                     />
                                 </label>
 
                                 <label>
-                                    Logradouro
+                                    Endereco *
                                     <input
                                         maxLength="180"
                                         onChange={(evento) =>
@@ -1348,8 +1588,59 @@ function Fornecedores() {
                                                     evento.target.value,
                                             })
                                         }
+                                        required
                                         type="text"
                                         value={fornecedorForm.logradouro}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="fornecedores-grade-form">
+                                <label>
+                                    Numero *
+                                    <input
+                                        maxLength="30"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                numero: evento.target.value,
+                                            })
+                                        }
+                                        required
+                                        type="text"
+                                        value={fornecedorForm.numero}
+                                    />
+                                </label>
+
+                                <label>
+                                    Bairro *
+                                    <input
+                                        maxLength="100"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                bairro: evento.target.value,
+                                            })
+                                        }
+                                        required
+                                        type="text"
+                                        value={fornecedorForm.bairro}
+                                    />
+                                </label>
+
+                                <label>
+                                    Pais *
+                                    <input
+                                        maxLength="60"
+                                        onChange={(evento) =>
+                                            setFornecedorForm({
+                                                ...fornecedorForm,
+                                                pais: evento.target.value,
+                                            })
+                                        }
+                                        required
+                                        type="text"
+                                        value={fornecedorForm.pais}
                                     />
                                 </label>
                             </div>
@@ -1519,9 +1810,13 @@ function Fornecedores() {
                                         >
                                             <div>
                                                 <strong>
+                                                    #{fornecedor.codigoCadastro}{' '}
                                                     {fornecedor.nome}
                                                 </strong>
                                                 <span>
+                                                    {fornecedor.documento
+                                                        || 'Sem CPF/CNPJ'}{' '}
+                                                    ·{' '}
                                                     {fornecedor.telefone
                                                         || 'Sem telefone'}
                                                 </span>
@@ -1545,12 +1840,24 @@ function Fornecedores() {
                                                             onClick={() =>
                                                                 setFornecedorForm({
                                                                     id: fornecedor.id,
+                                                                    codigoCadastro:
+                                                                        fornecedor.codigoCadastro
+                                                                        ?? '',
                                                                     nome: fornecedor.nome,
                                                                     nomeFantasia:
                                                                         fornecedor.nomeFantasia
                                                                         ?? '',
                                                                     razaoSocial:
                                                                         fornecedor.razaoSocial
+                                                                        ?? '',
+                                                                    inscricaoMunicipal:
+                                                                        fornecedor.inscricaoMunicipal
+                                                                        ?? '',
+                                                                    inscricaoEstadual:
+                                                                        fornecedor.inscricaoEstadual
+                                                                        ?? '',
+                                                                    regimeTributario:
+                                                                        fornecedor.regimeTributario
                                                                         ?? '',
                                                                     tipoPessoa:
                                                                         fornecedor.tipoPessoa
