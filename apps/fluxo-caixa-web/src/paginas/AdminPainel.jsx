@@ -76,12 +76,9 @@ async function obterMensagemDeErroAdmin(
 
     if (
         contexto === 'papel' &&
-        (
-            resposta.status === 404 ||
-            mensagem.includes('inesperado')
-        )
+        resposta.status === 404
     ) {
-        return 'A tela ja recebeu a opcao de alterar perfil, mas o backend publicado ainda nao terminou de atualizar esta rota. Aguarde o deploy do Render e tente novamente.'
+        return 'O backend publicado ainda nao reconheceu a rota de alterar perfil. Atualize a pagina apos o deploy do Render e tente novamente.'
     }
 
     return mensagem
