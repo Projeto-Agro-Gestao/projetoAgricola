@@ -172,6 +172,7 @@ function ContadorCarteira() {
     const [erro, setErro] = useState('')
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
+    const [carregandoCliente, setCarregandoCliente] = useState(false)
     const [salvando, setSalvando] = useState(false)
 
     const clientesFiltrados = useMemo(() => {
@@ -303,43 +304,59 @@ function ContadorCarteira() {
         setClienteSelecionado(cliente)
         setErro('')
         setMensagem('')
+        setCarregandoCliente(true)
 
         const base = `${API_URL}/contador/clientes/${cliente.empresaId}`
+        const buscar = (nome, url) =>
+            requisicaoJson(url)
+                .then((dados) => ({
+                    nome,
+                    dados,
+                    erro: null,
+                }))
+                .catch((error) => ({
+                    nome,
+                    dados: null,
+                    erro: error,
+                }))
 
         try {
-            const [
-                dadosPendencias,
-                dadosDocumentos,
-                dadosVisao,
-                dadosDashboardFiscal,
-                dadosMovimentacoes,
-                dadosClassificacoes,
-                dadosRegimes,
-                dadosParametros,
-                dadosSimulacao,
-            ] = await Promise.all([
-                requisicaoJson(`${base}/pendencias`),
-                requisicaoJson(`${base}/documentos`),
-                requisicaoJson(`${base}/visao-tributaria`),
-                requisicaoJson(`${base}/dashboard-contabil`),
-                requisicaoJson(`${base}/movimentacoes-fiscais`),
-                requisicaoJson(`${base}/classificacoes-contabeis`),
-                requisicaoJson(`${base}/regimes-tributarios`),
-                requisicaoJson(`${base}/parametros-tributarios`),
-                requisicaoJson(`${base}/simulacao-tributaria`),
+            const resultados = await Promise.all([
+                buscar('pendencias', `${base}/pendencias`),
+                buscar('documentos', `${base}/documentos`),
+                buscar('visao', `${base}/visao-tributaria`),
+                buscar('dashboardFiscal', `${base}/dashboard-contabil`),
+                buscar('movimentacoes', `${base}/movimentacoes-fiscais`),
+                buscar('classificacoes', `${base}/classificacoes-contabeis`),
+                buscar('regimes', `${base}/regimes-tributarios`),
+                buscar('parametros', `${base}/parametros-tributarios`),
+                buscar('simulacao', `${base}/simulacao-tributaria`),
             ])
+            const porNome = Object.fromEntries(
+                resultados.map((resultado) => [resultado.nome, resultado]),
+            )
 
-            setPendencias(dadosPendencias)
-            setDocumentos(dadosDocumentos)
-            setVisao(dadosVisao)
-            setDashboardFiscal(dadosDashboardFiscal)
-            setMovimentacoes(dadosMovimentacoes)
-            setClassificacoes(dadosClassificacoes)
-            setRegimes(dadosRegimes)
-            setParametros(dadosParametros)
-            setSimulacao(dadosSimulacao)
+            setPendencias(porNome.pendencias.dados ?? [])
+            setDocumentos(porNome.documentos.dados ?? [])
+            setVisao(porNome.visao.dados)
+            setDashboardFiscal(porNome.dashboardFiscal.dados)
+            setMovimentacoes(porNome.movimentacoes.dados ?? [])
+            setClassificacoes(porNome.classificacoes.dados ?? [])
+            setRegimes(porNome.regimes.dados ?? [])
+            setParametros(porNome.parametros.dados ?? [])
+            setSimulacao(porNome.simulacao.dados)
+
+            const falhas = resultados.filter((resultado) => resultado.erro)
+
+            if (falhas.length > 0) {
+                setMensagem(
+                    'Cliente selecionado. Alguns detalhes fiscais nao carregaram, mas os dados principais foram mantidos na tela.',
+                )
+            }
         } catch (error) {
             setErro(error.message || 'Nao foi possivel carregar o cliente.')
+        } finally {
+            setCarregandoCliente(false)
         }
     }
 
@@ -865,6 +882,10 @@ function ContadorCarteira() {
                             </div>
                         </div>
 
+                        {carregandoCliente && (
+                            <p>Carregando dados do cliente selecionado...</p>
+                        )}
+
                         <div className="contador-carteira-indicadores">
                             <button
                                 type="button"
@@ -938,7 +959,9 @@ function ContadorCarteira() {
                                     onClick={() => abrirLista('TODAS')}
                                 >
                                     Resultado:{' '}
-                                    {formatarDinheiro(visao?.resultadoAno)}
+                                    {formatarDinheiro(
+                                        visao?.resultadoAcumulado,
+                                    )}
                                 </button>
                                 <button
                                     type="button"
@@ -946,7 +969,7 @@ function ContadorCarteira() {
                                 >
                                     Projecao:{' '}
                                     {formatarDinheiro(
-                                        visao?.projecaoResultadoAno,
+                                        visao?.resultadoProjetado,
                                     )}
                                 </button>
                             </div>
