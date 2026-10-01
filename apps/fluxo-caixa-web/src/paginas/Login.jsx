@@ -8,34 +8,15 @@ import {
     API_LOGIN_URL,
     GOOGLE_CLIENT_ID,
 } from '../config.js'
+import {
+    limparPreferenciaLembrarAcesso,
+    normalizarEmailLembrado,
+    obterPreferenciaLembrarAcesso,
+    salvarPreferenciaLembrarAcesso,
+    salvarSessao,
+} from '../servicos/sessao.js'
 import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
 import './Autenticacao.css'
-
-function armazenarSessao(dados) {
-    const expiraEm =
-        Date.now() +
-        Number(dados.expiraEmSegundos ?? 3600) * 1000
-
-    localStorage.setItem(
-        'agrogestao_token',
-        dados.token,
-    )
-
-    localStorage.setItem(
-        'agrogestao_tipo_token',
-        dados.tipo ?? 'Bearer',
-    )
-
-    localStorage.setItem(
-        'agrogestao_usuario',
-        JSON.stringify(dados.usuario),
-    )
-
-    localStorage.setItem(
-        'agrogestao_token_expira_em',
-        String(expiraEm),
-    )
-}
 
 function Login() {
     const navigate = useNavigate()
@@ -51,12 +32,10 @@ function Login() {
         useState(Boolean(GOOGLE_CLIENT_ID))
 
     useEffect(() => {
-        const emailLembrado = localStorage.getItem(
-            'agrogestao_email_lembrado',
-        )
+        const preferencia = obterPreferenciaLembrarAcesso()
 
-        if (emailLembrado) {
-            setEmail(emailLembrado)
+        if (preferencia.lembrar) {
+            setEmail(preferencia.email)
             setLembrarAcesso(true)
         }
     }, [])
@@ -95,6 +74,8 @@ function Login() {
         setCarregando(true)
 
         try {
+            const emailNormalizado = normalizarEmailLembrado(email)
+
             const resposta = await fetch(API_LOGIN_URL, {
                 method: 'POST',
                 headers: {
@@ -102,7 +83,7 @@ function Login() {
                         'application/json; charset=utf-8',
                 },
                 body: JSON.stringify({
-                    email: email.trim(),
+                    email: emailNormalizado,
                     senha,
                 }),
             })
@@ -124,17 +105,17 @@ function Login() {
                 )
             }
 
-            armazenarSessao(dados)
+            salvarSessao({
+                token: dados.token,
+                tipoToken: dados.tipo ?? 'Bearer',
+                usuario: dados.usuario,
+                expiraEmSegundos: dados.expiraEmSegundos,
+            })
 
             if (lembrarAcesso) {
-                localStorage.setItem(
-                    'agrogestao_email_lembrado',
-                    email.trim(),
-                )
+                salvarPreferenciaLembrarAcesso(emailNormalizado)
             } else {
-                localStorage.removeItem(
-                    'agrogestao_email_lembrado',
-                )
+                limparPreferenciaLembrarAcesso()
             }
 
             navigate(
@@ -194,7 +175,20 @@ function Login() {
                 )
             }
 
-            armazenarSessao(dados)
+            salvarSessao({
+                token: dados.token,
+                tipoToken: dados.tipo ?? 'Bearer',
+                usuario: dados.usuario,
+                expiraEmSegundos: dados.expiraEmSegundos,
+            })
+
+            if (lembrarAcesso) {
+                salvarPreferenciaLembrarAcesso(
+                    dados.usuario?.email ?? email,
+                )
+            } else {
+                limparPreferenciaLembrarAcesso()
+            }
 
             navigate(
                 dados.usuario.papel === 'ADMINISTRADOR' ||

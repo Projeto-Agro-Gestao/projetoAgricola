@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test:remember": "node scripts/test-lembrar-acesso.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "videos": "node --env-file-if-exists=videos/.env videos/gravar.js",
