@@ -469,6 +469,93 @@
     justify-content: flex-end;
 }
 
+.admin-integracoes-grade {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    margin: 18px auto;
+    max-width: 1180px;
+}
+
+.admin-checklist,
+.admin-requisitos,
+.admin-links-oficiais {
+    display: grid;
+    gap: 10px;
+    padding: 0 22px 22px;
+}
+
+.admin-checklist-item,
+.admin-requisito {
+    align-items: center;
+    background: #fbfdf8;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+}
+
+.admin-checklist-item {
+    grid-template-columns: auto minmax(0, 1fr);
+}
+
+.admin-requisito {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-checklist-item p,
+.admin-requisito p,
+.admin-requisito small {
+    color: #5d6d5c;
+    margin: 4px 0 0;
+}
+
+.admin-requisito small {
+    grid-column: 1 / -1;
+}
+
+.admin-check {
+    align-items: center;
+    background: #fff1d6;
+    border: 1px solid #e7c47a;
+    border-radius: 999px;
+    color: #8a4b00;
+    display: inline-flex;
+    font-size: 0.7rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+}
+
+.admin-check-ok {
+    background: #e7f8da;
+    border-color: #b9d5ad;
+    color: #235f00;
+}
+
+.admin-links-oficiais {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-links-oficiais a {
+    align-items: center;
+    background: #fbfdf8;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    color: #235f00;
+    display: flex;
+    font-weight: 700;
+    min-height: 64px;
+    padding: 14px;
+    text-decoration: none;
+}
+
+.admin-links-oficiais a:hover {
+    background: #eef7e9;
+}
+
 @media (max-width: 860px) {
     .admin-topo {
         flex-direction: column;
@@ -501,5 +588,15 @@
 
     .admin-vinculos-lista article {
         flex-direction: column;
+    }
+
+    .admin-integracoes-grade,
+    .admin-links-oficiais {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-requisito {
+        align-items: stretch;
+        grid-template-columns: 1fr;
     }
 }

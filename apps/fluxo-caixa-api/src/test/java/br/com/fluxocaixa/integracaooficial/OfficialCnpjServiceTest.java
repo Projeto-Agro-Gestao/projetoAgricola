@@ -109,4 +109,58 @@ class OfficialCnpjServiceTest {
         assertThat(response.razaoSocial()).isEqualTo("Empresa Teste Ltda");
         verify(provider, never()).consultar(any());
     }
+
+    @Test
+    void setupMostraPendenciasQuandoProviderEstaDesativado() {
+        OfficialCnpjService service = new OfficialCnpjService(
+                new OfficialIntegrationProperties(),
+                mock(OfficialCnpjCacheRepository.class),
+                List.of(new DisabledCnpjProvider())
+        );
+
+        OfficialIntegrationSetupResponse setup = service.setup();
+
+        assertThat(setup.provider())
+                .isEqualTo(OfficialCnpjProviderType.DISABLED);
+        assertThat(setup.prontoParaTeste()).isFalse();
+        assertThat(setup.requisitos())
+                .anyMatch(requisito -> requisito.chave()
+                        .equals("OFFICIAL_CNPJ_PROVIDER")
+                        && !requisito.configurado());
+    }
+
+    @Test
+    void setupFicaProntoQuandoVariaveisObrigatoriasEstaoConfiguradas() {
+        OfficialCnpjProvider provider = mock(OfficialCnpjProvider.class);
+        when(provider.tipo()).thenReturn(OfficialCnpjProviderType.SERPRO);
+        when(provider.status()).thenReturn(new OfficialIntegrationStatusResponse(
+                OfficialCnpjProviderType.SERPRO,
+                OfficialIntegrationStatus.CONFIGURADO,
+                true,
+                null,
+                null,
+                "Configurado"
+        ));
+
+        OfficialIntegrationProperties properties =
+                new OfficialIntegrationProperties();
+        properties.getCnpj().setProvider(OfficialCnpjProviderType.SERPRO);
+        properties.getCnpj().setBaseUrl("https://api.exemplo");
+        properties.getCnpj().setTokenUrl("https://token.exemplo");
+        properties.getCnpj().setConsumerKey("key");
+        properties.getCnpj().setConsumerSecret("secret");
+
+        OfficialCnpjService service = new OfficialCnpjService(
+                properties,
+                mock(OfficialCnpjCacheRepository.class),
+                List.of(provider, new DisabledCnpjProvider())
+        );
+
+        OfficialIntegrationSetupResponse setup = service.setup();
+
+        assertThat(setup.prontoParaTeste()).isTrue();
+        assertThat(setup.requisitos())
+                .filteredOn(OfficialIntegrationRequirementResponse::obrigatorio)
+                .allMatch(OfficialIntegrationRequirementResponse::configurado);
+    }
 }

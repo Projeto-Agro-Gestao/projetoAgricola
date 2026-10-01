@@ -39,6 +39,7 @@ function AdminIntegracoes() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
     const [status, setStatus] = useState(null)
+    const [setup, setSetup] = useState(null)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
 
@@ -52,18 +53,25 @@ function AdminIntegracoes() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
-                `${API_URL}/admin/integracoes/oficiais/status`,
-                {
+            const [statusResposta, setupResposta] = await Promise.all([
+                fetch(`${API_URL}/admin/integracoes/oficiais/status`, {
                     headers: headers(sessao),
-                },
-            )
+                }),
+                fetch(`${API_URL}/admin/integracoes/oficiais/setup`, {
+                    headers: headers(sessao),
+                }),
+            ])
 
-            if (!resposta.ok) {
-                throw new Error(await mensagemErro(resposta))
+            if (!statusResposta.ok) {
+                throw new Error(await mensagemErro(statusResposta))
             }
 
-            setStatus(await resposta.json())
+            if (!setupResposta.ok) {
+                throw new Error(await mensagemErro(setupResposta))
+            }
+
+            setStatus(await statusResposta.json())
+            setSetup(await setupResposta.json())
         } catch (erro) {
             setMensagem(
                 erro instanceof Error
@@ -72,6 +80,23 @@ function AdminIntegracoes() {
             )
         } finally {
             setCarregando(false)
+        }
+    }
+
+    async function atualizarSetupSilencioso() {
+        if (!sessao) {
+            return
+        }
+
+        const resposta = await fetch(
+            `${API_URL}/admin/integracoes/oficiais/setup`,
+            {
+                headers: headers(sessao),
+            },
+        )
+
+        if (resposta.ok) {
+            setSetup(await resposta.json())
         }
     }
 
@@ -99,6 +124,7 @@ function AdminIntegracoes() {
             const dados = await resposta.json()
             setStatus(dados)
             setMensagem(dados.mensagem)
+            atualizarSetupSilencioso()
         } catch (erro) {
             setMensagem(
                 erro instanceof Error
@@ -199,6 +225,126 @@ function AdminIntegracoes() {
                     {status?.mensagem ??
                         'Consulta oficial de CNPJ ainda nao configurada.'}
                 </p>
+            </section>
+
+            <section className="admin-integracoes-grade">
+                <article className="admin-tabela-bloco">
+                    <div className="admin-tabela-cabecalho">
+                        <div>
+                            <span className="admin-secao-etiqueta">
+                                Assistente SERPRO
+                            </span>
+                            <h2>Configuracao automatizada</h2>
+                            <p>
+                                O painel verifica as variaveis do backend e
+                                mostra exatamente o que falta para ativar a
+                                consulta oficial.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="admin-checklist">
+                        {(setup?.passos ?? []).map((passo) => (
+                            <div
+                                className="admin-checklist-item"
+                                key={passo.titulo}
+                            >
+                                <span
+                                    className={
+                                        passo.concluido
+                                            ? 'admin-check admin-check-ok'
+                                            : 'admin-check'
+                                    }
+                                >
+                                    {passo.concluido ? 'OK' : 'Pendente'}
+                                </span>
+                                <div>
+                                    <strong>{passo.titulo}</strong>
+                                    <p>{passo.descricao}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <p className="admin-vazio">
+                        {setup?.mensagem ??
+                            'Carregando assistente de configuracao.'}
+                    </p>
+                </article>
+
+                <article className="admin-tabela-bloco">
+                    <div className="admin-tabela-cabecalho">
+                        <div>
+                            <span className="admin-secao-etiqueta">
+                                Render
+                            </span>
+                            <h2>Variaveis do backend</h2>
+                            <p>
+                                O AgroGestao confere apenas se existem valores.
+                                Os segredos nunca sao retornados para a tela.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="admin-requisitos">
+                        {(setup?.requisitos ?? []).map((item) => (
+                            <div
+                                className="admin-requisito"
+                                key={item.chave}
+                            >
+                                <div>
+                                    <strong>{item.chave}</strong>
+                                    <p>{item.descricao}</p>
+                                </div>
+                                <span
+                                    className={
+                                        item.configurado
+                                            ? 'admin-perfil admin-perfil-admin'
+                                            : 'admin-perfil'
+                                    }
+                                >
+                                    {item.configurado
+                                        ? 'Configurado'
+                                        : item.obrigatorio
+                                          ? 'Obrigatorio'
+                                          : 'Opcional'}
+                                </span>
+                                {item.segredo && (
+                                    <small>Valor protegido no backend</small>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </article>
+            </section>
+
+            <section className="admin-tabela-bloco">
+                <div className="admin-tabela-cabecalho">
+                    <div>
+                        <span className="admin-secao-etiqueta">
+                            Fontes oficiais
+                        </span>
+                        <h2>Links para habilitar e conferir</h2>
+                        <p>
+                            Use estes enderecos para contratar/habilitar o
+                            servico, conferir a documentacao e acompanhar as
+                            fontes tributarias oficiais.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="admin-links-oficiais">
+                    {(setup?.links ?? []).map((link) => (
+                        <a
+                            href={link.url}
+                            key={link.url}
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            {link.titulo}
+                        </a>
+                    ))}
+                </div>
             </section>
         </main>
     )

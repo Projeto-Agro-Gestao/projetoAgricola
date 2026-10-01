@@ -32,6 +32,12 @@ public class OfficialIntegrationController {
         return cnpjService.status();
     }
 
+    @GetMapping("/admin/integracoes/oficiais/setup")
+    public OfficialIntegrationSetupResponse setup() {
+        validarAdmin();
+        return cnpjService.setup();
+    }
+
     @PostMapping("/admin/integracoes/oficiais/cnpj/testar")
     public OfficialIntegrationStatusResponse testarCnpj() {
         validarAdmin();
