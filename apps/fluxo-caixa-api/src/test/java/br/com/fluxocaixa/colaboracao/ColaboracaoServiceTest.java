@@ -221,8 +221,8 @@ class ColaboracaoServiceTest {
     @Test
     void dashboardContabilUsaMovimentacoesComoFonteDeVerdade() {
         LocalDate hoje = LocalDate.now();
-        LocalDate inicio = hoje.withDayOfMonth(1);
-        LocalDate fim = hoje.withDayOfMonth(hoje.lengthOfMonth());
+        LocalDate inicio = LocalDate.of(hoje.getYear(), 1, 1);
+        LocalDate fim = LocalDate.of(hoje.getYear(), 12, 31);
 
         when(empresaRepository.findById(1L))
                 .thenReturn(Optional.of(empresa));

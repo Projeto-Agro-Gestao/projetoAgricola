@@ -84,6 +84,16 @@
     font-weight: 600;
 }
 
+.contador-carteira-sucesso {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--secondary);
+    color: var(--primary);
+    font-weight: 700;
+}
+
 .contador-carteira-filtros {
     display: flex;
     flex-wrap: wrap;
@@ -189,13 +199,31 @@
     margin-bottom: 18px;
 }
 
-.contador-carteira-indicadores article {
+.contador-carteira-indicadores article,
+.contador-carteira-indicadores button {
     display: grid;
     gap: 8px;
     padding: 14px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    text-align: left;
+}
+
+.contador-carteira-indicadores button {
+    cursor: pointer;
+    transition:
+        border-color var(--motion-base) var(--ease-out),
+        transform var(--motion-base) var(--ease-out),
+        box-shadow var(--motion-base) var(--ease-out);
+}
+
+.contador-carteira-indicadores button:hover {
+    border-color: var(--primary);
+    box-shadow: 0 12px 30px rgb(22 58 25 / 0.08);
+    transform: translateY(-1px);
 }
 
 .contador-carteira-indicadores small {
@@ -227,11 +255,23 @@
 }
 
 .contador-carteira-tributaria span,
+.contador-carteira-tributaria button,
 .contador-carteira-lista > div {
     padding: 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--card);
+}
+
+.contador-carteira-tributaria button {
+    color: var(--foreground);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.contador-carteira-tributaria button:hover {
+    border-color: var(--primary);
 }
 
 .contador-carteira-lista > div {
@@ -253,6 +293,193 @@
     cursor: pointer;
 }
 
+.contador-carteira-abas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 18px;
+}
+
+.contador-carteira-abas button,
+.contador-toolbar button,
+.contador-relatorios button,
+.contador-form-grid button,
+.contador-editor .contador-carteira-card-topo button,
+.contador-acoes button {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--primary);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.contador-carteira-abas button.ativo,
+.contador-toolbar button:hover,
+.contador-relatorios button:hover,
+.contador-form-grid button,
+.contador-acoes button:hover {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.contador-toolbar {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) minmax(220px, 1fr) auto auto;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.contador-toolbar select,
+.contador-toolbar input,
+.contador-form-grid input,
+.contador-form-grid select,
+.contador-form-grid textarea {
+    min-height: 40px;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.86rem;
+    padding: 0 12px;
+}
+
+.contador-form-grid textarea {
+    min-height: 88px;
+    padding-top: 10px;
+    resize: vertical;
+}
+
+.contador-tabela-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.contador-tabela {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+    background: var(--card);
+}
+
+.contador-tabela th,
+.contador-tabela td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.contador-tabela th {
+    background: var(--secondary);
+    color: var(--primary);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.contador-tabela td {
+    font-size: 0.86rem;
+}
+
+.contador-tabela td small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted-foreground);
+}
+
+.contador-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.contador-acoes button {
+    min-height: 32px;
+    padding: 0 9px;
+    font-size: 0.72rem;
+}
+
+.contador-vinculo-documento {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.contador-vinculo-documento select {
+    min-height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 0 10px;
+}
+
+.contador-editor {
+    margin-bottom: 18px;
+}
+
+.contador-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.contador-form-grid label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted-foreground);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.contador-form-largo,
+.contador-form-grid button {
+    grid-column: 1 / -1;
+}
+
+.contador-memoria {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.contador-memoria span {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.contador-memoria strong {
+    color: var(--foreground);
+    font-size: 1.1rem;
+}
+
+.contador-relatorios {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
 .contador-carteira-carregando {
     color: var(--muted-foreground);
 }
@@ -261,7 +488,9 @@
     .contador-carteira-grade,
     .contador-carteira-duas-colunas,
     .contador-carteira-indicadores,
-    .contador-carteira-tributaria > div {
+    .contador-carteira-tributaria > div,
+    .contador-toolbar,
+    .contador-relatorios {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -279,7 +508,12 @@
     .contador-carteira-grade,
     .contador-carteira-duas-colunas,
     .contador-carteira-indicadores,
-    .contador-carteira-tributaria > div {
+    .contador-carteira-tributaria > div,
+    .contador-toolbar,
+    .contador-form-grid,
+    .contador-memoria,
+    .contador-relatorios,
+    .contador-vinculo-documento {
         grid-template-columns: 1fr;
     }
 }

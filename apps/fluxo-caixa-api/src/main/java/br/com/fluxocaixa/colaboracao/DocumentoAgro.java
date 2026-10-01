@@ -116,6 +116,11 @@ public class DocumentoAgro {
         this.analisadoEm = LocalDateTime.now();
     }
 
+    public void vincularMovimentacao(Movimentacao movimentacao) {
+        this.movimentacao = movimentacao;
+        this.status = StatusDocumentoAgro.VINCULADO;
+    }
+
     public Long getId() { return id; }
     public Empresa getEmpresa() { return empresa; }
     public Movimentacao getMovimentacao() { return movimentacao; }

@@ -30,7 +30,10 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ColaboracaoService {
@@ -788,7 +791,7 @@ public class ColaboracaoService {
         Usuario usuario = usuarioAtual();
         validarAcessoEmpresa(usuario, empresaId);
         Empresa empresa = obterEmpresa(empresaId);
-        Periodo periodo = periodoOuMesAtual(dataInicial, dataFinal);
+        Periodo periodo = periodoOuAnoAtual(dataInicial, dataFinal);
 
         BigDecimal receitas = normalizar(
                 movimentacaoRepository.somarPorTipoEPeriodoEArea(
@@ -822,21 +825,32 @@ public class ColaboracaoService {
                         .findAllByEmpresa_IdOrderByAtualizadoEmDesc(
                                 empresaId
                         );
+        Set<Long> movimentacaoIdsPeriodo =
+                movimentacoes.stream()
+                        .map(Movimentacao::getId)
+                        .collect(Collectors.toSet());
+
+        List<AnaliseFiscalMovimentacao> analisesPeriodo =
+                analises.stream()
+                        .filter(analise -> movimentacaoIdsPeriodo.contains(
+                                analise.getMovimentacao().getId()
+                        ))
+                        .toList();
 
         BigDecimal potencialmenteDedutivel =
                 somarAnalises(
-                        analises,
+                        analisesPeriodo,
                         StatusTratamentoFiscal.POTENCIALMENTE_DEDUTIVEL
                 ).add(
                         somarAnalises(
-                                analises,
+                                analisesPeriodo,
                                 StatusTratamentoFiscal.VALIDADO_PELO_CONTADOR
                         )
                 );
 
         BigDecimal naoConsiderado =
                 somarAnalises(
-                        analises,
+                        analisesPeriodo,
                         StatusTratamentoFiscal.NAO_DEDUTIVEL
                 );
 
@@ -900,6 +914,199 @@ public class ColaboracaoService {
                 regime == null ? null : regime.getRegime(),
                 "Valores estimados para apoio a analise. A apuracao fiscal definitiva deve ser validada pelo profissional responsavel."
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContadorMovimentacaoFiscalResponse> listarMovimentacoesFiscais(
+            Long empresaId,
+            LocalDate dataInicial,
+            LocalDate dataFinal) {
+
+        validarAcessoEmpresa(usuarioAtual(), empresaId);
+        Periodo periodo = periodoOuAnoAtual(dataInicial, dataFinal);
+
+        List<Movimentacao> movimentacoes =
+                movimentacaoRepository.buscarPeriodoDesc(
+                        empresaId,
+                        periodo.inicio(),
+                        periodo.fim()
+                );
+
+        Map<Long, AnaliseFiscalMovimentacao> analisesPorMovimentacao =
+                analiseFiscalRepository
+                        .findAllByEmpresa_IdOrderByAtualizadoEmDesc(empresaId)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                analise -> analise.getMovimentacao().getId(),
+                                analise -> analise,
+                                (atual, ignorada) -> atual
+                        ));
+
+        Map<Long, List<DocumentoAgro>> documentosPorMovimentacao =
+                documentoRepository
+                        .findAllByEmpresa_IdOrderByCriadoEmDesc(empresaId)
+                        .stream()
+                        .filter(documento -> documento.getMovimentacao() != null)
+                        .collect(Collectors.groupingBy(
+                                documento -> documento.getMovimentacao().getId()
+                        ));
+
+        return movimentacoes.stream()
+                .map(movimentacao -> {
+                    AnaliseFiscalMovimentacao analise =
+                            analisesPorMovimentacao.get(movimentacao.getId());
+                    List<DocumentoAgro> documentos =
+                            documentosPorMovimentacao.getOrDefault(
+                                    movimentacao.getId(),
+                                    List.of()
+                            );
+
+                    StatusDocumentoAgro statusDocumento =
+                            documentos.stream()
+                                    .map(DocumentoAgro::getStatus)
+                                    .filter(Objects::nonNull)
+                                    .findFirst()
+                                    .orElse(null);
+
+                    StatusTratamentoFiscal tratamento =
+                            analise == null
+                                    ? null
+                                    : analise.getTratamentoFiscal();
+
+                    return new ContadorMovimentacaoFiscalResponse(
+                            movimentacao.getId(),
+                            movimentacao.getDataMovimentacao(),
+                            movimentacao.getTipo(),
+                            movimentacao.getDescricao(),
+                            movimentacao.getFornecedorNome(),
+                            normalizar(movimentacao.getValor()),
+                            movimentacao.getCategoria() == null
+                                    ? null
+                                    : movimentacao.getCategoria().getNome(),
+                            movimentacao.getPropriedadeRural() == null
+                                    ? null
+                                    : movimentacao.getPropriedadeRural().getNome(),
+                            movimentacao.getAtividadeRural() == null
+                                    ? null
+                                    : movimentacao.getAtividadeRural().getNome(),
+                            documentos.size(),
+                            !documentos.isEmpty(),
+                            statusDocumento,
+                            analise == null
+                                    || analise.getClassificacaoContabil() == null
+                                    ? null
+                                    : analise.getClassificacaoContabil().getId(),
+                            analise == null
+                                    || analise.getClassificacaoContabil() == null
+                                    ? null
+                                    : analise.getClassificacaoContabil().getNome(),
+                            tratamento,
+                            analise == null
+                                    ? null
+                                    : analise.getStatus(),
+                            analise == null
+                                    ? null
+                                    : normalizar(analise.getValorConsiderado()),
+                            analise == null
+                                    ? null
+                                    : analise.getObservacao(),
+                            tratamento == StatusTratamentoFiscal.POTENCIALMENTE_DEDUTIVEL
+                                    || tratamento == StatusTratamentoFiscal.VALIDADO_PELO_CONTADOR
+                                    || tratamento == StatusTratamentoFiscal.PARCIALMENTE_CONSIDERADO
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional
+    public PendenciaAgroResponse solicitarDocumentoFiscal(
+            Long empresaId,
+            Long movimentacaoId) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+
+        Movimentacao movimentacao =
+                movimentacaoRepository
+                        .findByIdAndEmpresa_IdAndExcluidaFalse(
+                                movimentacaoId,
+                                empresaId
+                        )
+                        .orElseThrow(() ->
+                                new MovimentacaoNaoEncontradaException(
+                                        movimentacaoId
+                                )
+                        );
+
+        String titulo = "Documento solicitado pelo contador";
+        String descricao =
+                "Envie o documento referente a "
+                        + movimentacao.getDescricao()
+                        + " de "
+                        + movimentacao.getDataMovimentacao()
+                        + " no valor de R$ "
+                        + normalizar(movimentacao.getValor())
+                        + ".";
+
+        PendenciaAgroResponse pendencia =
+                criarPendencia(
+                        empresaId,
+                        new CriarPendenciaRequest(
+                                movimentacaoId,
+                                TipoPendenciaAgro.DOCUMENTO_SOLICITADO,
+                                PrioridadePendenciaAgro.NORMAL,
+                                titulo,
+                                descricao,
+                                null
+                        )
+                );
+
+        auditar(movimentacao.getEmpresa(), usuario,
+                "SOLICITAR_DOCUMENTO_FISCAL",
+                "Movimentacao", movimentacao.getId(), descricao);
+
+        return pendencia;
+    }
+
+    @Transactional
+    public DocumentoAgroResponse vincularDocumentoFiscal(
+            Long empresaId,
+            Long documentoId,
+            Long movimentacaoId) {
+
+        Usuario usuario = usuarioAtual();
+        validarAcessoEmpresa(usuario, empresaId);
+
+        DocumentoAgro documento =
+                documentoRepository
+                        .findByIdAndEmpresa_Id(documentoId, empresaId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Documento nao encontrado."
+                                )
+                        );
+
+        Movimentacao movimentacao =
+                movimentacaoRepository
+                        .findByIdAndEmpresa_IdAndExcluidaFalse(
+                                movimentacaoId,
+                                empresaId
+                        )
+                        .orElseThrow(() ->
+                                new MovimentacaoNaoEncontradaException(
+                                        movimentacaoId
+                                )
+                        );
+
+        documento.vincularMovimentacao(movimentacao);
+        DocumentoAgro salvo = documentoRepository.save(documento);
+
+        auditar(movimentacao.getEmpresa(), usuario,
+                "VINCULAR_DOCUMENTO_FISCAL",
+                "DocumentoAgro", salvo.getId(),
+                "Movimentacao " + movimentacao.getId());
+
+        return DocumentoAgroResponse.de(salvo);
     }
 
     @Transactional(readOnly = true)
@@ -1296,16 +1503,16 @@ public class ColaboracaoService {
         }
     }
 
-    private Periodo periodoOuMesAtual(
+    private Periodo periodoOuAnoAtual(
             LocalDate dataInicial,
             LocalDate dataFinal) {
 
         LocalDate hoje = LocalDate.now();
         LocalDate inicio = dataInicial == null
-                ? hoje.withDayOfMonth(1)
+                ? LocalDate.of(hoje.getYear(), 1, 1)
                 : dataInicial;
         LocalDate fim = dataFinal == null
-                ? hoje.withDayOfMonth(hoje.lengthOfMonth())
+                ? LocalDate.of(hoje.getYear(), 12, 31)
                 : dataFinal;
 
         if (fim.isBefore(inicio)) {

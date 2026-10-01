@@ -96,6 +96,23 @@ public class ContadorController {
         return colaboracaoService.listarAnalisesFiscais(empresaId);
     }
 
+    @GetMapping("/clientes/{empresaId}/movimentacoes-fiscais")
+    public List<ContadorMovimentacaoFiscalResponse> movimentacoesFiscais(
+            @PathVariable Long empresaId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataInicial,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataFinal) {
+
+        return colaboracaoService.listarMovimentacoesFiscais(
+                empresaId,
+                dataInicial,
+                dataFinal
+        );
+    }
+
     @PutMapping("/clientes/{empresaId}/movimentacoes/{movimentacaoId}/analise-fiscal")
     public AnaliseFiscalMovimentacaoResponse atualizarAnaliseFiscal(
             @PathVariable Long empresaId,
@@ -106,6 +123,30 @@ public class ContadorController {
                 empresaId,
                 movimentacaoId,
                 request
+        );
+    }
+
+    @PostMapping("/clientes/{empresaId}/movimentacoes/{movimentacaoId}/solicitar-documento")
+    public PendenciaAgroResponse solicitarDocumento(
+            @PathVariable Long empresaId,
+            @PathVariable Long movimentacaoId) {
+
+        return colaboracaoService.solicitarDocumentoFiscal(
+                empresaId,
+                movimentacaoId
+        );
+    }
+
+    @PostMapping("/clientes/{empresaId}/documentos/{documentoId}/vincular/{movimentacaoId}")
+    public DocumentoAgroResponse vincularDocumento(
+            @PathVariable Long empresaId,
+            @PathVariable Long documentoId,
+            @PathVariable Long movimentacaoId) {
+
+        return colaboracaoService.vincularDocumentoFiscal(
+                empresaId,
+                documentoId,
+                movimentacaoId
         );
     }
 
