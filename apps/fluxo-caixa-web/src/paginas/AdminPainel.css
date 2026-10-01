@@ -354,6 +354,11 @@
     width: min(100%, 560px);
 }
 
+.admin-modal-amplo {
+    max-width: 760px;
+    width: min(100%, 760px);
+}
+
 .admin-modal-topo {
     align-items: flex-start;
     display: flex;
@@ -396,7 +401,8 @@
     font-weight: 600;
 }
 
-.admin-modal input {
+.admin-modal input,
+.admin-modal select {
     background: #ffffff;
     border: 1px solid #c7d9bf;
     border-radius: 8px;
@@ -404,6 +410,39 @@
     font: inherit;
     min-height: 42px;
     padding: 0 12px;
+}
+
+.admin-vinculo-form {
+    align-items: end;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-vinculos-lista {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-vinculos-lista article {
+    align-items: center;
+    background: #f8fcf5;
+    border: 1px solid #d5e3cf;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 12px;
+}
+
+.admin-vinculos-lista article div {
+    display: grid;
+    gap: 3px;
+}
+
+.admin-vinculos-lista article span {
+    color: #52624b;
+    font-size: .82rem;
 }
 
 .admin-modal fieldset {
@@ -451,6 +490,16 @@
     }
 
     .admin-tabela-cabecalho {
+        flex-direction: column;
+    }
+
+    .admin-vinculo-form,
+    .admin-vinculos-lista article {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-vinculos-lista article {
         flex-direction: column;
     }
 }

@@ -169,6 +169,10 @@ function AdminPainel() {
         useState(null)
     const [confirmacaoPapel, setConfirmacaoPapel] =
         useState(null)
+    const [vinculosContador, setVinculosContador] =
+        useState(null)
+    const [empresaParaVincular, setEmpresaParaVincular] =
+        useState('')
     const [formularioEdicao, setFormularioEdicao] =
         useState({
             nomeEmpresa: '',
@@ -258,6 +262,32 @@ function AdminPainel() {
             return atendeBusca && atendeFiltro
         })
     }, [buscaUsuarios, filtroUsuarios, usuarios])
+
+    const empresasClienteDisponiveis = useMemo(() => {
+        const empresas = new Map()
+        usuarios
+            .filter((usuario) =>
+                usuario.empresaId &&
+                usuario.empresaId !== vinculosContador?.contador?.empresaId &&
+                !isAdministradorUsuario(usuario) &&
+                usuario.papel !== 'CONTADOR')
+            .forEach((usuario) => {
+                if (!empresas.has(usuario.empresaId)) {
+                    empresas.set(usuario.empresaId, {
+                        empresaId: usuario.empresaId,
+                        nomeEmpresa: usuario.nomeEmpresa,
+                        produtorNome: usuario.nome,
+                    })
+                }
+            })
+
+        return Array.from(empresas.values())
+            .sort((a, b) =>
+                String(a.nomeEmpresa ?? '').localeCompare(
+                    String(b.nomeEmpresa ?? ''),
+                    'pt-BR',
+                ))
+    }, [usuarios, vinculosContador])
 
     useEffect(() => {
         if (!sessao) {
@@ -431,6 +461,147 @@ function AdminPainel() {
                 : 'Usuario promovido a administrador com sucesso.',
         )
         setConfirmacaoPapel(null)
+    }
+
+    async function abrirVinculosContador(usuario) {
+        if (!sessao) {
+            return
+        }
+
+        setSalvandoId(usuario.id)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/contadores/${usuario.id}/clientes`,
+                {
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                    },
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(await obterMensagemDeErro(resposta))
+            }
+
+            setVinculosContador({
+                contador: usuario,
+                vinculos: await resposta.json(),
+            })
+            setEmpresaParaVincular('')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel carregar os vinculos do contador.',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
+    }
+
+    async function vincularClienteAoContador(evento) {
+        evento.preventDefault()
+
+        if (!sessao || !vinculosContador || !empresaParaVincular) {
+            return
+        }
+
+        setSalvandoId(vinculosContador.contador.id)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/contadores/${vinculosContador.contador.id}/clientes`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                        'Content-Type':
+                            'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        empresaId: Number(empresaParaVincular),
+                    }),
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(await obterMensagemDeErro(resposta))
+            }
+
+            const vinculo = await resposta.json()
+            setVinculosContador((atual) => ({
+                ...atual,
+                vinculos: [
+                    ...(atual?.vinculos ?? []).filter((item) =>
+                        item.empresaId !== vinculo.empresaId),
+                    vinculo,
+                ].sort((a, b) =>
+                    String(a.empresaNome ?? '').localeCompare(
+                        String(b.empresaNome ?? ''),
+                        'pt-BR',
+                    )),
+            }))
+            setEmpresaParaVincular('')
+            setMensagem('Cliente vinculado ao contador com sucesso.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel vincular o cliente.',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
+    }
+
+    async function removerClienteDoContador(vinculo) {
+        if (!sessao || !vinculosContador) {
+            return
+        }
+
+        setSalvandoId(vinculosContador.contador.id)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/contadores/${vinculosContador.contador.id}/clientes/${vinculo.empresaId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                    },
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(await obterMensagemDeErro(resposta))
+            }
+
+            const atualizado = await resposta.json()
+            setVinculosContador((atual) => ({
+                ...atual,
+                vinculos: (atual?.vinculos ?? []).map((item) =>
+                    item.empresaId === atualizado.empresaId
+                        ? atualizado
+                        : item,
+                ),
+            }))
+            setMensagem('Vinculo removido do contador.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel remover o vinculo.',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
     }
 
     async function salvarAlteracao(
@@ -923,6 +1094,24 @@ function AdminPainel() {
                                                 </button>
                                             )}
 
+                                            {usuario.papel === 'CONTADOR' && (
+                                                <button
+                                                    className="admin-botao-secundario"
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    onClick={() =>
+                                                        abrirVinculosContador(
+                                                            usuario,
+                                                        )
+                                                    }
+                                                    type="button"
+                                                >
+                                                    Clientes
+                                                </button>
+                                            )}
+
                                             {usuario.situacao ===
                                                 'PENDENTE_APROVACAO' && (
                                                 <div className="admin-prazo-acesso">
@@ -1209,6 +1398,130 @@ function AdminPainel() {
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {vinculosContador && (
+                <div
+                    className="admin-modal-fundo"
+                    role="presentation"
+                >
+                    <div
+                        aria-modal="true"
+                        className="admin-modal admin-modal-amplo"
+                        role="dialog"
+                    >
+                        <div className="admin-modal-topo">
+                            <div>
+                                <span>Carteira do contador</span>
+                                <h2>
+                                    Clientes de{' '}
+                                    {vinculosContador.contador.nome}
+                                </h2>
+                            </div>
+
+                            <button
+                                className="admin-modal-fechar"
+                                disabled={
+                                    salvandoId ===
+                                    vinculosContador.contador.id
+                                }
+                                onClick={() =>
+                                    setVinculosContador(null)
+                                }
+                                type="button"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+
+                        <form
+                            className="admin-vinculo-form"
+                            onSubmit={vincularClienteAoContador}
+                        >
+                            <label>
+                                Vincular cliente
+                                <select
+                                    onChange={(evento) =>
+                                        setEmpresaParaVincular(
+                                            evento.target.value,
+                                        )
+                                    }
+                                    value={empresaParaVincular}
+                                >
+                                    <option value="">
+                                        Selecione uma empresa/produtor
+                                    </option>
+                                    {empresasClienteDisponiveis.map(
+                                        (empresa) => (
+                                            <option
+                                                key={empresa.empresaId}
+                                                value={empresa.empresaId}
+                                            >
+                                                {empresa.nomeEmpresa} -{' '}
+                                                {empresa.produtorNome}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            </label>
+
+                            <button
+                                className="admin-botao-primario"
+                                disabled={
+                                    !empresaParaVincular ||
+                                    salvandoId ===
+                                    vinculosContador.contador.id
+                                }
+                                type="submit"
+                            >
+                                + Vincular cliente
+                            </button>
+                        </form>
+
+                        <div className="admin-vinculos-lista">
+                            {vinculosContador.vinculos.length === 0 ? (
+                                <p>
+                                    Nenhum cliente vinculado a este
+                                    contador.
+                                </p>
+                            ) : (
+                                vinculosContador.vinculos.map((vinculo) => (
+                                    <article key={vinculo.vinculoId}>
+                                        <div>
+                                            <strong>
+                                                {vinculo.empresaNome}
+                                            </strong>
+                                            <span>
+                                                Status: {vinculo.status}
+                                            </span>
+                                        </div>
+
+                                        {vinculo.status === 'ATIVO' ? (
+                                            <button
+                                                className="admin-botao-perigo"
+                                                disabled={
+                                                    salvandoId ===
+                                                    vinculosContador
+                                                        .contador.id
+                                                }
+                                                onClick={() =>
+                                                    removerClienteDoContador(
+                                                        vinculo,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Remover vinculo
+                                            </button>
+                                        ) : (
+                                            <span>Vinculo encerrado</span>
+                                        )}
+                                    </article>
+                                ))
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 

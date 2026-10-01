@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -130,7 +131,7 @@ class ColaboracaoServiceTest {
         SecurityContextHolder.getContext()
                 .setAuthentication(new JwtAuthenticationToken(jwt));
 
-        when(usuarioRepository.findById(1L))
+        lenient().when(usuarioRepository.findById(1L))
                 .thenReturn(Optional.of(usuario));
     }
 
@@ -272,5 +273,84 @@ class ColaboracaoServiceTest {
                 .isEqualByComparingTo("18000.00");
         assertThat(dashboard.tributoEstimado())
                 .isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    void carteiraContadorRetornaClienteVinculadoComResultadoDoFinanceiro() {
+        Empresa empresaContador = new Empresa("Escritorio Contabil", null);
+        ReflectionTestUtils.setField(empresaContador, "id", 2L);
+
+        Usuario contador = new Usuario(
+                empresaContador,
+                "Contador Teste",
+                "contador@teste.com",
+                null,
+                "hash",
+                PapelUsuario.CONTADOR
+        );
+        ReflectionTestUtils.setField(contador, "id", 2L);
+
+        Empresa empresaCliente = new Empresa("Fazenda Cliente", null);
+        ReflectionTestUtils.setField(empresaCliente, "id", 99L);
+
+        Jwt jwt = Jwt.withTokenValue("token-contador")
+                .header("alg", "none")
+                .claim("usuarioId", 2L)
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .build();
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(new JwtAuthenticationToken(jwt));
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicio = hoje.withDayOfMonth(1);
+        LocalDate fim = hoje.withDayOfMonth(hoje.lengthOfMonth());
+
+        when(usuarioRepository.findById(2L))
+                .thenReturn(Optional.of(contador));
+        when(contadorEmpresaRepository
+                .findAllByContador_IdAndStatusOrderByEmpresa_NomeAsc(
+                        2L,
+                        StatusVinculoContador.ATIVO
+                ))
+                .thenReturn(List.of(
+                        new ContadorEmpresa(contador, empresaCliente)
+                ));
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                99L,
+                TipoMovimentacao.RECEITA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("12000.00"));
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                99L,
+                TipoMovimentacao.DESPESA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("5000.00"));
+        when(pendenciaRepository.countByEmpresa_IdAndStatusNot(
+                99L,
+                StatusPendenciaAgro.RESOLVIDA
+        )).thenReturn(0L);
+        when(movimentacaoRepository.countDespesasSemDocumento(99L))
+                .thenReturn(0L);
+        when(movimentacaoRepository
+                .countByEmpresa_IdAndCategoriaIsNullAndExcluidaFalse(99L))
+                .thenReturn(0L);
+        when(documentoRepository.countByEmpresa_IdAndStatus(
+                99L,
+                StatusDocumentoAgro.ENVIADO
+        )).thenReturn(0L);
+
+        List<ContadorClienteResponse> carteira =
+                service.carteiraContador();
+
+        assertThat(carteira).hasSize(1);
+        assertThat(carteira.get(0).empresaId()).isEqualTo(99L);
+        assertThat(carteira.get(0).resultadoMes())
+                .isEqualByComparingTo("7000.00");
     }
 }

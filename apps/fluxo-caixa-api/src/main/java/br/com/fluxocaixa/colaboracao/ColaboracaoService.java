@@ -728,19 +728,18 @@ public class ColaboracaoService {
     @Transactional(readOnly = true)
     public VisaoTributariaResponse visaoTributaria(
             Long empresaId,
-            int ano) {
+            LocalDate dataInicial,
+            LocalDate dataFinal) {
 
         validarAcessoEmpresa(usuarioAtual(), empresaId);
-
-        LocalDate inicio = LocalDate.of(ano, 1, 1);
-        LocalDate fim = LocalDate.of(ano, 12, 31);
+        Periodo periodo = periodoOuAnoAtual(dataInicial, dataFinal);
 
         BigDecimal receitas = normalizar(
                 movimentacaoRepository.somarPorTipoEPeriodoEArea(
                         empresaId,
                         TipoMovimentacao.RECEITA,
-                        inicio,
-                        fim,
+                        periodo.inicio(),
+                        periodo.fim(),
                         null
                 )
         );
@@ -749,14 +748,14 @@ public class ColaboracaoService {
                 movimentacaoRepository.somarPorTipoEPeriodoEArea(
                         empresaId,
                         TipoMovimentacao.DESPESA,
-                        inicio,
-                        fim,
+                        periodo.inicio(),
+                        periodo.fim(),
                         null
                 )
         );
 
         BigDecimal resultado = receitas.subtract(despesas);
-        int mesAtual = Math.max(1, LocalDate.now().getMonthValue());
+        int mesAtual = Math.max(1, periodo.fim().getMonthValue());
         BigDecimal projetado = resultado
                 .divide(new BigDecimal(mesAtual), 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("12"));
@@ -772,7 +771,7 @@ public class ColaboracaoService {
                                 );
 
         return new VisaoTributariaResponse(
-                ano,
+                periodo.fim().getYear(),
                 receitas,
                 despesas,
                 resultado,

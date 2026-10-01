@@ -3,6 +3,11 @@ package br.com.fluxocaixa.admin;
 import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
 import br.com.fluxocaixa.colaboracao.AuditoriaAgro;
 import br.com.fluxocaixa.colaboracao.AuditoriaAgroRepository;
+import br.com.fluxocaixa.colaboracao.ContadorEmpresa;
+import br.com.fluxocaixa.colaboracao.ContadorEmpresaRepository;
+import br.com.fluxocaixa.empresa.Empresa;
+import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
+import br.com.fluxocaixa.empresa.EmpresaRepository;
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.StatusPagamento;
 import br.com.fluxocaixa.usuario.TipoAcessoUsuario;
@@ -44,19 +49,25 @@ public class AdminService {
     private final CategoriaSugeridaService categoriaSugeridaService;
     private final UsuarioProvisionamentoService provisionamentoService;
     private final AuditoriaAgroRepository auditoriaRepository;
+    private final EmpresaRepository empresaRepository;
+    private final ContadorEmpresaRepository contadorEmpresaRepository;
 
     public AdminService(
             UsuarioRepository usuarioRepository,
             UsuarioAcessoRepository usuarioAcessoRepository,
             CategoriaSugeridaService categoriaSugeridaService,
             UsuarioProvisionamentoService provisionamentoService,
-            AuditoriaAgroRepository auditoriaRepository) {
+            AuditoriaAgroRepository auditoriaRepository,
+            EmpresaRepository empresaRepository,
+            ContadorEmpresaRepository contadorEmpresaRepository) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
         this.categoriaSugeridaService = categoriaSugeridaService;
         this.provisionamentoService = provisionamentoService;
         this.auditoriaRepository = auditoriaRepository;
+        this.empresaRepository = empresaRepository;
+        this.contadorEmpresaRepository = contadorEmpresaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -244,6 +255,100 @@ public class AdminService {
         );
 
         return montarResponse(usuario);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClienteVinculadoContadorResponse> listarClientesContador(
+            Long contadorId) {
+
+        validarAdministrador();
+        Usuario contador = buscarUsuario(contadorId);
+        validarUsuarioContador(contador);
+
+        return contadorEmpresaRepository
+                .findAllByContador_IdOrderByEmpresa_NomeAsc(contadorId)
+                .stream()
+                .map(ClienteVinculadoContadorResponse::de)
+                .toList();
+    }
+
+    @Transactional
+    public ClienteVinculadoContadorResponse vincularClienteContador(
+            Long contadorId,
+            VincularClienteContadorRequest request) {
+
+        Usuario executor = buscarAdministradorAutenticado();
+        Usuario contador = buscarUsuario(contadorId);
+        validarUsuarioContador(contador);
+
+        Empresa empresa = empresaRepository.findById(request.empresaId())
+                .orElseThrow(() ->
+                        new EmpresaNaoEncontradaException(
+                                request.empresaId()
+                        )
+                );
+
+        if (contador.getEmpresa().getId().equals(empresa.getId())) {
+            throw new IllegalArgumentException(
+                    "A empresa propria do contador nao deve ser vinculada como cliente."
+            );
+        }
+
+        ContadorEmpresa vinculo =
+                contadorEmpresaRepository
+                        .findByContador_IdAndEmpresa_Id(
+                                contador.getId(),
+                                empresa.getId()
+                        )
+                        .orElseGet(() ->
+                                new ContadorEmpresa(contador, empresa)
+                        );
+
+        vinculo.ativar();
+        ContadorEmpresa salvo = contadorEmpresaRepository.save(vinculo);
+
+        registrarAuditoriaVinculoContador(
+                executor,
+                contador,
+                empresa,
+                "CONTADOR_CLIENTE_VINCULADO"
+        );
+
+        return ClienteVinculadoContadorResponse.de(salvo);
+    }
+
+    @Transactional
+    public ClienteVinculadoContadorResponse removerClienteContador(
+            Long contadorId,
+            Long empresaId) {
+
+        Usuario executor = buscarAdministradorAutenticado();
+        Usuario contador = buscarUsuario(contadorId);
+        validarUsuarioContador(contador);
+
+        ContadorEmpresa vinculo =
+                contadorEmpresaRepository
+                        .findByContador_IdAndEmpresa_Id(
+                                contadorId,
+                                empresaId
+                        )
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "Vinculo contador-cliente nao encontrado."
+                                )
+                        );
+
+        vinculo.encerrar();
+        ContadorEmpresa salvo = contadorEmpresaRepository.save(vinculo);
+
+        registrarAuditoriaVinculoContador(
+                executor,
+                contador,
+                vinculo.getEmpresa(),
+                "CONTADOR_CLIENTE_REMOVIDO"
+        );
+
+        return ClienteVinculadoContadorResponse.de(salvo);
     }
 
     private Usuario buscarUsuario(Long usuarioId) {
@@ -466,6 +571,34 @@ public class AdminService {
                                 + "; newRole=" + novoPapel
                 )
         );
+    }
+
+    private void registrarAuditoriaVinculoContador(
+            Usuario executor,
+            Usuario contador,
+            Empresa empresa,
+            String acao) {
+
+        auditoriaRepository.save(
+                new AuditoriaAgro(
+                        empresa,
+                        executor,
+                        acao,
+                        "CONTADOR_EMPRESA",
+                        contador.getId(),
+                        "executorId=" + executor.getId()
+                                + "; contadorId=" + contador.getId()
+                                + "; empresaId=" + empresa.getId()
+                )
+        );
+    }
+
+    private void validarUsuarioContador(Usuario usuario) {
+        if (usuario.getPapel() != PapelUsuario.CONTADOR) {
+            throw new IllegalArgumentException(
+                    "Selecione um usuario com perfil CONTADOR."
+            );
+        }
     }
 
     private String normalizarEmail(String email) {

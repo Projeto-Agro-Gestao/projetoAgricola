@@ -46,11 +46,18 @@ public class ContadorController {
 
     @GetMapping("/clientes/{empresaId}/visao-tributaria")
     public VisaoTributariaResponse visaoTributaria(
-            @PathVariable Long empresaId) {
+            @PathVariable Long empresaId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataInicial,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataFinal) {
 
         return colaboracaoService.visaoTributaria(
                 empresaId,
-                LocalDate.now().getYear()
+                dataInicial,
+                dataFinal
         );
     }
 

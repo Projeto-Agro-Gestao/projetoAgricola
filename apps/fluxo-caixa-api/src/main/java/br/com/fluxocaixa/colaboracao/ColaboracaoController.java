@@ -211,11 +211,26 @@ public class ColaboracaoController {
     public VisaoTributariaResponse visaoTributaria(
             @PathVariable Long empresaId,
             @RequestParam(defaultValue = "0")
-            int ano) {
+            int ano,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataInicial,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dataFinal) {
+
+        LocalDate inicio = dataInicial;
+        LocalDate fim = dataFinal;
+
+        if (inicio == null && fim == null && ano > 0) {
+            inicio = LocalDate.of(ano, 1, 1);
+            fim = LocalDate.of(ano, 12, 31);
+        }
 
         return colaboracaoService.visaoTributaria(
                 empresaId,
-                ano == 0 ? LocalDate.now().getYear() : ano
+                inicio,
+                fim
         );
     }
 

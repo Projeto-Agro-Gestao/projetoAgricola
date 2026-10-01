@@ -55,6 +55,14 @@ public class ContadorEmpresa {
         this.empresa = empresa;
     }
 
+    public void ativar() {
+        this.status = StatusVinculoContador.ATIVO;
+    }
+
+    public void encerrar() {
+        this.status = StatusVinculoContador.ENCERRADO;
+    }
+
     public Long getId() { return id; }
     public Usuario getContador() { return contador; }
     public Empresa getEmpresa() { return empresa; }
