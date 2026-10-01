@@ -45,6 +45,12 @@ function AlternadorModulos() {
             rota: '/contador',
             texto: 'Contador',
         },
+        {
+            ativo: location.pathname.startsWith('/dashboard/plano'),
+            icone: 'Pg',
+            rota: '/dashboard/plano',
+            texto: 'Plano',
+        },
     ]
 
     return (
