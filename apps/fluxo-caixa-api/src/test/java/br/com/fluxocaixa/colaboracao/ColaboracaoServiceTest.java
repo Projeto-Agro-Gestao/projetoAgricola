@@ -353,4 +353,48 @@ class ColaboracaoServiceTest {
         assertThat(carteira.get(0).resultadoMes())
                 .isEqualByComparingTo("7000.00");
     }
+
+    @Test
+    void carteiraContadorIncluiEmpresaPropriaDoUsuarioComResultadoDoFinanceiro() {
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicio = hoje.withDayOfMonth(1);
+        LocalDate fim = hoje.withDayOfMonth(hoje.lengthOfMonth());
+
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                1L,
+                TipoMovimentacao.RECEITA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("12000.00"));
+        when(movimentacaoRepository.somarPorTipoEPeriodoEArea(
+                1L,
+                TipoMovimentacao.DESPESA,
+                inicio,
+                fim,
+                null
+        )).thenReturn(new BigDecimal("5000.00"));
+        when(pendenciaRepository.countByEmpresa_IdAndStatusNot(
+                1L,
+                StatusPendenciaAgro.RESOLVIDA
+        )).thenReturn(0L);
+        when(movimentacaoRepository.countDespesasSemDocumento(1L))
+                .thenReturn(0L);
+        when(movimentacaoRepository
+                .countByEmpresa_IdAndCategoriaIsNullAndExcluidaFalse(1L))
+                .thenReturn(0L);
+        when(documentoRepository.countByEmpresa_IdAndStatus(
+                1L,
+                StatusDocumentoAgro.ENVIADO
+        )).thenReturn(0L);
+
+        List<ContadorClienteResponse> carteira =
+                service.carteiraContador();
+
+        assertThat(carteira).hasSize(1);
+        assertThat(carteira.get(0).empresaId()).isEqualTo(1L);
+        assertThat(carteira.get(0).empresaNome()).isEqualTo("Fazenda Teste");
+        assertThat(carteira.get(0).resultadoMes())
+                .isEqualByComparingTo("7000.00");
+    }
 }

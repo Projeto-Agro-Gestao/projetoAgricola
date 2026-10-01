@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -154,21 +155,7 @@ public class ColaboracaoService {
 
         Usuario contador = usuarioAtual();
 
-        if (!isAdmin(contador)
-                && contador.getPapel() != PapelUsuario.CONTADOR) {
-            return List.of();
-        }
-
-        List<ContadorEmpresa> vinculos = isAdmin(contador)
-                ? empresaRepository.findAll()
-                        .stream()
-                        .map(empresa -> new ContadorEmpresa(contador, empresa))
-                        .toList()
-                : contadorEmpresaRepository
-                        .findAllByContador_IdAndStatusOrderByEmpresa_NomeAsc(
-                                contador.getId(),
-                                StatusVinculoContador.ATIVO
-                        );
+        List<Empresa> empresas = empresasAcessiveisNaCarteira(contador);
 
         LocalDate hoje = LocalDate.now();
         LocalDate inicio = hoje.withDayOfMonth(1);
@@ -176,8 +163,7 @@ public class ColaboracaoService {
                 hoje.lengthOfMonth()
         );
 
-        return vinculos.stream()
-                .map(ContadorEmpresa::getEmpresa)
+        return empresas.stream()
                 .sorted(Comparator.comparing(Empresa::getNome))
                 .map(empresa -> {
                     BigDecimal receitas = normalizar(
@@ -227,6 +213,47 @@ public class ColaboracaoService {
                     );
                 })
                 .toList();
+    }
+
+    private List<Empresa> empresasAcessiveisNaCarteira(Usuario usuario) {
+
+        if (isAdmin(usuario)) {
+            return empresaRepository.findAll();
+        }
+
+        Map<Long, Empresa> empresasPorId = new LinkedHashMap<>();
+
+        if (usuario.getEmpresa() != null
+                && usuario.getEmpresa().getId() != null) {
+            empresasPorId.put(
+                    usuario.getEmpresa().getId(),
+                    usuario.getEmpresa()
+            );
+        }
+
+        if (usuario.getPapel() == PapelUsuario.CONTADOR) {
+            List<Empresa> clientesVinculados = contadorEmpresaRepository
+                    .findAllByContador_IdAndStatusOrderByEmpresa_NomeAsc(
+                            usuario.getId(),
+                            StatusVinculoContador.ATIVO
+                    )
+                    .stream()
+                    .map(ContadorEmpresa::getEmpresa)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            if (!clientesVinculados.isEmpty()) {
+                empresasPorId.clear();
+                clientesVinculados.forEach(empresa ->
+                        empresasPorId.putIfAbsent(
+                                empresa.getId(),
+                                empresa
+                        )
+                );
+            }
+        }
+
+        return List.copyOf(empresasPorId.values());
     }
 
     @Transactional
