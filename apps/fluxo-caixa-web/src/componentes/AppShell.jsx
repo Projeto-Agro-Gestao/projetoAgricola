@@ -67,7 +67,7 @@ function AppShell() {
         <>
             <nav
                 className="app-shell"
-                aria-label="Navegacao da conta"
+                aria-label="Navegação da conta"
             >
                 <button
                     type="button"
@@ -96,8 +96,8 @@ function AppShell() {
                     >
                         <h2>Tem certeza que deseja sair da sua conta?</h2>
                         <p>
-                            Sua sessao sera encerrada e sera necessario fazer
-                            login novamente para acessar o AgroGestao.
+                            Sua sessão será encerrada e será necessário fazer
+                            login novamente para acessar o AgroGestão.
                         </p>
                         <div>
                             <button

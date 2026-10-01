@@ -112,7 +112,7 @@ function EscolhaModulo() {
 
                         <div>
                             <strong>
-                                AgroGestao
+                                AgroGestão
                             </strong>
 
                             <small>
@@ -128,7 +128,7 @@ function EscolhaModulo() {
                                 onClick={abrirAreaAdministrativa}
                                 type="button"
                             >
-                                Area administrativa
+                                Área administrativa
                             </button>
                         )}
 
@@ -162,17 +162,17 @@ function EscolhaModulo() {
                 <main>
                     <div className="escolha-modulo-apresentacao">
                         <p>
-                            Ola, {sessao.usuario.nome}
+                            Olá, {sessao.usuario.nome}
                         </p>
 
                         <h1>
-                            O que voce deseja controlar agora?
+                            O que você deseja controlar agora?
                         </h1>
 
                         <span>
-                            Escolha uma area de trabalho. O produtor fica com
-                            telas simples; o contador tem uma visao mais
-                            organizada para acompanhar clientes e pendencias.
+                            Escolha uma área de trabalho. O produtor fica com
+                            telas simples; o contador tem uma visão mais
+                            organizada para acompanhar clientes e pendências.
                         </span>
                     </div>
 
@@ -197,13 +197,13 @@ function EscolhaModulo() {
 
                                 <p>
                                     Acompanhe receitas, despesas, saldo e
-                                    resultado do periodo registrado.
+                                    resultado do período registrado.
                                 </p>
 
                                 <ul>
-                                    <li>Receita - dinheiro entrando</li>
-                                    <li>Despesa - dinheiro saindo</li>
-                                    <li>Graficos e relatorios</li>
+                                    <li>Receita — dinheiro entrando</li>
+                                    <li>Despesa — dinheiro saindo</li>
+                                    <li>Gráficos e relatórios</li>
                                 </ul>
                             </div>
 
@@ -234,14 +234,14 @@ function EscolhaModulo() {
                                 </h2>
 
                                 <p>
-                                    Veja valores que ainda vao entrar ou sair e
+                                    Veja valores que ainda vão entrar ou sair e
                                     acompanhe vencimentos futuros.
                                 </p>
 
                                 <ul>
                                     <li>Contas a receber</li>
                                     <li>Contas a pagar</li>
-                                    <li>Previsao futura</li>
+                                    <li>Previsão futura</li>
                                 </ul>
                             </div>
 
@@ -272,14 +272,14 @@ function EscolhaModulo() {
                                 </h2>
 
                                 <p>
-                                    Cadastre onde comprou, compare precos e
+                                    Cadastre onde comprou, compare preços e
                                     organize produtos por categoria.
                                 </p>
 
                                 <ul>
                                     <li>Fornecedor e produto</li>
-                                    <li>Comparacao de precos</li>
-                                    <li>Relatorios de compra</li>
+                                    <li>Comparação de preços</li>
+                                    <li>Relatórios de compra</li>
                                 </ul>
                             </div>
 
@@ -310,13 +310,13 @@ function EscolhaModulo() {
                                 </h2>
 
                                 <p>
-                                    Envie documentos, veja pendencias do
-                                    contador e acompanhe a visao rapida do mes.
+                                    Envie documentos, veja pendências do
+                                    contador e acompanhe a visão rápida do mês.
                                 </p>
 
                                 <ul>
                                     <li>Inbox de documentos</li>
-                                    <li>Pendencias solicitadas</li>
+                                    <li>Pendências solicitadas</li>
                                     <li>Propriedades e atividades</li>
                                 </ul>
                             </div>
@@ -340,28 +340,28 @@ function EscolhaModulo() {
 
                             <div className="escolha-modulo-card-texto">
                                 <small>
-                                    Carteira e analise
+                                    Carteira e análise
                                 </small>
 
                                 <h2>
-                                    Area do contador
+                                    Área do contador
                                 </h2>
 
                                 <p>
                                     Acompanhe clientes, documentos,
-                                    pendencias, classificacoes e visao
-                                    tributaria resumida.
+                                    pendências, classificações e visão
+                                    tributária resumida.
                                 </p>
 
                                 <ul>
                                     <li>Carteira de clientes</li>
-                                    <li>Documentos em analise</li>
-                                    <li>Indicadores tributarios</li>
+                                    <li>Documentos em análise</li>
+                                    <li>Indicadores tributários</li>
                                 </ul>
                             </div>
 
                             <strong className="escolha-modulo-acao">
-                                Abrir area do contador
+                                Abrir área do contador
                                 <span aria-hidden="true">
                                     -&gt;
                                 </span>
@@ -370,7 +370,7 @@ function EscolhaModulo() {
                     </section>
 
                     <p className="escolha-modulo-ajuda">
-                        Voce podera voltar para esta tela e trocar de area
+                        Você poderá voltar para esta tela e trocar de área
                         quando quiser.
                     </p>
                 </main>

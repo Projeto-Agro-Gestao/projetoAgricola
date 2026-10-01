@@ -13,7 +13,7 @@ function AlternadorModulos() {
             ativo: location.pathname === '/dashboard',
             icone: 'In',
             rota: '/dashboard',
-            texto: 'Inicio',
+            texto: 'Início',
         },
         {
             ativo: location.pathname.startsWith('/dashboard/financeiro'),
@@ -55,7 +55,7 @@ function AlternadorModulos() {
 
     return (
         <nav
-            aria-label="Alternar entre as areas do AgroGestao"
+            aria-label="Alternar entre as áreas do AgroGestão"
             className="alternador-modulos"
         >
             {itens.map((item) => (

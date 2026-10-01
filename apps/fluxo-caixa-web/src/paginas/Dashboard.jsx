@@ -27,7 +27,7 @@ const AREAS_DASHBOARD = [
     },
     {
         valor: 'PECUARIA',
-        rotulo: 'Pecuaria',
+        rotulo: 'Pecuária',
     },
 ]
 
@@ -1221,7 +1221,7 @@ function Dashboard() {
                         </div>
 
                         <div
-                            aria-label="Area produtiva"
+                            aria-label="Área produtiva"
                             className="dashboard-area-filtro"
                         >
                             {AREAS_DASHBOARD.map((area) => (
