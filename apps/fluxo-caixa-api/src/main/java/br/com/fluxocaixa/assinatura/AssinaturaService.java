@@ -3,6 +3,7 @@ package br.com.fluxocaixa.assinatura;
 import br.com.fluxocaixa.categoria.AreaCategoria;
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.categoria.CategoriaRepository;
+import br.com.fluxocaixa.comum.documento.DocumentoFiscalValidator;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
@@ -34,6 +35,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -44,6 +46,12 @@ public class AssinaturaService {
 
     private static final String CATEGORIA_ASSINATURA =
             "Assinatura Gestao Agricola";
+
+    private static final Set<String> UFS_BRASILEIRAS = Set.of(
+            "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO",
+            "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI",
+            "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+    );
 
     private final AssinaturaRepository assinaturaRepository;
     private final AssinaturaConfiguracaoRepository configuracaoRepository;
@@ -177,13 +185,20 @@ public class AssinaturaService {
         Empresa empresa = empresaRepository.findById(empresaId)
                 .orElseThrow(() ->
                         new EmpresaNaoEncontradaException(empresaId)
-                );
+        );
 
         String documento = validarDocumentoPagamento(request);
+        boolean semNumero = Boolean.TRUE.equals(request.semNumero());
+        String numero = semNumero
+                ? null
+                : normalizarTextoObrigatorio(
+                        request.numero(),
+                        "Informe o numero ou marque Sem numero."
+                );
 
         empresa.alterarDadosCobranca(
                 documento,
-                normalizarDigitosObrigatorio(
+                normalizarCepObrigatorio(
                         request.cep(),
                         "Informe o CEP para pagamento."
                 ),
@@ -191,9 +206,12 @@ public class AssinaturaService {
                         request.rua(),
                         "Informe a rua para pagamento."
                 ),
-                normalizarTextoObrigatorio(
-                        request.numero(),
-                        "Informe o numero para pagamento."
+                numero,
+                semNumero,
+                normalizarTextoOpcionalLimitado(
+                        request.complemento(),
+                        50,
+                        "Complemento deve ter no maximo 50 caracteres."
                 ),
                 normalizarTextoObrigatorio(
                         request.bairro(),
@@ -205,6 +223,11 @@ public class AssinaturaService {
                 ),
                 normalizarEstadoObrigatorio(
                         request.estado()
+                ),
+                normalizarTextoOpcionalLimitado(
+                        request.observacoesEndereco(),
+                        500,
+                        "Observacoes do endereco devem ter no maximo 500 caracteres."
                 )
         );
 
@@ -723,10 +746,14 @@ public class AssinaturaService {
                                         : usuarioPrincipal.getTelefone(),
                                 empresa.getCepCobranca(),
                                 empresa.getRuaCobranca(),
-                                empresa.getNumeroCobranca(),
+                                empresa.isSemNumeroCobranca()
+                                        ? "S/N"
+                                        : empresa.getNumeroCobranca(),
+                                empresa.getComplementoCobranca(),
                                 empresa.getBairroCobranca(),
                                 "empresa-" + empresa.getId(),
-                                true
+                                true,
+                                empresa.getObservacoesEnderecoCobranca()
                         )
                 );
 
@@ -893,15 +920,17 @@ public class AssinaturaService {
             );
         }
 
-        if ("CPF".equals(tipo) && documento.length() != 11) {
+        if ("CPF".equals(tipo)
+                && !DocumentoFiscalValidator.cpfValido(documento)) {
             throw new IllegalArgumentException(
-                    "CPF deve possuir 11 digitos."
+                    "CPF invalido."
             );
         }
 
-        if ("CNPJ".equals(tipo) && documento.length() != 14) {
+        if ("CNPJ".equals(tipo)
+                && !DocumentoFiscalValidator.cnpjValido(documento)) {
             throw new IllegalArgumentException(
-                    "CNPJ deve possuir 14 digitos."
+                    "CNPJ invalido."
             );
         }
 
@@ -913,7 +942,7 @@ public class AssinaturaService {
 
         if (!acessoService.dadosCobrancaCompletos(assinatura)) {
             throw new IllegalArgumentException(
-                    "Preencha CPF ou CNPJ, CEP, rua, numero, bairro, cidade e estado antes de gerar Pix ou boleto. Esses dados sao exigidos pelo orgao cobrador."
+                    "Preencha CPF ou CNPJ, CEP, rua, bairro, cidade, estado e numero ou marque Sem numero antes de gerar Pix ou boleto."
             );
         }
     }
@@ -935,6 +964,21 @@ public class AssinaturaService {
         return digitos;
     }
 
+    private String normalizarCepObrigatorio(
+            String valor,
+            String mensagem) {
+
+        String cep = normalizarDigitosObrigatorio(valor, mensagem);
+
+        if (cep.length() != 8) {
+            throw new IllegalArgumentException(
+                    "CEP deve possuir 8 digitos."
+            );
+        }
+
+        return cep;
+    }
+
     private String normalizarTextoObrigatorio(
             String valor,
             String mensagem) {
@@ -944,6 +988,24 @@ public class AssinaturaService {
         }
 
         return valor.trim().replaceAll("\\s+", " ");
+    }
+
+    private String normalizarTextoOpcionalLimitado(
+            String valor,
+            int limite,
+            String mensagem) {
+
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+
+        String normalizado = valor.trim().replaceAll("\\s+", " ");
+
+        if (normalizado.length() > limite) {
+            throw new IllegalArgumentException(mensagem);
+        }
+
+        return normalizado;
     }
 
     private String normalizarEstadoObrigatorio(String estado) {
@@ -956,6 +1018,12 @@ public class AssinaturaService {
         if (valor.length() != 2) {
             throw new IllegalArgumentException(
                     "Informe o estado com 2 letras, como SC, PR ou RS."
+            );
+        }
+
+        if (!UFS_BRASILEIRAS.contains(valor)) {
+            throw new IllegalArgumentException(
+                    "Informe uma UF brasileira valida."
             );
         }
 

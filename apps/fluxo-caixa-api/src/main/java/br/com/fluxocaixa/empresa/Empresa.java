@@ -34,6 +34,12 @@ public class Empresa {
     @Column(name = "numero_cobranca", length = 20)
     private String numeroCobranca;
 
+    @Column(name = "sem_numero_cobranca", nullable = false)
+    private boolean semNumeroCobranca;
+
+    @Column(name = "complemento_cobranca", length = 50)
+    private String complementoCobranca;
+
     @Column(name = "bairro_cobranca", length = 100)
     private String bairroCobranca;
 
@@ -42,6 +48,9 @@ public class Empresa {
 
     @Column(name = "estado_cobranca", length = 2)
     private String estadoCobranca;
+
+    @Column(name = "observacoes_endereco_cobranca", length = 500)
+    private String observacoesEnderecoCobranca;
 
     @Column(nullable = false)
     private boolean ativo = true;
@@ -120,6 +129,14 @@ public class Empresa {
         return numeroCobranca;
     }
 
+    public boolean isSemNumeroCobranca() {
+        return semNumeroCobranca;
+    }
+
+    public String getComplementoCobranca() {
+        return complementoCobranca;
+    }
+
     public String getBairroCobranca() {
         return bairroCobranca;
     }
@@ -130,6 +147,10 @@ public class Empresa {
 
     public String getEstadoCobranca() {
         return estadoCobranca;
+    }
+
+    public String getObservacoesEnderecoCobranca() {
+        return observacoesEnderecoCobranca;
     }
 
     public boolean isAtivo() {
@@ -165,17 +186,23 @@ public class Empresa {
             String cepCobranca,
             String ruaCobranca,
             String numeroCobranca,
+            boolean semNumeroCobranca,
+            String complementoCobranca,
             String bairroCobranca,
             String cidadeCobranca,
-            String estadoCobranca) {
+            String estadoCobranca,
+            String observacoesEnderecoCobranca) {
 
         this.documento = documento;
         this.cepCobranca = cepCobranca;
         this.ruaCobranca = ruaCobranca;
         this.numeroCobranca = numeroCobranca;
+        this.semNumeroCobranca = semNumeroCobranca;
+        this.complementoCobranca = complementoCobranca;
         this.bairroCobranca = bairroCobranca;
         this.cidadeCobranca = cidadeCobranca;
         this.estadoCobranca = estadoCobranca;
+        this.observacoesEnderecoCobranca = observacoesEnderecoCobranca;
     }
 
     public void configurarAtividades(

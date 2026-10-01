@@ -80,6 +80,98 @@ async function obterMensagemDeErro(resposta, padrao) {
     return dados?.mensagem ?? padrao
 }
 
+function somenteDigitos(valor) {
+    return String(valor ?? '').replace(/\D/g, '')
+}
+
+function formatarCep(valor) {
+    const digitos = somenteDigitos(valor).slice(0, 8)
+    return digitos.length > 5
+        ? `${digitos.slice(0, 5)}-${digitos.slice(5)}`
+        : digitos
+}
+
+function formatarDocumento(valor, tipoDocumento) {
+    const digitos = somenteDigitos(valor)
+
+    if (tipoDocumento === 'CPF') {
+        const cpf = digitos.slice(0, 11)
+        return cpf
+            .replace(/^(\d{3})(\d)/, '$1.$2')
+            .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+            .replace(/\.(\d{3})(\d)/, '.$1-$2')
+    }
+
+    const cnpj = digitos.slice(0, 14)
+    return cnpj
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2')
+}
+
+function digitosRepetidos(digitos) {
+    return /^(\d)\1+$/.test(digitos)
+}
+
+function cpfValido(valor) {
+    const digitos = somenteDigitos(valor)
+
+    if (digitos.length !== 11 || digitosRepetidos(digitos)) {
+        return false
+    }
+
+    let soma = 0
+    for (let indice = 0; indice < 9; indice += 1) {
+        soma += Number(digitos[indice]) * (10 - indice)
+    }
+
+    let verificador = 11 - (soma % 11)
+    if (verificador >= 10) {
+        verificador = 0
+    }
+
+    if (verificador !== Number(digitos[9])) {
+        return false
+    }
+
+    soma = 0
+    for (let indice = 0; indice < 10; indice += 1) {
+        soma += Number(digitos[indice]) * (11 - indice)
+    }
+
+    verificador = 11 - (soma % 11)
+    if (verificador >= 10) {
+        verificador = 0
+    }
+
+    return verificador === Number(digitos[10])
+}
+
+function cnpjValido(valor) {
+    const digitos = somenteDigitos(valor)
+
+    if (digitos.length !== 14 || digitosRepetidos(digitos)) {
+        return false
+    }
+
+    const calcularDigito = (tamanho) => {
+        const pesos = tamanho === 12
+            ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+            : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        const soma = pesos.reduce(
+            (total, peso, indice) =>
+                total + Number(digitos[indice]) * peso,
+            0,
+        )
+        const resto = soma % 11
+        return resto < 2 ? 0 : 11 - resto
+    }
+
+    return calcularDigito(12) === Number(digitos[12])
+        && calcularDigito(13) === Number(digitos[13])
+}
+
 function PlanoPagamentos() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
@@ -92,6 +184,7 @@ function PlanoPagamentos() {
     const [gerando, setGerando] = useState('')
     const [salvandoDocumento, setSalvandoDocumento] = useState(false)
     const [emitindoNota, setEmitindoNota] = useState(false)
+    const [consultandoCep, setConsultandoCep] = useState(false)
     const [dadosCobranca, setDadosCobranca] =
         useState({
             tipoDocumento: 'CPF',
@@ -99,11 +192,14 @@ function PlanoPagamentos() {
             cep: '',
             rua: '',
             numero: '',
+            semNumero: false,
+            complemento: '',
             bairro: '',
             cidade: '',
             estado: '',
             telefone: '',
             email: '',
+            observacoesEndereco: '',
         })
 
     const empresaId = sessao?.usuario?.empresaId
@@ -156,11 +252,18 @@ function PlanoPagamentos() {
                 cep: novosDados.resumo?.cepCobranca ?? '',
                 rua: novosDados.resumo?.ruaCobranca ?? '',
                 numero: novosDados.resumo?.numeroCobranca ?? '',
+                semNumero:
+                    novosDados.resumo?.semNumeroCobranca ?? false,
+                complemento:
+                    novosDados.resumo?.complementoCobranca ?? '',
                 bairro: novosDados.resumo?.bairroCobranca ?? '',
                 cidade: novosDados.resumo?.cidadeCobranca ?? '',
                 estado: novosDados.resumo?.estadoCobranca ?? '',
                 telefone: novosDados.resumo?.telefoneCobranca ?? '',
                 email: novosDados.resumo?.emailCobranca ?? '',
+                observacoesEndereco:
+                    novosDados.resumo?.observacoesEnderecoCobranca
+                    ?? '',
             })
             setMensagem('')
         } catch (erro) {
@@ -239,22 +342,97 @@ function PlanoPagamentos() {
     }
 
     function documentoValido() {
-        const digitos = dadosCobranca.documento
-            .replace(/\D/g, '')
-
         return dadosCobranca.tipoDocumento === 'CPF'
-            ? digitos.length === 11
-            : digitos.length === 14
+            ? cpfValido(dadosCobranca.documento)
+            : cnpjValido(dadosCobranca.documento)
     }
 
     function dadosCobrancaCompletos() {
         return documentoValido()
-            && dadosCobranca.cep.replace(/\D/g, '').length >= 8
+            && somenteDigitos(dadosCobranca.cep).length === 8
             && dadosCobranca.rua.trim()
-            && dadosCobranca.numero.trim()
+            && (
+                dadosCobranca.semNumero
+                || dadosCobranca.numero.trim()
+            )
             && dadosCobranca.bairro.trim()
             && dadosCobranca.cidade.trim()
             && dadosCobranca.estado.trim().length === 2
+    }
+
+    async function consultarCep() {
+        const cep = somenteDigitos(dadosCobranca.cep)
+
+        if (!cep) {
+            return
+        }
+
+        if (cep.length !== 8) {
+            setMensagem('CEP deve possuir 8 digitos.')
+            return
+        }
+
+        try {
+            setConsultandoCep(true)
+            setMensagem('Buscando endereco...')
+
+            const resposta = await fetch(
+                `${API_URL}/empresas/${empresaId}/assinatura/cep/${cep}`,
+                {
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                    },
+                },
+            )
+
+            if (resposta.status === 401) {
+                limparSessao()
+                navigate('/login', { replace: true })
+                return
+            }
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(
+                        resposta,
+                        'Nao foi possivel consultar o CEP automaticamente. Preencha o endereco manualmente.',
+                    ),
+                )
+            }
+
+            const endereco = await resposta.json()
+
+            if (!endereco?.logradouro
+                && !endereco?.bairro
+                && !endereco?.cidade
+                && !endereco?.uf) {
+                setMensagem(
+                    endereco?.mensagem
+                    ?? 'CEP nao encontrado. Preencha o endereco manualmente.',
+                )
+                return
+            }
+
+            setDadosCobranca((estadoAtual) => ({
+                ...estadoAtual,
+                cep: formatarCep(endereco.cep ?? cep),
+                rua: endereco.logradouro ?? estadoAtual.rua,
+                bairro: endereco.bairro ?? estadoAtual.bairro,
+                cidade: endereco.cidade ?? estadoAtual.cidade,
+                estado: (endereco.uf ?? estadoAtual.estado)
+                    .toUpperCase(),
+            }))
+            setMensagem('Endereco localizado. Confira os dados antes de salvar.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel consultar o CEP automaticamente. Preencha o endereco manualmente.',
+            )
+        } finally {
+            setConsultandoCep(false)
+        }
     }
 
     async function salvarDocumentoPagamento(evento) {
@@ -267,14 +445,35 @@ function PlanoPagamentos() {
             if (!documentoValido()) {
                 throw new Error(
                     dadosCobranca.tipoDocumento === 'CPF'
-                        ? 'CPF deve possuir 11 digitos.'
-                        : 'CNPJ deve possuir 14 digitos.',
+                        ? 'CPF invalido.'
+                        : 'CNPJ invalido.',
+                )
+            }
+
+            if (somenteDigitos(dadosCobranca.cep).length !== 8) {
+                throw new Error('CEP deve possuir 8 digitos.')
+            }
+
+            if (
+                dadosCobranca.complemento.trim().length > 50
+            ) {
+                throw new Error(
+                    'Complemento deve ter no maximo 50 caracteres.',
+                )
+            }
+
+            if (
+                !dadosCobranca.semNumero
+                && !dadosCobranca.numero.trim()
+            ) {
+                throw new Error(
+                    'Informe o numero ou marque Sem numero.',
                 )
             }
 
             if (!dadosCobrancaCompletos()) {
                 throw new Error(
-                    'Preencha CPF ou CNPJ, CEP, rua, numero, bairro, cidade e estado. Esses dados sao exigidos pelo orgao cobrador.',
+                    'Preencha CPF ou CNPJ, CEP, rua, bairro, cidade, estado e numero ou marque Sem numero.',
                 )
             }
 
@@ -294,12 +493,19 @@ function PlanoPagamentos() {
                             dadosCobranca.documento,
                         cep: dadosCobranca.cep,
                         rua: dadosCobranca.rua,
-                        numero: dadosCobranca.numero,
+                        numero: dadosCobranca.semNumero
+                            ? null
+                            : dadosCobranca.numero,
+                        semNumero: dadosCobranca.semNumero,
+                        complemento:
+                            dadosCobranca.complemento,
                         bairro: dadosCobranca.bairro,
                         cidade: dadosCobranca.cidade,
                         estado: dadosCobranca.estado,
                         telefone: dadosCobranca.telefone,
                         email: dadosCobranca.email,
+                        observacoesEndereco:
+                            dadosCobranca.observacoesEndereco,
                     }),
                 },
             )
@@ -545,6 +751,7 @@ function PlanoPagamentos() {
                                     setDadosCobranca({
                                         ...dadosCobranca,
                                         tipoDocumento: 'CPF',
+                                        documento: '',
                                     })
                                 }
                                 type="radio"
@@ -563,6 +770,7 @@ function PlanoPagamentos() {
                                     setDadosCobranca({
                                         ...dadosCobranca,
                                         tipoDocumento: 'CNPJ',
+                                        documento: '',
                                     })
                                 }
                                 type="radio"
@@ -583,7 +791,10 @@ function PlanoPagamentos() {
                             onChange={(evento) =>
                                 setDadosCobranca({
                                     ...dadosCobranca,
-                                    documento: evento.target.value,
+                                    documento: formatarDocumento(
+                                        evento.target.value,
+                                        dadosCobranca.tipoDocumento,
+                                    ),
                                 })
                             }
                             placeholder={
@@ -600,16 +811,22 @@ function PlanoPagamentos() {
                             CEP
                             <input
                                 inputMode="numeric"
-                                maxLength={12}
+                                maxLength={9}
+                                onBlur={consultarCep}
                                 onChange={(evento) =>
                                     setDadosCobranca({
                                         ...dadosCobranca,
-                                        cep: evento.target.value,
+                                        cep: formatarCep(
+                                            evento.target.value,
+                                        ),
                                     })
                                 }
-                                placeholder="Ex.: 88000000"
+                                placeholder="Ex.: 88813-600"
                                 value={dadosCobranca.cep}
                             />
+                            {consultandoCep && (
+                                <small>Buscando endereco...</small>
+                            )}
                         </label>
 
                         <label className="plano-documento-campo">
@@ -647,6 +864,7 @@ function PlanoPagamentos() {
                         <label className="plano-documento-campo">
                             Numero
                             <input
+                                disabled={dadosCobranca.semNumero}
                                 maxLength={20}
                                 onChange={(evento) =>
                                     setDadosCobranca({
@@ -656,6 +874,44 @@ function PlanoPagamentos() {
                                 }
                                 value={dadosCobranca.numero}
                             />
+                        </label>
+
+                        <label className="plano-documento-campo plano-checkbox">
+                            <input
+                                checked={dadosCobranca.semNumero}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        semNumero:
+                                            evento.target.checked,
+                                        numero: evento.target.checked
+                                            ? ''
+                                            : dadosCobranca.numero,
+                                    })
+                                }
+                                type="checkbox"
+                            />
+                            Sem numero
+                        </label>
+                    </div>
+
+                    <div className="plano-documento-grade">
+                        <label className="plano-documento-campo">
+                            Complemento
+                            <input
+                                maxLength={50}
+                                onChange={(evento) =>
+                                    setDadosCobranca({
+                                        ...dadosCobranca,
+                                        complemento: evento.target.value,
+                                    })
+                                }
+                                placeholder="Apartamento, bloco, sala..."
+                                value={dadosCobranca.complemento}
+                            />
+                            <small>
+                                {dadosCobranca.complemento.length}/50
+                            </small>
                         </label>
 
                         <label className="plano-documento-campo">
@@ -687,6 +943,22 @@ function PlanoPagamentos() {
                         />
                     </label>
 
+                    <label className="plano-documento-campo plano-documento-largo">
+                        Observacoes do endereco
+                        <textarea
+                            maxLength={500}
+                            onChange={(evento) =>
+                                setDadosCobranca({
+                                    ...dadosCobranca,
+                                    observacoesEndereco:
+                                        evento.target.value,
+                                })
+                            }
+                            placeholder="Entrada, referencia rural ou orientacao de entrega."
+                            value={dadosCobranca.observacoesEndereco}
+                        />
+                    </label>
+
                     <button
                         disabled={salvandoDocumento}
                         type="submit"
@@ -698,10 +970,11 @@ function PlanoPagamentos() {
                 </form>
 
                 <p className="plano-documento-ajuda">
-                    CPF ou CNPJ, CEP, rua, numero, bairro, cidade e
-                    estado sao exigencias do orgao cobrador para gerar
-                    Pix ou boleto. Telefone e e-mail sao usados quando
-                    estiverem disponiveis no cadastro.
+                    CPF ou CNPJ, CEP, rua, bairro, cidade, estado e
+                    numero ou Sem numero sao exigencias para gerar Pix
+                    ou boleto. A busca por CEP apenas ajuda no
+                    preenchimento; voce pode corrigir o endereco antes
+                    de salvar.
                 </p>
             </section>
 

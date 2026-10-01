@@ -269,9 +269,12 @@ public class AssinaturaAcessoService {
                 assinatura.getEmpresa().getCepCobranca(),
                 assinatura.getEmpresa().getRuaCobranca(),
                 assinatura.getEmpresa().getNumeroCobranca(),
+                assinatura.getEmpresa().isSemNumeroCobranca(),
+                assinatura.getEmpresa().getComplementoCobranca(),
                 assinatura.getEmpresa().getBairroCobranca(),
                 assinatura.getEmpresa().getCidadeCobranca(),
                 assinatura.getEmpresa().getEstadoCobranca(),
+                assinatura.getEmpresa().getObservacoesEnderecoCobranca(),
                 usuarioPrincipal == null
                         ? null
                         : usuarioPrincipal.getTelefone(),
@@ -286,7 +289,10 @@ public class AssinaturaAcessoService {
         return possuiValor(assinatura.getEmpresa().getDocumento())
                 && possuiValor(assinatura.getEmpresa().getCepCobranca())
                 && possuiValor(assinatura.getEmpresa().getRuaCobranca())
-                && possuiValor(assinatura.getEmpresa().getNumeroCobranca())
+                && (
+                        assinatura.getEmpresa().isSemNumeroCobranca()
+                                || possuiValor(assinatura.getEmpresa().getNumeroCobranca())
+                )
                 && possuiValor(assinatura.getEmpresa().getBairroCobranca())
                 && possuiValor(assinatura.getEmpresa().getCidadeCobranca())
                 && possuiValor(assinatura.getEmpresa().getEstadoCobranca());

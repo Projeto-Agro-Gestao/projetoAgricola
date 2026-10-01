@@ -15,8 +15,11 @@ public record AtualizarDocumentoPagamentoRequest(
         @NotBlank(message = "Informe a rua")
         String rua,
 
-        @NotBlank(message = "Informe o numero")
         String numero,
+
+        Boolean semNumero,
+
+        String complemento,
 
         @NotBlank(message = "Informe o bairro")
         String bairro,
@@ -29,6 +32,7 @@ public record AtualizarDocumentoPagamentoRequest(
 
         String telefone,
 
-        String email
+        String email,
+        String observacoesEndereco
 ) {
 }

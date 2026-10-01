@@ -162,12 +162,48 @@
     gap: 8px;
 }
 
-.plano-documento-campo input {
+.plano-documento-campo input,
+.plano-documento-campo textarea {
     background: #fbfff8;
     border: 1px solid #cfe0c7;
     border-radius: 8px;
+    padding: 0 14px;
+}
+
+.plano-documento-campo input {
+    min-height: 48px;
+}
+
+.plano-documento-campo textarea {
+    min-height: 96px;
+    padding: 14px;
+    resize: vertical;
+}
+
+.plano-documento-campo small {
+    color: #6a7a63;
+    font-size: .78rem;
+    font-weight: 600;
+}
+
+.plano-documento-largo {
+    grid-column: 1 / -1;
+}
+
+.plano-checkbox {
+    align-content: center;
+    background: #f2f8ee;
+    border: 1px solid #dbe8d5;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
     min-height: 48px;
     padding: 0 14px;
+}
+
+.plano-checkbox input {
+    min-height: auto;
+    width: auto;
 }
 
 .plano-documento-ajuda {

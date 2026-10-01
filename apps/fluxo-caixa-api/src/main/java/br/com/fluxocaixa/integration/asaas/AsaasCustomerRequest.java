@@ -8,8 +8,10 @@ public record AsaasCustomerRequest(
         String postalCode,
         String address,
         String addressNumber,
+        String complement,
         String province,
         String externalReference,
-        boolean notificationDisabled
+        boolean notificationDisabled,
+        String observations
 ) {
 }

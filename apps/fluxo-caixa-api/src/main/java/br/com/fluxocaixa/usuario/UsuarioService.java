@@ -147,6 +147,8 @@ public class UsuarioService {
                 normalizarTextoOpcional(
                         request.numeroCobranca()
                 ),
+                false,
+                null,
                 normalizarTextoOpcional(
                         request.bairroCobranca()
                 ),
@@ -155,7 +157,8 @@ public class UsuarioService {
                 ),
                 normalizarEstadoOpcional(
                         request.estadoCobranca()
-                )
+                ),
+                null
         );
         usuario.getEmpresa().configurarAtividades(
                 request.agriculturaAtiva(),

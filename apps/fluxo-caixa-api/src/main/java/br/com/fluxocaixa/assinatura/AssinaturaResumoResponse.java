@@ -30,9 +30,12 @@ public record AssinaturaResumoResponse(
         String cepCobranca,
         String ruaCobranca,
         String numeroCobranca,
+        boolean semNumeroCobranca,
+        String complementoCobranca,
         String bairroCobranca,
         String cidadeCobranca,
         String estadoCobranca,
+        String observacoesEnderecoCobranca,
         String telefoneCobranca,
         String emailCobranca,
         boolean dadosCobrancaCompletos

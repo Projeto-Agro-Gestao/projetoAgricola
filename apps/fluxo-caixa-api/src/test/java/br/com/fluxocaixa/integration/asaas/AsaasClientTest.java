@@ -165,9 +165,11 @@ class AsaasClientTest {
                                     "88000000",
                                     "Rua Principal",
                                     "123",
+                                    null,
                                     "Centro",
                                     "empresa-1",
-                                    true
+                                    true,
+                                    null
                             )
                     );
 

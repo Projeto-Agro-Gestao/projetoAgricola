@@ -16,13 +16,16 @@ public class AssinaturaController {
 
     private final AssinaturaService assinaturaService;
     private final NotaFiscalService notaFiscalService;
+    private final CepLookupService cepLookupService;
 
     public AssinaturaController(
             AssinaturaService assinaturaService,
-            NotaFiscalService notaFiscalService) {
+            NotaFiscalService notaFiscalService,
+            CepLookupService cepLookupService) {
 
         this.assinaturaService = assinaturaService;
         this.notaFiscalService = notaFiscalService;
+        this.cepLookupService = cepLookupService;
     }
 
     @GetMapping
@@ -44,6 +47,15 @@ public class AssinaturaController {
                         empresaId,
                         request
                 )
+        );
+    }
+
+    @GetMapping("/cep/{cep}")
+    public ResponseEntity<CepConsultaResponse> consultarCep(
+            @PathVariable String cep) {
+
+        return ResponseEntity.ok(
+                cepLookupService.consultar(cep)
         );
     }
 
