@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Service
 public class ReceitaFederalCnpjService {
@@ -32,19 +33,28 @@ public class ReceitaFederalCnpjService {
             );
         }
 
-        JsonNode resposta = restClient
-                .get()
-                .uri(baseUrl + "/" + normalizado)
-                .headers(headers -> {
-                    if (!token.isBlank()) {
-                        headers.set(
-                                HttpHeaders.AUTHORIZATION,
-                                "Bearer " + token
-                        );
-                    }
-                })
-                .retrieve()
-                .body(JsonNode.class);
+        JsonNode resposta;
+
+        try {
+            resposta = restClient
+                    .get()
+                    .uri(baseUrl + "/" + normalizado)
+                    .headers(headers -> {
+                        if (!token.isBlank()) {
+                            headers.set(
+                                    HttpHeaders.AUTHORIZATION,
+                                    "Bearer " + token
+                            );
+                        }
+                    })
+                    .retrieve()
+                    .body(JsonNode.class);
+        } catch (RestClientException exception) {
+            throw new ConsultaCnpjIndisponivelException(
+                    "Consulta de CNPJ indisponivel no momento. Tente novamente mais tarde.",
+                    exception
+            );
+        }
 
         if (resposta == null || resposta.isNull()) {
             throw new IllegalStateException(

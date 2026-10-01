@@ -11,6 +11,7 @@ import br.com.fluxocaixa.categoria.TransferenciaCategoriaInvalidaException;
 import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.fornecedor.FornecedorComComprasException;
+import br.com.fluxocaixa.fornecedor.ConsultaCnpjIndisponivelException;
 import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.movimentacao.MovimentacaoNaoEncontradaException;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
@@ -177,6 +178,27 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.CONFLICT,
                 "Fornecedor possui compras",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(ConsultaCnpjIndisponivelException.class)
+    public ResponseEntity<ErroResposta>
+    tratarConsultaCnpjIndisponivel(
+            ConsultaCnpjIndisponivelException exception,
+            HttpServletRequest request) {
+
+        log.warn(
+                "Consulta externa de CNPJ indisponivel em {}: {}",
+                request.getRequestURI(),
+                exception.getMessage()
+        );
+
+        return criarResposta(
+                HttpStatus.BAD_GATEWAY,
+                "Consulta de CNPJ indisponivel",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()
