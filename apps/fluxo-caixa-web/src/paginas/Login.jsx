@@ -18,6 +18,19 @@ import {
 import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
 import './Autenticacao.css'
 
+function mensagemDeFalhaConexao(erro, mensagemPadrao) {
+    if (
+        erro instanceof TypeError &&
+        erro.message === 'Failed to fetch'
+    ) {
+        return 'Nao foi possivel conectar ao servidor do AgroGestao. Aguarde alguns instantes e tente novamente.'
+    }
+
+    return erro instanceof Error
+        ? erro.message
+        : mensagemPadrao
+}
+
 function Login() {
     const navigate = useNavigate()
 
@@ -129,9 +142,10 @@ function Login() {
             )
         } catch (erro) {
             setMensagem(
-                erro instanceof Error
-                    ? erro.message
-                    : 'Não foi possível entrar na conta',
+                mensagemDeFalhaConexao(
+                    erro,
+                    'Não foi possível entrar na conta',
+                ),
             )
         } finally {
             setCarregando(false)
@@ -201,9 +215,10 @@ function Login() {
             )
         } catch (erro) {
             setMensagem(
-                erro instanceof Error
-                    ? erro.message
-                    : 'Nao foi possivel entrar com Google',
+                mensagemDeFalhaConexao(
+                    erro,
+                    'Nao foi possivel entrar com Google',
+                ),
             )
         } finally {
             setCarregandoGoogle(false)
