@@ -51,6 +51,106 @@ const REGIMES = [
     'OUTRO',
 ]
 
+const REFERENCIAS_TRIBUTARIAS = {
+    MEI: {
+        titulo: 'MEI - DAS mensal',
+        descricao:
+            'Consulte os valores oficiais do DAS-MEI para a competencia atual antes de salvar o parametro.',
+        links: [
+            [
+                'Portal gov.br - valores do DAS-MEI',
+                'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor/perguntas-frequentes/pagamento-da-contribuicao-mensal-carne-mensal/qual-o-valor-das-contribuicoes',
+            ],
+            [
+                'Portal do Simples Nacional',
+                'https://www8.receita.fazenda.gov.br/SimplesNacional/',
+            ],
+        ],
+    },
+    SIMPLES_NACIONAL: {
+        titulo: 'Simples Nacional - anexos e faixas',
+        descricao:
+            'Use os anexos, faixa de receita, aliquota nominal e parcela a deduzir validados pelo contador.',
+        links: [
+            [
+                'Portal oficial do Simples Nacional',
+                'https://www8.receita.fazenda.gov.br/SimplesNacional/',
+            ],
+            [
+                'Anexos e tabelas do Simples Nacional',
+                'https://normas.receita.fazenda.gov.br/sijut2consulta/normas..receita.fazenda.gov.br/sijut2consulta/anexoOutros.action?idArquivoBinario=48430',
+            ],
+        ],
+    },
+    LUCRO_PRESUMIDO: {
+        titulo: 'Lucro Presumido - IRPJ/CSLL',
+        descricao:
+            'Confira aliquotas, adicional, percentuais de presuncao e parametros aplicaveis ao cliente.',
+        links: [
+            [
+                'Receita Federal - IRPJ',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/tributos/IRPJ',
+            ],
+            [
+                'Receita Federal - CSLL',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/tributos/CSLL',
+            ],
+        ],
+    },
+    LUCRO_REAL: {
+        titulo: 'Lucro Real - apuracao por resultado',
+        descricao:
+            'Configure os parametros a partir do resultado ajustado, sem misturar resultado financeiro com base tributaria definitiva.',
+        links: [
+            [
+                'Receita Federal - IRPJ',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/tributos/IRPJ',
+            ],
+            [
+                'Receita Federal - CSLL',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/tributos/CSLL',
+            ],
+        ],
+    },
+    PESSOA_FISICA: {
+        titulo: 'Pessoa fisica - orientacoes Receita Federal',
+        descricao:
+            'Valide a regra aplicavel ao contribuinte antes de informar parametros de simulacao.',
+        links: [
+            [
+                'Receita Federal - Meu Imposto de Renda',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda',
+            ],
+        ],
+    },
+    PRODUTOR_RURAL_PF: {
+        titulo: 'Produtor rural PF - atividade rural',
+        descricao:
+            'Use as orientacoes do Livro Caixa da Atividade Rural e LCDPR quando aplicavel.',
+        links: [
+            [
+                'Livro Caixa da Atividade Rural',
+                'https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/download/pgd/lcar',
+            ],
+            [
+                'Apurar resultado da atividade rural',
+                'https://www.gov.br/pt-br/servicos/apurar-resultado-da-atividade-rural',
+            ],
+        ],
+    },
+    OUTRO: {
+        titulo: 'Outro regime - parametro manual',
+        descricao:
+            'Cadastre a aliquota e deducao somente depois de validar a regra aplicavel.',
+        links: [
+            [
+                'Receita Federal - orientacao tributaria',
+                'https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria',
+            ],
+        ],
+    },
+}
+
 function obterSessao() {
     try {
         const token = localStorage.getItem('agrogestao_token')
@@ -126,6 +226,13 @@ function hojeCompetencia() {
     return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`
 }
 
+function referenciaTributaria(regime) {
+    return (
+        REFERENCIAS_TRIBUTARIAS[regime] ??
+        REFERENCIAS_TRIBUTARIAS.OUTRO
+    )
+}
+
 function ContadorCarteira() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
@@ -174,6 +281,24 @@ function ContadorCarteira() {
     const [carregando, setCarregando] = useState(false)
     const [carregandoCliente, setCarregandoCliente] = useState(false)
     const [salvando, setSalvando] = useState(false)
+
+    const regimeAtual = useMemo(
+        () =>
+            regimes.find((regime) => regime.situacao === 'ATIVO') ??
+            regimes[0] ??
+            null,
+        [regimes],
+    )
+
+    const referenciaAtual = useMemo(
+        () =>
+            referenciaTributaria(
+                formParametro.regime ||
+                    formRegime.regime ||
+                    regimeAtual?.regime,
+            ),
+        [formParametro.regime, formRegime.regime, regimeAtual],
+    )
 
     const clientesFiltrados = useMemo(() => {
         if (filtro === 'TODOS') {
@@ -567,7 +692,7 @@ function ContadorCarteira() {
         setErro('')
 
         try {
-            await requisicaoJson(
+            const regimeSalvo = await requisicaoJson(
                 `${API_URL}/contador/clientes/${clienteSelecionado.empresaId}/regimes-tributarios`,
                 {
                     method: 'POST',
@@ -581,6 +706,17 @@ function ContadorCarteira() {
                     }),
                 },
             )
+            setFormParametro((atual) => ({
+                ...atual,
+                regime: regimeSalvo.regime,
+                competencia:
+                    regimeSalvo.competencia ||
+                    atual.competencia ||
+                    formRegime.competencia,
+                nome:
+                    atual.nome ||
+                    `Parametro ${regimeSalvo.regime}`,
+            }))
             setMensagem('Configuracao tributaria salva.')
             await carregarCliente(clienteSelecionado)
         } catch (error) {
@@ -770,6 +906,33 @@ function ContadorCarteira() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [clienteSelecionado?.empresaId])
+
+    useEffect(() => {
+        if (!regimeAtual?.regime) {
+            return
+        }
+
+        setFormRegime((atual) => ({
+            ...atual,
+            regime: regimeAtual.regime,
+            dataInicio:
+                regimeAtual.dataInicio ?? atual.dataInicio,
+            competencia:
+                regimeAtual.competencia ||
+                atual.competencia ||
+                hojeCompetencia(),
+            observacao:
+                atual.observacao || regimeAtual.observacao || '',
+        }))
+        setFormParametro((atual) => ({
+            ...atual,
+            regime: regimeAtual.regime,
+            competencia:
+                regimeAtual.competencia ||
+                atual.competencia ||
+                hojeCompetencia(),
+        }))
+    }, [regimeAtual?.id])
 
     if (!sessao) {
         return null
@@ -1740,14 +1903,41 @@ function ContadorCarteira() {
                             </form>
                             <div className="contador-carteira-lista">
                                 {regimes.map((regime) => (
-                                    <div key={regime.id}>
+                                    <button
+                                        type="button"
+                                        key={regime.id}
+                                        onClick={() => {
+                                            setFormRegime((atual) => ({
+                                                ...atual,
+                                                regime: regime.regime,
+                                                dataInicio:
+                                                    regime.dataInicio ??
+                                                    atual.dataInicio,
+                                                competencia:
+                                                    regime.competencia ||
+                                                    atual.competencia,
+                                                observacao:
+                                                    regime.observacao || '',
+                                            }))
+                                            setFormParametro((atual) => ({
+                                                ...atual,
+                                                regime: regime.regime,
+                                                competencia:
+                                                    regime.competencia ||
+                                                    atual.competencia,
+                                                nome:
+                                                    atual.nome ||
+                                                    `Parametro ${regime.regime}`,
+                                            }))
+                                        }}
+                                    >
                                         <strong>{regime.regime}</strong>
                                         <span>
                                             Inicio {formatarData(regime.dataInicio)} -{' '}
                                             {regime.situacao}
                                         </span>
                                         <p>{regime.observacao}</p>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </article>
@@ -1860,6 +2050,32 @@ function ContadorCarteira() {
                                 </button>
                             </form>
                             <div className="contador-carteira-lista">
+                                <div className="contador-referencia-tributaria">
+                                    <small>Referencias oficiais</small>
+                                    <strong>{referenciaAtual.titulo}</strong>
+                                    <p>{referenciaAtual.descricao}</p>
+                                    <div>
+                                        {referenciaAtual.links.map(
+                                            ([texto, url]) => (
+                                                <a
+                                                    key={url}
+                                                    href={url}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {texto}
+                                                </a>
+                                            ),
+                                        )}
+                                    </div>
+                                    <small>
+                                        O AgroGestao nao define aliquota
+                                        automaticamente. O contador valida a
+                                        fonte e salva os parametros versionados
+                                        da competencia.
+                                    </small>
+                                </div>
+
                                 {parametros.map((parametro) => (
                                     <div key={parametro.id}>
                                         <strong>
