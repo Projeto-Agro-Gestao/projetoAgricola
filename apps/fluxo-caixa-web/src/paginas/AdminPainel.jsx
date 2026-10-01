@@ -758,6 +758,10 @@ function AdminPainel() {
         navigate('/admin/assinaturas')
     }
 
+    function abrirIntegracoes() {
+        navigate('/admin/integracoes')
+    }
+
     return (
         <main className="admin-painel">
             <header className="admin-topo">
@@ -788,6 +792,14 @@ function AdminPainel() {
                         type="button"
                     >
                         Plano e pagamentos
+                    </button>
+
+                    <button
+                        className="admin-botao-secundario"
+                        onClick={abrirIntegracoes}
+                        type="button"
+                    >
+                        Integracoes oficiais
                     </button>
 
                 </div>

@@ -27,6 +27,7 @@ const Cadastro = lazy(() => import('./paginas/Cadastro.jsx'))
 const EsqueciSenha = lazy(() => import('./paginas/EsqueciSenha.jsx'))
 const RedefinirSenha = lazy(() => import('./paginas/RedefinirSenha.jsx'))
 const AdminPainel = lazy(() => import('./paginas/AdminPainel.jsx'))
+const AdminIntegracoes = lazy(() => import('./paginas/AdminIntegracoes.jsx'))
 const Perfil = lazy(() => import('./paginas/Perfil.jsx'))
 const AppMobile = lazy(() => import('./paginas/AppMobile.jsx'))
 const PlanoPagamentos = lazy(() => import('./paginas/PlanoPagamentos.jsx'))
@@ -95,6 +96,11 @@ function App() {
                 <Route
                     path="/admin/assinaturas"
                     element={<AdminAssinaturas />}
+                />
+
+                <Route
+                    path="/admin/integracoes"
+                    element={<AdminIntegracoes />}
                 />
 
                 <Route

@@ -12,6 +12,7 @@ import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.fornecedor.FornecedorComComprasException;
 import br.com.fluxocaixa.fornecedor.ConsultaCnpjIndisponivelException;
+import br.com.fluxocaixa.integracaooficial.OfficialIntegrationException;
 import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.movimentacao.MovimentacaoNaoEncontradaException;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
@@ -202,6 +203,37 @@ public class ManipuladorGlobalDeErros {
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()
+        );
+    }
+
+    @ExceptionHandler(OfficialIntegrationException.class)
+    public ResponseEntity<ErroResposta>
+    tratarIntegracaoOficial(
+            OfficialIntegrationException exception,
+            HttpServletRequest request) {
+
+        HttpStatus status = switch (exception.getStatus()) {
+            case NAO_CONFIGURADO -> HttpStatus.SERVICE_UNAVAILABLE;
+            case CREDENCIAIS_INVALIDAS -> HttpStatus.BAD_GATEWAY;
+            case INDISPONIVEL, ERRO -> HttpStatus.BAD_GATEWAY;
+            case CONFIGURADO, CONECTADO -> HttpStatus.CONFLICT;
+        };
+
+        log.warn(
+                "Integracao oficial retornou {} em {}",
+                exception.getStatus(),
+                request.getRequestURI()
+        );
+
+        return criarResposta(
+                status,
+                "Integracao oficial indisponivel",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of(
+                        "status",
+                        exception.getStatus().name()
+                )
         );
     }
 
