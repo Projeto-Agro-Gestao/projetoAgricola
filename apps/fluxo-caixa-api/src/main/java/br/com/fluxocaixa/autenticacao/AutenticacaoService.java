@@ -13,11 +13,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Locale;
 
 @Service
 public class AutenticacaoService {
+
+    private static final ZoneId ZONA_BRASILIA =
+            ZoneId.of("America/Sao_Paulo");
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAcessoRepository usuarioAcessoRepository;
@@ -72,12 +77,13 @@ public class AutenticacaoService {
 
         if (!isAdministrador(usuario.getPapel())
                 && !usuario.possuiAcessoValido(
-                java.time.LocalDate.now()
+                LocalDate.now(ZONA_BRASILIA)
         )) {
             throw new AcessoUsuarioBloqueadoException();
         }
 
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora =
+                LocalDateTime.now(ZONA_BRASILIA);
         usuario.registrarLogin(agora);
         registrarUso(usuario, agora);
 
