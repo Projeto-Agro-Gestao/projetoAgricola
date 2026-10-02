@@ -100,6 +100,7 @@ public class CorsConfig {
         origens.add("https://projeto-agricola-gamma.vercel.app");
         origens.add("https://projeto-agricola.vercel.app");
         origens.add("https://*.vercel.app");
+        origens.add("https://projetoagricola.tadeu-ar.workers.dev");
         origens.add("http://localhost:*");
         origens.add("http://127.0.0.1:*");
 
