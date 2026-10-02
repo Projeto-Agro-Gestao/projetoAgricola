@@ -6,6 +6,7 @@ import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
 import br.com.fluxocaixa.configuracao.GoogleOAuthProperties;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,11 +109,26 @@ public class GoogleAuthService {
         String telefone =
                 normalizarTextoOpcional(request.telefone());
 
+        String documento =
+                normalizarDocumentoObrigatorio(request.documento());
+
+        if (empresaRepository.existsByDocumento(documento)) {
+            throw new DocumentoJaCadastradoException(documento);
+        }
+
         Empresa empresa = new Empresa(
                 nomeEmpresa,
-                null,
+                documento,
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
+        );
+
+        empresa.alterarDadosFiscais(
+                documento,
+                normalizarTextoOpcional(request.inscricaoEstadual()),
+                request.isentoInscricaoEstadual(),
+                normalizarTextoOpcional(request.inscricaoMunicipal()),
+                request.isentoInscricaoMunicipal()
         );
 
         Empresa empresaSalva = empresaRepository.save(empresa);
@@ -287,6 +303,25 @@ public class GoogleAuthService {
         return texto
                 .trim()
                 .replaceAll("\\s+", " ");
+    }
+
+    private String normalizarDocumentoObrigatorio(String documento) {
+
+        if (documento == null || documento.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Conclua o cadastro informando o CPF ou CNPJ da propriedade."
+            );
+        }
+
+        String digitos = documento.replaceAll("[^0-9]", "");
+
+        if (digitos.length() != 11 && digitos.length() != 14) {
+            throw new IllegalArgumentException(
+                    "Informe CPF com 11 digitos ou CNPJ com 14 digitos."
+            );
+        }
+
+        return digitos;
     }
 
     private String gerarSenhaTecnica() {

@@ -28,6 +28,28 @@ public record GoogleAuthRequest(
         )
         String telefone,
 
+        @Size(
+                max = 20,
+                message = "O documento deve possuir no maximo 20 caracteres"
+        )
+        String documento,
+
+        @Size(
+                max = 40,
+                message = "A inscricao estadual deve possuir no maximo 40 caracteres"
+        )
+        String inscricaoEstadual,
+
+        boolean isentoInscricaoEstadual,
+
+        @Size(
+                max = 40,
+                message = "A inscricao municipal deve possuir no maximo 40 caracteres"
+        )
+        String inscricaoMunicipal,
+
+        boolean isentoInscricaoMunicipal,
+
         boolean agriculturaAtiva,
         boolean pecuariaAtiva
 ) {

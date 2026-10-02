@@ -4,6 +4,7 @@ import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
 import br.com.fluxocaixa.assinatura.AssinaturaService;
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
+import br.com.fluxocaixa.empresa.DocumentoJaCadastradoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -57,15 +58,31 @@ public class UsuarioService {
                 request.telefone()
         );
 
+        String documento = normalizarDocumentoObrigatorio(
+                request.documento()
+        );
+
         if (usuarioRepository.existsByEmailIgnoreCase(email)) {
             throw new EmailJaCadastradoException();
         }
 
+        if (empresaRepository.existsByDocumento(documento)) {
+            throw new DocumentoJaCadastradoException(documento);
+        }
+
         Empresa empresa = new Empresa(
                 nomeEmpresa,
-                null,
+                documento,
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
+        );
+
+        empresa.alterarDadosFiscais(
+                documento,
+                normalizarTextoOpcional(request.inscricaoEstadual()),
+                request.isentoInscricaoEstadual(),
+                normalizarTextoOpcional(request.inscricaoMunicipal()),
+                request.isentoInscricaoMunicipal()
         );
 
         Empresa empresaSalva =
@@ -160,6 +177,13 @@ public class UsuarioService {
                 ),
                 null
         );
+        usuario.getEmpresa().alterarDadosFiscais(
+                normalizarDocumentoOpcional(request.documentoPagamento()),
+                normalizarTextoOpcional(request.inscricaoEstadual()),
+                request.isentoInscricaoEstadual(),
+                normalizarTextoOpcional(request.inscricaoMunicipal()),
+                request.isentoInscricaoMunicipal()
+        );
         usuario.getEmpresa().configurarAtividades(
                 request.agriculturaAtiva(),
                 request.pecuariaAtiva()
@@ -240,6 +264,19 @@ public class UsuarioService {
         if (digitos.length() != 11 && digitos.length() != 14) {
             throw new IllegalArgumentException(
                     "Informe CPF com 11 digitos ou CNPJ com 14 digitos."
+            );
+        }
+
+        return digitos;
+    }
+
+    private String normalizarDocumentoObrigatorio(String documento) {
+
+        String digitos = normalizarDocumentoOpcional(documento);
+
+        if (digitos == null) {
+            throw new IllegalArgumentException(
+                    "Informe o CPF ou CNPJ da propriedade."
             );
         }
 

@@ -557,6 +557,68 @@
     color: var(--primary);
 }
 
+/*
+ * Dados fiscais (fieldset opcional no cadastro)
+ */
+
+.autenticacao-dados-fiscais {
+    display: grid;
+    min-width: 0;
+    margin: 2px 0 0;
+    padding: 14px 16px;
+    gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.15);
+    background: color-mix(in oklch, var(--card) 80%, var(--background));
+}
+
+.autenticacao-dados-fiscais legend {
+    padding: 0 6px;
+    color: var(--foreground);
+    font-size: 0.73rem;
+    font-weight: 700;
+}
+
+.autenticacao-dados-fiscais > p {
+    margin: 0 0 2px;
+    color: var(--muted-foreground);
+    font-size: 0.67rem;
+    line-height: 1.5;
+}
+
+.autenticacao-dados-fiscais:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.autenticacao-isento {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 28px;
+    margin-top: 2px;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted-foreground);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.autenticacao-isento input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    min-height: unset;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.autenticacao-isento:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
 @media (max-width: 900px) {
     .autenticacao {
         grid-template-columns: minmax(310px, 0.8fr) minmax(430px, 1fr);

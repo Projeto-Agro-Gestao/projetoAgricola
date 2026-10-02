@@ -54,6 +54,16 @@ public record AtualizarPerfilRequest(
         @Size(max = 2, message = "O estado deve possuir a sigla com 2 letras")
         String estadoCobranca,
 
+        @Size(max = 40, message = "A inscricao estadual deve possuir no maximo 40 caracteres")
+        String inscricaoEstadual,
+
+        boolean isentoInscricaoEstadual,
+
+        @Size(max = 40, message = "A inscricao municipal deve possuir no maximo 40 caracteres")
+        String inscricaoMunicipal,
+
+        boolean isentoInscricaoMunicipal,
+
         boolean agriculturaAtiva,
         boolean pecuariaAtiva
 

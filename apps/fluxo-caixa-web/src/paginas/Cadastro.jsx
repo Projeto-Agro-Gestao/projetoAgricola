@@ -64,6 +64,26 @@ function armazenarSessao(dados) {
     )
 }
 
+function aplicarMascaraDocumento(valor) {
+    const digitos = valor.replace(/\D/g, '')
+
+    if (digitos.length <= 11) {
+        // CPF: 000.000.000-00
+        return digitos
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    }
+
+    // CNPJ: 00.000.000/0001-00
+    return digitos
+        .slice(0, 14)
+        .replace(/(\d{2})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1/$2')
+        .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+}
+
 function Cadastro() {
     const navigate = useNavigate()
     const formularioRef = useRef(null)
@@ -93,6 +113,18 @@ function Cadastro() {
         setPecuariaAtiva,
     ] = useState(false)
 
+    const [documento, setDocumento] = useState('')
+
+    const [
+        isentoIE,
+        setIsentoIE,
+    ] = useState(false)
+
+    const [
+        isentoIM,
+        setIsentoIM,
+    ] = useState(false)
+
     const [erro, setErro] = useState('')
     const [mensagem, setMensagem] = useState('')
 
@@ -115,12 +147,16 @@ function Cadastro() {
         cadastroGoogleRef.current = {
             agriculturaAtiva,
             pecuariaAtiva,
+            isentoIE,
+            isentoIM,
             carregando:
                 carregando || carregandoGoogle,
         }
     }, [
         agriculturaAtiva,
         pecuariaAtiva,
+        isentoIE,
+        isentoIM,
         carregando,
         carregandoGoogle,
     ])
@@ -212,6 +248,27 @@ function Cadastro() {
             return
         }
 
+        const documentoDigitos = documento.replace(/\D/g, '')
+
+        if (
+            documentoDigitos.length !== 11 &&
+            documentoDigitos.length !== 14
+        ) {
+            setErro(
+                'Informe o CPF (11 dígitos) ou CNPJ (14 dígitos) da propriedade.',
+            )
+
+            return
+        }
+
+        const inscricaoEstadual = String(
+            formulario.get('inscricaoEstadual') ?? '',
+        ).trim()
+
+        const inscricaoMunicipal = String(
+            formulario.get('inscricaoMunicipal') ?? '',
+        ).trim()
+
         setCarregando(true)
 
         try {
@@ -230,6 +287,17 @@ function Cadastro() {
                         telefone:
                             telefone || null,
                         senha,
+                        documento: documentoDigitos,
+                        inscricaoEstadual:
+                            isentoIE
+                                ? null
+                                : inscricaoEstadual || null,
+                        isentoInscricaoEstadual: isentoIE,
+                        inscricaoMunicipal:
+                            isentoIM
+                                ? null
+                                : inscricaoMunicipal || null,
+                        isentoInscricaoMunicipal: isentoIM,
                         agriculturaAtiva,
                         pecuariaAtiva,
                     }),
@@ -329,10 +397,27 @@ function Cadastro() {
         const telefone = String(
             dadosFormulario.get('telefone') ?? '',
         ).trim()
+        const documentoGoogle = documento.replace(/\D/g, '')
+        const inscricaoEstadualGoogle = String(
+            dadosFormulario.get('inscricaoEstadual') ?? '',
+        ).trim()
+        const inscricaoMunicipalGoogle = String(
+            dadosFormulario.get('inscricaoMunicipal') ?? '',
+        ).trim()
 
         if (!nomeEmpresa) {
             setErro(
                 'Digite o nome da propriedade antes de cadastrar com Google.',
+            )
+            return
+        }
+
+        if (
+            documentoGoogle.length !== 11 &&
+            documentoGoogle.length !== 14
+        ) {
+            setErro(
+                'Informe o CPF ou CNPJ da propriedade antes de cadastrar com Google.',
             )
             return
         }
@@ -357,6 +442,17 @@ function Cadastro() {
                     credential,
                     nomeEmpresa,
                     telefone: telefone || null,
+                    documento: documentoGoogle,
+                    inscricaoEstadual:
+                        estado.isentoIE
+                            ? null
+                            : inscricaoEstadualGoogle || null,
+                    isentoInscricaoEstadual: estado.isentoIE,
+                    inscricaoMunicipal:
+                        estado.isentoIM
+                            ? null
+                            : inscricaoMunicipalGoogle || null,
+                    isentoInscricaoMunicipal: estado.isentoIM,
                     agriculturaAtiva:
                         estado.agriculturaAtiva,
                     pecuariaAtiva:
@@ -511,6 +607,111 @@ function Cadastro() {
                                 type="text"
                             />
                         </div>
+
+                        <div className="autenticacao-campo">
+                            <label htmlFor="documentoProdutor">
+                                CPF ou CNPJ da propriedade
+                            </label>
+
+                            <input
+                                disabled={carregando}
+                                id="documentoProdutor"
+                                inputMode="numeric"
+                                maxLength="18"
+                                name="documento"
+                                onChange={(e) =>
+                                    setDocumento(
+                                        aplicarMascaraDocumento(
+                                            e.target.value,
+                                        ),
+                                    )
+                                }
+                                placeholder="000.000.000-00 ou 00.000.000/0001-00"
+                                required
+                                type="text"
+                                value={documento}
+                            />
+                        </div>
+
+                        <fieldset
+                            className="autenticacao-dados-fiscais"
+                            disabled={carregando}
+                        >
+                            <legend>
+                                Dados fiscais (opcional)
+                            </legend>
+
+                            <p>
+                                Preencha se tiver Inscrição
+                                Estadual ou Municipal. Você
+                                pode completar depois no
+                                Perfil.
+                            </p>
+
+                            <div className="autenticacao-campo">
+                                <label htmlFor="inscricaoEstadual">
+                                    Inscrição Estadual (IE)
+                                </label>
+
+                                <input
+                                    disabled={
+                                        carregando || isentoIE
+                                    }
+                                    id="inscricaoEstadual"
+                                    maxLength="40"
+                                    name="inscricaoEstadual"
+                                    placeholder="Ex: 123.456.789.012"
+                                    type="text"
+                                />
+
+                                <label className="autenticacao-isento">
+                                    <input
+                                        checked={isentoIE}
+                                        disabled={carregando}
+                                        onChange={(e) =>
+                                            setIsentoIE(
+                                                e.target.checked,
+                                            )
+                                        }
+                                        type="checkbox"
+                                    />
+
+                                    <span>Isento de IE</span>
+                                </label>
+                            </div>
+
+                            <div className="autenticacao-campo">
+                                <label htmlFor="inscricaoMunicipal">
+                                    Inscrição Municipal (IM)
+                                </label>
+
+                                <input
+                                    disabled={
+                                        carregando || isentoIM
+                                    }
+                                    id="inscricaoMunicipal"
+                                    maxLength="40"
+                                    name="inscricaoMunicipal"
+                                    placeholder="Ex: 12.345.678-9"
+                                    type="text"
+                                />
+
+                                <label className="autenticacao-isento">
+                                    <input
+                                        checked={isentoIM}
+                                        disabled={carregando}
+                                        onChange={(e) =>
+                                            setIsentoIM(
+                                                e.target.checked,
+                                            )
+                                        }
+                                        type="checkbox"
+                                    />
+
+                                    <span>Isento de IM</span>
+                                </label>
+                            </div>
+                        </fieldset>
 
                         <fieldset
                             className="autenticacao-atividades"

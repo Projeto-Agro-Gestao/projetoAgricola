@@ -28,6 +28,10 @@ public record UsuarioResponse(
         String bairroCobranca,
         String cidadeCobranca,
         String estadoCobranca,
+        String inscricaoEstadual,
+        boolean isentoInscricaoEstadual,
+        String inscricaoMunicipal,
+        boolean isentoInscricaoMunicipal,
         LocalDateTime ultimoLoginEm,
         LocalDateTime ultimoUsoEm,
         LocalDateTime criadoEm
@@ -69,6 +73,14 @@ public record UsuarioResponse(
                         .getCidadeCobranca(),
                 usuario.getEmpresa()
                         .getEstadoCobranca(),
+                usuario.getEmpresa()
+                        .getInscricaoEstadual(),
+                usuario.getEmpresa()
+                        .isIsentoInscricaoEstadual(),
+                usuario.getEmpresa()
+                        .getInscricaoMunicipal(),
+                usuario.getEmpresa()
+                        .isIsentoInscricaoMunicipal(),
                 usuario.getUltimoLoginEm(),
                 usuario.getUltimoUsoEm(),
                 usuario.getCriadoEm()

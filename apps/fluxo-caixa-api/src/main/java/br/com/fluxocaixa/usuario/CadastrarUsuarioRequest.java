@@ -58,6 +58,31 @@ public record CadastrarUsuarioRequest(
         )
         String senha,
 
+        @NotBlank(
+                message = "Digite o CPF ou CNPJ da propriedade"
+        )
+        @Size(
+                max = 20,
+                message = "O documento deve possuir no máximo 20 caracteres"
+        )
+        String documento,
+
+        @Size(
+                max = 40,
+                message = "A inscrição estadual deve possuir no máximo 40 caracteres"
+        )
+        String inscricaoEstadual,
+
+        boolean isentoInscricaoEstadual,
+
+        @Size(
+                max = 40,
+                message = "A inscrição municipal deve possuir no máximo 40 caracteres"
+        )
+        String inscricaoMunicipal,
+
+        boolean isentoInscricaoMunicipal,
+
         boolean agriculturaAtiva,
         boolean pecuariaAtiva
 

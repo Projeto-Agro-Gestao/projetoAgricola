@@ -52,6 +52,18 @@ public class Empresa {
     @Column(name = "observacoes_endereco_cobranca", length = 500)
     private String observacoesEnderecoCobranca;
 
+    @Column(name = "inscricao_estadual", length = 40)
+    private String inscricaoEstadual;
+
+    @Column(name = "isento_inscricao_estadual", nullable = false)
+    private boolean isentoInscricaoEstadual = false;
+
+    @Column(name = "inscricao_municipal", length = 40)
+    private String inscricaoMunicipal;
+
+    @Column(name = "isento_inscricao_municipal", nullable = false)
+    private boolean isentoInscricaoMunicipal = false;
+
     @Column(nullable = false)
     private boolean ativo = true;
 
@@ -173,12 +185,42 @@ public class Empresa {
         return atualizadoEm;
     }
 
+    public String getInscricaoEstadual() {
+        return inscricaoEstadual;
+    }
+
+    public boolean isIsentoInscricaoEstadual() {
+        return isentoInscricaoEstadual;
+    }
+
+    public String getInscricaoMunicipal() {
+        return inscricaoMunicipal;
+    }
+
+    public boolean isIsentoInscricaoMunicipal() {
+        return isentoInscricaoMunicipal;
+    }
+
     public void alterarNome(String nome) {
         this.nome = nome;
     }
 
     public void alterarDocumento(String documento) {
         this.documento = documento;
+    }
+
+    public void alterarDadosFiscais(
+            String documento,
+            String inscricaoEstadual,
+            boolean isentoInscricaoEstadual,
+            String inscricaoMunicipal,
+            boolean isentoInscricaoMunicipal) {
+
+        this.documento = documento;
+        this.isentoInscricaoEstadual = isentoInscricaoEstadual;
+        this.inscricaoEstadual = isentoInscricaoEstadual ? null : inscricaoEstadual;
+        this.isentoInscricaoMunicipal = isentoInscricaoMunicipal;
+        this.inscricaoMunicipal = isentoInscricaoMunicipal ? null : inscricaoMunicipal;
     }
 
     public void alterarDadosCobranca(
