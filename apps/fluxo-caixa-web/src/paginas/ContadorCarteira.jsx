@@ -195,6 +195,27 @@ function formatarDinheiro(valor) {
     }).format(Number(valor ?? 0))
 }
 
+function clienteDaSessao(sessao) {
+    const usuario = sessao?.usuario
+
+    if (!usuario?.empresaId) {
+        return null
+    }
+
+    return {
+        empresaId: usuario.empresaId,
+        empresaNome: usuario.nomeEmpresa ?? 'Minha propriedade',
+        statusEmpresa: 'ATIVO',
+        pendenciasAbertas: 0,
+        despesasSemDocumento: 0,
+        movimentacoesSemClassificacao: 0,
+        documentosNovos: 0,
+        resultadoMes: 0,
+        ultimaAtividade: null,
+        visaoPropria: true,
+    }
+}
+
 function formatarData(data) {
     if (!data) {
         return '-'
@@ -281,6 +302,13 @@ function ContadorCarteira() {
     const [carregando, setCarregando] = useState(false)
     const [carregandoCliente, setCarregandoCliente] = useState(false)
     const [salvando, setSalvando] = useState(false)
+
+    const usuarioLogado = sessao?.usuario
+    const exibindoVisaoPropria =
+        clienteSelecionado?.visaoPropria ||
+        (usuarioLogado?.empresaId &&
+            clienteSelecionado?.empresaId === usuarioLogado.empresaId &&
+            usuarioLogado?.papel !== 'CONTADOR')
 
     const regimeAtual = useMemo(
         () =>
@@ -409,13 +437,45 @@ function ContadorCarteira() {
 
         try {
             const dados = await requisicaoJson(`${API_URL}/contador/clientes`)
-            setClientes(dados)
+            const fallbackProprio = clienteDaSessao(sessao)
+            const lista =
+                dados.length > 0
+                    ? dados.map((cliente) =>
+                          fallbackProprio &&
+                          cliente.empresaId === fallbackProprio.empresaId
+                              ? {
+                                    ...cliente,
+                                    visaoPropria: true,
+                                }
+                              : cliente,
+                      )
+                    : fallbackProprio
+                      ? [fallbackProprio]
+                      : []
 
-            if (dados.length > 0 && !clienteSelecionado) {
-                setClienteSelecionado(dados[0])
+            setClientes(lista)
+
+            if (lista.length > 0 && !clienteSelecionado) {
+                setClienteSelecionado(lista[0])
             }
         } catch (error) {
-            setErro(error.message || 'Nao foi possivel carregar a carteira.')
+            const fallbackProprio = clienteDaSessao(sessao)
+
+            if (fallbackProprio) {
+                setClientes([fallbackProprio])
+
+                if (!clienteSelecionado) {
+                    setClienteSelecionado(fallbackProprio)
+                }
+
+                setMensagem(
+                    'Sua empresa foi carregada diretamente para a area fiscal.',
+                )
+            } else {
+                setErro(
+                    error.message || 'Nao foi possivel carregar a carteira.',
+                )
+            }
         } finally {
             setCarregando(false)
         }
@@ -470,6 +530,41 @@ function ContadorCarteira() {
             setRegimes(porNome.regimes.dados ?? [])
             setParametros(porNome.parametros.dados ?? [])
             setSimulacao(porNome.simulacao.dados)
+
+            const dashboardDados = porNome.dashboardFiscal.dados
+
+            if (dashboardDados) {
+                const clienteAtualizado = {
+                    ...cliente,
+                    pendenciasAbertas:
+                        dashboardDados.documentosPendentes ??
+                        cliente.pendenciasAbertas,
+                    despesasSemDocumento:
+                        dashboardDados.despesasSemDocumento ??
+                        cliente.despesasSemDocumento,
+                    movimentacoesSemClassificacao:
+                        dashboardDados.despesasPendentesClassificacao ??
+                        cliente.movimentacoesSemClassificacao,
+                    documentosNovos:
+                        dashboardDados.documentosRecebidos ??
+                        cliente.documentosNovos,
+                    resultadoMes:
+                        dashboardDados.resultadoFinanceiro ??
+                        cliente.resultadoMes,
+                }
+
+                setClienteSelecionado(clienteAtualizado)
+                setClientes((atuais) =>
+                    atuais.map((item) =>
+                        item.empresaId === clienteAtualizado.empresaId
+                            ? {
+                                  ...item,
+                                  ...clienteAtualizado,
+                              }
+                            : item,
+                    ),
+                )
+            }
 
             const falhas = resultados.filter((resultado) => resultado.erro)
 
@@ -955,12 +1050,20 @@ function ContadorCarteira() {
                         <AlternadorModulos />
                     </div>
 
-                    <p>Area do contador</p>
-                    <h1>Carteira e trabalho fiscal</h1>
+                    <p>
+                        {exibindoVisaoPropria
+                            ? 'Area fiscal da propriedade'
+                            : 'Area do contador'}
+                    </p>
+                    <h1>
+                        {exibindoVisaoPropria
+                            ? 'Minha analise contabil e fiscal'
+                            : 'Carteira e trabalho fiscal'}
+                    </h1>
                     <span>
-                        Trabalhe sobre as movimentacoes reais do produtor:
-                        documentos, classificacoes, pendencias, regimes,
-                        simulacoes e relatorios em uma unica base.
+                        {exibindoVisaoPropria
+                            ? 'Veja a mesma base de movimentacoes, documentos, classificacoes, regimes, simulacoes e relatorios que fica disponivel para o contador.'
+                            : 'Trabalhe sobre as movimentacoes reais do produtor: documentos, classificacoes, pendencias, regimes, simulacoes e relatorios em uma unica base.'}
                     </span>
                 </header>
 
@@ -995,14 +1098,22 @@ function ContadorCarteira() {
                         <div className="contador-carteira-card-topo">
                             <div>
                                 <small>Clientes</small>
-                                <h2>Produtores atendidos</h2>
+                                <h2>
+                                    {exibindoVisaoPropria
+                                        ? 'Minha empresa'
+                                        : 'Produtores atendidos'}
+                                </h2>
                             </div>
                             <span>{clientesFiltrados.length}</span>
                         </div>
 
                         <div className="contador-carteira-clientes">
                             {clientesFiltrados.length === 0 ? (
-                                <p>Nenhum cliente vinculado.</p>
+                                <p>
+                                    {exibindoVisaoPropria
+                                        ? 'Sua empresa ainda nao foi carregada.'
+                                        : 'Nenhum cliente vinculado.'}
+                                </p>
                             ) : (
                                 clientesFiltrados.map((cliente) => (
                                     <button
