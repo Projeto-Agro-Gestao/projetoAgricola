@@ -216,7 +216,7 @@ function PaginaInicial() {
                     <Revelar className="publica-secao-editorial">
                         <h2>Hoje, produtor e contador ainda trabalham separados.</h2>
                         <p>
-                            O produtor registra informacoes de um lado, guarda
+                            O produtor registra informações de um lado, guarda
                             documentos em outro e muitas vezes precisa enviar
                             tudo ao contador de forma manual. O contador recebe
                             dados espalhados, cobra documentos e organiza tudo
@@ -225,39 +225,48 @@ function PaginaInicial() {
                     </Revelar>
 
                     <Revelar className="publica-orbita" aria-label="Canais espalhados entre produtor e contador">
-                        <div className="publica-orbita-anel" aria-hidden="true" />
-
-                        <div className="publica-orbita-centro">
+                        <div className="publica-orbita-cenario">
                             <div className="publica-orbita-figura publica-orbita-flutuar-a">
-                                <span className="publica-avatar publica-avatar-produtor">
-                                    <IconeFolha />
-                                </span>
+                                <img
+                                    alt="Produtor rural"
+                                    className="publica-avatar publica-avatar-foto"
+                                    src="/produtor.jpg"
+                                />
                                 <b>Produtor</b>
+                                <small>No campo</small>
+                            </div>
+
+                            <div className="publica-orbita-meio">
+                                <div className="publica-orbita-anel" aria-hidden="true" />
+                                <div className="publica-orbita-linha-conexao" aria-hidden="true" />
+
+                                {itensOrbita.map((item, indice) => (
+                                    <div
+                                        aria-hidden="true"
+                                        className={`publica-orbita-ponto publica-orbita-atraso-${indice + 1}`}
+                                        key={indice}
+                                    >
+                                        <div
+                                            className="publica-orbita-item"
+                                            style={{ color: item.cor }}
+                                        >
+                                            {item.icone}
+                                            <small style={{ color: item.cor }}>{item.rotulo}</small>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="publica-orbita-figura publica-orbita-flutuar-b">
-                                <span className="publica-avatar publica-avatar-contador">
-                                    <IconeDocumento />
-                                </span>
+                                <img
+                                    alt="Contador"
+                                    className="publica-avatar publica-avatar-foto"
+                                    src="/contador.jpg"
+                                />
                                 <b>Contador</b>
+                                <small>No escritório</small>
                             </div>
                         </div>
-
-                        {itensOrbita.map((item, indice) => (
-                            <div
-                                aria-hidden="true"
-                                className={`publica-orbita-ponto publica-orbita-atraso-${indice + 1}`}
-                                key={indice}
-                            >
-                                <div
-                                    className="publica-orbita-item"
-                                    style={{ color: item.cor }}
-                                >
-                                    {item.icone}
-                                    <small style={{ color: item.cor }}>{item.rotulo}</small>
-                                </div>
-                            </div>
-                        ))}
                     </Revelar>
                 </section>
 

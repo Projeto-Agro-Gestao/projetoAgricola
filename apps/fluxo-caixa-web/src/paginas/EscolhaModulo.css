@@ -113,7 +113,7 @@
 
 .escolha-modulo-apresentacao {
     max-width: 760px;
-    margin: 0 auto 38px;
+    margin: 0 auto 10px;
     text-align: center;
 }
 
@@ -138,13 +138,152 @@
     line-height: 1.06;
 }
 
-.escolha-modulo-apresentacao > span {
-    display: block;
-    max-width: 610px;
-    margin: 16px auto 0;
+/* ── Subtítulo abaixo da órbita ── */
+.escolha-modulo-subtitulo {
+    max-width: 580px;
+    margin: 0 auto 38px;
     color: var(--muted-foreground);
     font-size: 0.93rem;
     line-height: 1.65;
+    text-align: center;
+}
+
+/* ── Wrapper da órbita + personagens ── */
+.escolha-modulo-orbita-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 20px auto 18px;
+    max-width: 800px;
+}
+
+/* ── Personagens (agricultor / contador) ── */
+.escolha-modulo-personagem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.escolha-modulo-personagem > span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+.escolha-modulo-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    box-shadow:
+        0 8px 30px rgb(0 0 0 / 0.10),
+        0 0 0 6px
+        color-mix(in oklch, var(--primary) 12%, transparent);
+    transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.escolha-modulo-avatar:hover {
+    transform: scale(1.05) translateY(-4px);
+    box-shadow:
+        0 14px 40px rgb(0 0 0 / 0.15),
+        0 0 0 8px
+        color-mix(in oklch, var(--primary) 22%, transparent);
+}
+
+/* ── Centro da órbita ── */
+.escolha-modulo-orbita-centro {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+/* Anel que gira */
+.escolha-modulo-orbita-anel {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px dashed
+        color-mix(in oklch, var(--primary) 35%, transparent);
+    animation: orbita-girar 12s linear infinite;
+}
+
+@keyframes orbita-girar {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Ícones na órbita — giram junto com o anel mas em sentido contrário */
+.escolha-modulo-orbita-icone {
+    position: absolute;
+    top: calc(50% - 19px);
+    left: calc(50% - 19px);
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 1.1rem;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.10);
+    /* Posição inicial: distribui 6 ícones de 60 em 60 graus */
+    --a: calc(var(--i) * 60deg);
+    transform:
+        rotate(var(--a))
+        translateY(-88px)
+        rotate(calc(-1 * var(--a)));
+    animation: orbita-icone-girar 12s linear infinite;
+}
+
+@keyframes orbita-icone-girar {
+    from {
+        transform:
+            rotate(var(--a))
+            translateY(-88px)
+            rotate(calc(-1 * var(--a)));
+    }
+    to {
+        transform:
+            rotate(calc(var(--a) + 360deg))
+            translateY(-88px)
+            rotate(calc(-1 * (var(--a) + 360deg)));
+    }
+}
+
+
+/* Núcleo central */
+.escolha-modulo-orbita-nucleo {
+    position: absolute;
+    inset: 50%;
+    transform: translate(-50%, -50%);
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    border-radius: 22px;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            color-mix(in oklch, var(--primary) 60%, #2f7d93)
+        );
+    box-shadow:
+        0 10px 30px
+        color-mix(in oklch, var(--primary) 35%, transparent);
+}
+
+.escolha-modulo-orbita-nucleo > span {
+    color: var(--primary-foreground);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
 }
 
 .escolha-modulo-opcoes {
@@ -398,6 +537,40 @@
     .escolha-modulo-card {
         min-height: auto;
     }
+
+    .escolha-modulo-orbita-wrapper {
+        gap: 0;
+    }
+
+    .escolha-modulo-avatar {
+        width: 110px;
+        height: 110px;
+    }
+
+    .escolha-modulo-orbita-centro {
+        width: 150px;
+        height: 150px;
+    }
+
+    .escolha-modulo-orbita-icone {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        transform:
+            rotate(calc(var(--i) * 60deg))
+            translateY(-66px)
+            rotate(calc(var(--i) * -60deg));
+    }
+
+    .escolha-modulo-orbita-nucleo {
+        width: 62px;
+        height: 62px;
+        border-radius: 17px;
+    }
+
+    .escolha-modulo-orbita-nucleo > span {
+        font-size: 1.1rem;
+    }
 }
 
 @media (max-width: 500px) {
@@ -428,8 +601,26 @@
         margin: 0;
     }
 
-    .escolha-modulo-apresentacao > span {
-        margin-left: 0;
+    .escolha-modulo-orbita-wrapper {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .escolha-modulo-orbita-centro {
+        order: -1;
+        width: 170px;
+        height: 170px;
+    }
+
+    .escolha-modulo-orbita-icone {
+        transform:
+            rotate(calc(var(--i) * 60deg))
+            translateY(-76px)
+            rotate(calc(var(--i) * -60deg));
+    }
+
+    .escolha-modulo-subtitulo {
+        text-align: left;
     }
 
     .escolha-modulo-card {

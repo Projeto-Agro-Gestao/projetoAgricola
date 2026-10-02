@@ -112,7 +112,7 @@ function EscolhaModulo() {
 
                         <div>
                             <strong>
-                                AgroGestão
+                                Agro Gestão
                             </strong>
 
                             <small>
@@ -175,6 +175,7 @@ function EscolhaModulo() {
                             organizada para acompanhar clientes e pendências.
                         </span>
                     </div>
+
 
                     <section className="escolha-modulo-opcoes">
                         <button
