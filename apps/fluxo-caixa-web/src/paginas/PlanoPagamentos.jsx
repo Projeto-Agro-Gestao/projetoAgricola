@@ -7,6 +7,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './PlanoPagamentos.css'
 import { limparSessao } from '../servicos/sessao.js'
+import { gerarCobrancaComDados, salvarDadosPagamento } from '../servicos/pagamentos.js'
 
 function obterSessao() {
     try {
@@ -299,18 +300,10 @@ function PlanoPagamentos() {
             setGerando(tipo)
             setMensagem('')
 
-            const caminho =
-                tipo === 'pix' ? 'pix' : 'boleto'
-
-            const resposta = await fetch(
-                `${API_URL}/empresas/${empresaId}/assinatura/pagamentos/${caminho}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                },
+            const resposta = await gerarCobrancaComDados(
+                { apiUrl: API_URL, empresaId, sessao, dados: dadosCobranca },
+                tipo,
+                obterMensagemDeErro,
             )
 
             if (!resposta.ok) {
@@ -477,38 +470,9 @@ function PlanoPagamentos() {
                 )
             }
 
-            const resposta = await fetch(
-                `${API_URL}/empresas/${empresaId}/assinatura/documento-pagamento`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tipoDocumento:
-                            dadosCobranca.tipoDocumento,
-                        documento:
-                            dadosCobranca.documento,
-                        cep: dadosCobranca.cep,
-                        rua: dadosCobranca.rua,
-                        numero: dadosCobranca.semNumero
-                            ? null
-                            : dadosCobranca.numero,
-                        semNumero: dadosCobranca.semNumero,
-                        complemento:
-                            dadosCobranca.complemento,
-                        bairro: dadosCobranca.bairro,
-                        cidade: dadosCobranca.cidade,
-                        estado: dadosCobranca.estado,
-                        telefone: dadosCobranca.telefone,
-                        email: dadosCobranca.email,
-                        observacoesEndereco:
-                            dadosCobranca.observacoesEndereco,
-                    }),
-                },
-            )
+            const resposta = await salvarDadosPagamento({
+                apiUrl: API_URL, empresaId, sessao, dados: dadosCobranca,
+            })
 
             if (!resposta.ok) {
                 throw new Error(

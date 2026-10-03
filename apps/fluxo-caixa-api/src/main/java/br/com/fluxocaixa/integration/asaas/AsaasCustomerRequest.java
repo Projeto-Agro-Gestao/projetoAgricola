@@ -1,5 +1,6 @@
 package br.com.fluxocaixa.integration.asaas;
 
+@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
 public record AsaasCustomerRequest(
         String name,
         String cpfCnpj,

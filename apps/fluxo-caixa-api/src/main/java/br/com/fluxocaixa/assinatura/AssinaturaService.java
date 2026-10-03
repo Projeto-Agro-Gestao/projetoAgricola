@@ -10,7 +10,6 @@ import br.com.fluxocaixa.empresa.EmpresaRepository;
 import br.com.fluxocaixa.integration.asaas.AsaasBoletoLinhaResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasClient;
 import br.com.fluxocaixa.integration.asaas.AsaasCustomerRequest;
-import br.com.fluxocaixa.integration.asaas.AsaasCustomerResponse;
 import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.integration.asaas.AsaasPaymentRequest;
 import br.com.fluxocaixa.integration.asaas.AsaasPaymentResponse;
@@ -707,7 +706,14 @@ public class AssinaturaService {
                 && ambienteAtual.equals(
                 assinatura.getAsaasCustomerEnvironment()
         )) {
-            return;
+            try {
+                asaasClient.atualizarCliente(assinatura.getAsaasCustomerId(), dadosClienteAsaas(assinatura));
+                return;
+            } catch (AsaasException exception) {
+                if (!Integer.valueOf(404).equals(exception.getStatusCode())
+                        && !exception.contemCodigo("invalid_customer")) throw exception;
+                assinatura.limparAsaasCustomer();
+            }
         }
 
         assinatura.definirAsaasCustomer(
@@ -717,6 +723,11 @@ public class AssinaturaService {
     }
 
     private String criarClienteAsaas(Assinatura assinatura) {
+
+        return asaasClient.criarCliente(dadosClienteAsaas(assinatura)).id();
+    }
+
+    private AsaasCustomerRequest dadosClienteAsaas(Assinatura assinatura) {
 
         Empresa empresa = assinatura.getEmpresa();
         String documento = normalizarDocumento(empresa.getDocumento());
@@ -733,9 +744,7 @@ public class AssinaturaService {
             );
         }
 
-        AsaasCustomerResponse response =
-                asaasClient.criarCliente(
-                        new AsaasCustomerRequest(
+        return new AsaasCustomerRequest(
                                 empresa.getNome(),
                                 documento,
                                 usuarioPrincipal == null
@@ -754,25 +763,11 @@ public class AssinaturaService {
                                 "empresa-" + empresa.getId(),
                                 true,
                                 empresa.getObservacoesEnderecoCobranca()
-                        )
-                );
-
-        return response.id();
+                        );
     }
 
     private String ambienteAsaasAtual() {
-        String ambiente = asaasProperties.environment();
-
-        if (ambiente == null || ambiente.isBlank()) {
-            return "SANDBOX";
-        }
-
-        if ("PRODUCTION".equalsIgnoreCase(ambiente)
-                || "PRODUCAO".equalsIgnoreCase(ambiente)) {
-            return "PRODUCTION";
-        }
-
-        return ambiente.trim().toUpperCase();
+        return asaasProperties.ambienteEfetivo();
     }
 
     private Movimentacao criarMovimentacaoReceita(
@@ -1031,11 +1026,7 @@ public class AssinaturaService {
     }
 
     private boolean isProducao() {
-        return "PRODUCAO".equalsIgnoreCase(
-                asaasProperties.environment()
-        ) || "PRODUCTION".equalsIgnoreCase(
-                asaasProperties.environment()
-        );
+        return "PRODUCTION".equals(asaasProperties.ambienteEfetivo());
     }
 
     private LocalDateTime converterExpiracaoPix(String expirationDate) {

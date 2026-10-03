@@ -59,6 +59,10 @@ public class AsaasClient {
         );
     }
 
+    public AsaasCustomerResponse atualizarCliente(String customerId, AsaasCustomerRequest request) {
+        return enviarJson("/customers/" + codificar(customerId), request, AsaasCustomerResponse.class, "PUT");
+    }
+
     public AsaasPixQrCodeResponse buscarPixQrCode(
             String paymentId) {
 
@@ -119,6 +123,11 @@ public class AsaasClient {
             Object corpo,
             Class<T> tipoResposta) {
 
+        return enviarJson(caminho, corpo, tipoResposta, "POST");
+    }
+
+    private <T> T enviarJson(String caminho, Object corpo, Class<T> tipoResposta, String metodo) {
+
         validarConfiguracao();
 
         try {
@@ -131,8 +140,10 @@ public class AsaasClient {
                     ))
                     .header(HttpHeaders.CONTENT_TYPE,
                             MediaType.APPLICATION_JSON_VALUE)
-                    .header("access_token", properties.apiKey())
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .header("User-Agent", "AgroGestao/1.0")
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .header("access_token", properties.apiKey().trim())
+                    .method(metodo, HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
             return enviar(request, tipoResposta);
@@ -155,7 +166,9 @@ public class AsaasClient {
                 .timeout(Duration.ofSeconds(
                         Math.max(properties.timeoutSeconds(), 3)
                 ))
-                .header("access_token", properties.apiKey())
+                .header("User-Agent", "AgroGestao/1.0")
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header("access_token", properties.apiKey().trim())
                 .GET()
                 .build();
 
@@ -175,7 +188,9 @@ public class AsaasClient {
                 ))
                 .header(HttpHeaders.CONTENT_TYPE,
                         MediaType.APPLICATION_JSON_VALUE)
-                .header("access_token", properties.apiKey())
+                .header("User-Agent", "AgroGestao/1.0")
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header("access_token", properties.apiKey().trim())
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -246,7 +261,7 @@ public class AsaasClient {
     }
 
     private String baseUrl() {
-        return properties.baseUrl().replaceAll("/+$", "");
+        return properties.urlEfetiva();
     }
 
     private String codificar(String valor) {

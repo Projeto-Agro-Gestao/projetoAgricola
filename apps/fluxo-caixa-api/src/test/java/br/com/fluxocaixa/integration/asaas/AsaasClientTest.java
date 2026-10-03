@@ -323,6 +323,38 @@ class AsaasClientTest {
         }
     }
 
+    @Test
+    void enviaHeadersOficiaisEmPostPutEGet() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
+        var chamadas = new java.util.concurrent.CopyOnWriteArrayList<java.util.List<String>>();
+        server.createContext("/v3/", exchange -> {
+            chamadas.add(java.util.List.of(exchange.getRequestMethod(),
+                    exchange.getRequestHeaders().getFirst("User-Agent"),
+                    exchange.getRequestHeaders().getFirst("access_token"),
+                    exchange.getRequestURI().getPath()));
+            responderJson(exchange, "{\"id\":\"cus_teste\",\"encodedImage\":\"qr\",\"payload\":\"pix\"}");
+        });
+        server.start();
+        try {
+            AsaasClient client = new AsaasClient(new AsaasProperties(" chave-teste ",
+                    "http://localhost:" + server.getAddress().getPort() + "/v3", "SANDBOX", "", 10), new ObjectMapper());
+            var request = new AsaasCustomerRequest("Teste", "52998224725", null, null,
+                    "88813600", "Rua", "S/N", null, "Bairro", "empresa-1", true, null);
+            client.criarCliente(request);
+            client.atualizarCliente("cus_teste", request);
+            client.buscarPixQrCode("pay_teste");
+            assertThat(chamadas).hasSize(3);
+            assertThat(chamadas).allSatisfy(c -> {
+                assertThat(c.get(1)).isEqualTo("AgroGestao/1.0");
+                assertThat(c.get(2)).isEqualTo("chave-teste");
+            });
+            assertThat(chamadas.get(0).get(0)).isEqualTo("POST");
+            assertThat(chamadas.get(1).get(0)).isEqualTo("PUT");
+            assertThat(chamadas.get(1).get(3)).isEqualTo("/v3/customers/cus_teste");
+            assertThat(chamadas.get(2).get(0)).isEqualTo("GET");
+        } finally { server.stop(0); }
+    }
+
     private static void responderJson(
             com.sun.net.httpserver.HttpExchange exchange,
             String json) throws IOException {

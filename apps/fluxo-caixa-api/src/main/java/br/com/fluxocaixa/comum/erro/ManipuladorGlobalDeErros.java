@@ -462,9 +462,12 @@ public class ManipuladorGlobalDeErros {
         );
 
         return criarResposta(
-                HttpStatus.BAD_GATEWAY,
+                exception.getStatusCode() != null && (exception.getStatusCode() == 400 || exception.getStatusCode() == 422)
+                        ? HttpStatus.UNPROCESSABLE_ENTITY
+                        : exception.getStatusCode() != null && exception.getStatusCode() == 429
+                            ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.BAD_GATEWAY,
                 "Pagamento indisponivel",
-                exception.getMessage(),
+                exception.mensagemParaUsuario(),
                 request.getRequestURI(),
                 Map.of()
         );

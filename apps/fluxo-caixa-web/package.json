@@ -8,6 +8,7 @@
     "build": "vite build",
     "test:remember": "node scripts/test-lembrar-acesso.mjs",
     "test:security": "node scripts/test-security-headers.mjs",
+    "test:pagamentos": "node scripts/test-pagamentos.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "videos": "node --env-file-if-exists=videos/.env videos/gravar.js",

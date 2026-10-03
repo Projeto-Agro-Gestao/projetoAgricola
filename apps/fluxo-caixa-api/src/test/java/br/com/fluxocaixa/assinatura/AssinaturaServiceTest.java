@@ -200,6 +200,43 @@ class AssinaturaServiceTest {
                 .hasMessageContaining("gratuito");
     }
 
+    @Test
+    void sincronizaCustomerExistenteAntesDeGerarBoleto() {
+        Assinatura assinatura = assinaturaComCustomer("cus_atual", "PRODUCTION");
+        assinatura.getEmpresa().alterarDadosCobranca("52998224725", "88813600", "Rua corrigida",
+                null, true, "Casa", "Centro", "Criciuma", "SC", null);
+        configurarDependenciasBasicas(assinatura);
+        when(asaasClient.criarPagamento(any())).thenReturn(payment("pay_boleto", "BOLETO", "https://sandbox.asaas.com/b/pdf/pay_boleto"));
+        when(asaasClient.buscarLinhaDigitavel("pay_boleto")).thenReturn(new AsaasBoletoLinhaResponse("linha"));
+
+        var resultado = serviceComAmbiente("PRODUCTION").criarBoleto(1L);
+        var ordem = org.mockito.Mockito.inOrder(asaasClient);
+        ordem.verify(asaasClient).atualizarCliente(org.mockito.ArgumentMatchers.eq("cus_atual"), any());
+        ordem.verify(asaasClient).criarPagamento(any());
+        assertThat(resultado.linhaDigitavel()).isEqualTo("linha");
+        var cadastro = ArgumentCaptor.forClass(AsaasCustomerRequest.class);
+        verify(asaasClient).atualizarCliente(org.mockito.ArgumentMatchers.eq("cus_atual"), cadastro.capture());
+        assertThat(cadastro.getValue().cpfCnpj()).isEqualTo("52998224725");
+        assertThat(cadastro.getValue().address()).isEqualTo("Rua corrigida");
+        assertThat(cadastro.getValue().addressNumber()).isEqualTo("S/N");
+    }
+
+    @Test
+    void recuperaCustomerRemovidoDuranteSincronizacaoDoPix() {
+        Assinatura assinatura = assinaturaComCustomer("cus_removido", "PRODUCTION");
+        configurarDependenciasBasicas(assinatura);
+        when(asaasClient.atualizarCliente(org.mockito.ArgumentMatchers.eq("cus_removido"), any()))
+                .thenThrow(new AsaasException("HTTP 404", 404, "{}"));
+        when(asaasClient.criarCliente(any())).thenReturn(customer("cus_novo"));
+        when(asaasClient.criarPagamento(any())).thenReturn(payment("pay_pix", "PIX", null));
+        when(asaasClient.buscarPixQrCode("pay_pix")).thenReturn(new AsaasPixQrCodeResponse("qr", "copia", "2026-12-31 23:59:59"));
+
+        var resultado = serviceComAmbiente("PRODUCTION").criarPix(1L);
+        assertThat(assinatura.getAsaasCustomerId()).isEqualTo("cus_novo");
+        assertThat(resultado.pixCopiaCola()).isEqualTo("copia");
+        verify(asaasClient, times(1)).criarPagamento(any());
+    }
+
     private Assinatura assinaturaComCustomer(
             String customerId,
             String ambiente) {
