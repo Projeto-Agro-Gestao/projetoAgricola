@@ -22,3 +22,6 @@ databases/
 
 # Logs
 *.log
+
+# Skills de agentes de IA (locais)
+.agents/
