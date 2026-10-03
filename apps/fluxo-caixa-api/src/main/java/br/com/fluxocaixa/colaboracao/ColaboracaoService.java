@@ -12,7 +12,6 @@ import br.com.fluxocaixa.movimentacao.TipoMovimentacao;
 import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -352,11 +350,7 @@ public class ColaboracaoService {
         validarAcessoEmpresa(usuario, empresaId);
         Empresa empresa = obterEmpresa(empresaId);
 
-        if (arquivo == null || arquivo.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Informe um arquivo para enviar."
-            );
-        }
+        DocumentoUploadValidator.Arquivo arquivoValidado = DocumentoUploadValidator.validar(arquivo);
 
         Movimentacao movimentacao = movimentacaoId == null
                 ? null
@@ -371,51 +365,35 @@ public class ColaboracaoService {
                                 )
                         );
 
-        try {
-            DocumentoAgro documento = documentoRepository.save(
-                    new DocumentoAgro(
-                            empresa,
-                            movimentacao,
-                            usuario,
-                            arquivo.getOriginalFilename() == null
-                                    ? "documento"
-                                    : arquivo.getOriginalFilename(),
-                            arquivo.getContentType() == null
-                                    ? MediaType.APPLICATION_OCTET_STREAM_VALUE
-                                    : arquivo.getContentType(),
-                            arquivo.getSize(),
-                            tipo == null
-                                    ? TipoDocumentoAgro.OUTRO
-                                    : tipo,
-                            observacao,
-                            arquivo.getBytes()
+        DocumentoAgro documento = documentoRepository.save(
+                new DocumentoAgro(
+                        empresa,
+                        movimentacao,
+                        usuario,
+                        arquivoValidado.nome(),
+                        arquivoValidado.tipoConteudo(),
+                        (long) arquivoValidado.conteudo().length,
+                        tipo == null ? TipoDocumentoAgro.OUTRO : tipo,
+                        observacao,
+                        arquivoValidado.conteudo()
+                )
+        );
+
+        if (movimentacao != null) {
+            pendenciaRepository
+                    .findAllByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNotOrderByCriadoEmDesc(
+                            empresaId,
+                            movimentacao.getId(),
+                            TipoPendenciaAgro.DOCUMENTO_AUSENTE,
+                            StatusPendenciaAgro.RESOLVIDA
                     )
-            );
-
-            if (movimentacao != null) {
-                pendenciaRepository
-                        .findAllByEmpresa_IdAndMovimentacao_IdAndTipoAndStatusNotOrderByCriadoEmDesc(
-                                empresaId,
-                                movimentacao.getId(),
-                                TipoPendenciaAgro.DOCUMENTO_AUSENTE,
-                                StatusPendenciaAgro.RESOLVIDA
-                        )
-                        .forEach(pendencia ->
-                                pendencia.responderPeloProdutor(documento)
-                        );
-            }
-
-            auditar(empresa, usuario, "ENVIAR_DOCUMENTO",
-                    "DocumentoAgro", documento.getId(),
-                    documento.getNomeArquivo());
-
-            return DocumentoAgroResponse.de(documento);
-        } catch (IOException exception) {
-            throw new IllegalStateException(
-                    "Nao foi possivel ler o documento enviado.",
-                    exception
-            );
+                    .forEach(pendencia -> pendencia.responderPeloProdutor(documento));
         }
+
+        auditar(empresa, usuario, "ENVIAR_DOCUMENTO",
+                "DocumentoAgro", documento.getId(), documento.getNomeArquivo());
+
+        return DocumentoAgroResponse.de(documento);
     }
 
     @Transactional(readOnly = true)

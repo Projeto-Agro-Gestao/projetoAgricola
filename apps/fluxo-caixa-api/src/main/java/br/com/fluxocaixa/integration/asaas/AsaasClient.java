@@ -210,11 +210,9 @@ public class AsaasClient {
                 );
             } catch (IOException exception) {
                 LOGGER.warn(
-                        "Falha ao ler resposta do Asaas em {} com HTTP {}: {} - {}",
-                        request.uri().getPath(),
+                        "Falha ao ler resposta do Asaas com HTTP {}: {}",
                         response.statusCode(),
-                        exception.getClass().getSimpleName(),
-                        exception.getMessage()
+                        exception.getClass().getSimpleName()
                 );
                 throw new AsaasException(
                         "Nao foi possivel ler a resposta do Asaas.",
@@ -223,10 +221,8 @@ public class AsaasClient {
             }
         } catch (IOException exception) {
             LOGGER.warn(
-                    "Falha de comunicacao com Asaas em {}: {} - {}",
-                    request.uri().getPath(),
-                    exception.getClass().getSimpleName(),
-                    exception.getMessage()
+                    "Falha de comunicacao com Asaas: {}",
+                    exception.getClass().getSimpleName()
             );
             throw new AsaasException(
                     "Nao foi possivel ler a resposta do Asaas.",

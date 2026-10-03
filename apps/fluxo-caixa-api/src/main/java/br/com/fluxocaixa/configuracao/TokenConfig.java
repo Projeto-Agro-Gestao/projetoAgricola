@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
+import br.com.fluxocaixa.autenticacao.VersaoAutenticacaoTokenValidator;
 
 @Configuration
 @EnableConfigurationProperties(
@@ -82,7 +83,8 @@ public class TokenConfig {
     @Bean
     public JwtDecoder jwtDecoder(
             SecretKey jwtSecretKey,
-            PropriedadesSeguranca propriedades) {
+            PropriedadesSeguranca propriedades,
+            VersaoAutenticacaoTokenValidator versaoAutenticacaoTokenValidator) {
 
         NimbusJwtDecoder decoder =
                 NimbusJwtDecoder
@@ -112,7 +114,8 @@ public class TokenConfig {
         decoder.setJwtValidator(
                 new DelegatingOAuth2TokenValidator<>(
                         validadorPadraoEEmissor,
-                        validadorDestinatario
+                        validadorDestinatario,
+                        versaoAutenticacaoTokenValidator
                 )
         );
 

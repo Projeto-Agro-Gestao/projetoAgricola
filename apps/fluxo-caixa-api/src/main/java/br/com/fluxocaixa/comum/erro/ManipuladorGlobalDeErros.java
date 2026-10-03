@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -497,6 +498,13 @@ public class ManipuladorGlobalDeErros {
                 request.getRequestURI(),
                 Map.of()
         );
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErroResposta> tratarArquivoGrande(
+            MaxUploadSizeExceededException exception, HttpServletRequest request) {
+        return criarResposta(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo muito grande",
+                "Documento deve ter no maximo 10 MB.", request.getRequestURI(), Map.of());
     }
 
     @ExceptionHandler(Exception.class)

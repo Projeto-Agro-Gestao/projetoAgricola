@@ -56,6 +56,9 @@ public class Usuario {
     @Column(name = "tentativas_login", nullable = false)
     private int tentativasLogin = 0;
 
+    @Column(name = "versao_autenticacao", nullable = false)
+    private long versaoAutenticacao = 0;
+
     @Column(name = "bloqueado_ate")
     private LocalDateTime bloqueadoAte;
 
@@ -117,6 +120,16 @@ public class Usuario {
 
     public void alterarSenha(String novaSenhaHash) {
         this.senhaHash = novaSenhaHash;
+        this.versaoAutenticacao++;
+    }
+
+    public long getVersaoAutenticacao() { return versaoAutenticacao; }
+
+    public void registrarFalhaLogin(LocalDateTime agora) {
+        if (bloqueadoAte != null && bloqueadoAte.isAfter(agora)) return;
+        if (bloqueadoAte != null) tentativasLogin = 0;
+        tentativasLogin++;
+        bloqueadoAte = tentativasLogin >= 5 ? agora.plusMinutes(15) : null;
     }
 
     public void alterarDados(

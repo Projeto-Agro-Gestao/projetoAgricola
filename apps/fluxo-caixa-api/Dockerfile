@@ -7,6 +7,8 @@ RUN mvn -q package -DskipTests
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+RUN groupadd --system agrogestao && useradd --system --gid agrogestao agrogestao
+COPY --from=build --chown=agrogestao:agrogestao /app/target/*.jar app.jar
+USER agrogestao
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -11,6 +11,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import br.com.fluxocaixa.autenticacao.AuthRateLimitFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
 public class SecurityConfig {
@@ -31,6 +35,11 @@ public class SecurityConfig {
             throws Exception {
 
         http
+                .addFilterBefore(new AuthRateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'; base-uri 'none'; sandbox"))
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                        .addHeaderWriter(new StaticHeadersWriter("Permissions-Policy", "camera=(), microphone=(), geolocation=()")))
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
@@ -52,7 +61,9 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/cadastro",
-                                "/api/v1/auth/google"
+                                "/api/v1/auth/google",
+                                "/api/v1/auth/esqueci-senha",
+                                "/api/v1/auth/redefinir-senha"
                         )
                         .permitAll()
                         .requestMatchers(

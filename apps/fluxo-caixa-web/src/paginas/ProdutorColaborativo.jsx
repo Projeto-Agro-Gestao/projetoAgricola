@@ -466,7 +466,7 @@ function ProdutorColaborativo() {
                                 Arquivo *
                                 <input
                                     type="file"
-                                    accept="image/*,.pdf,.xml,.txt"
+                                    accept=".png,.jpg,.jpeg,.pdf,.xml"
                                     onChange={(evento) =>
                                         setArquivo(
                                             evento.target.files?.[0] ?? null,

@@ -28,17 +28,22 @@ public class AutenticacaoService {
     private final UsuarioAcessoRepository usuarioAcessoRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final TentativasLoginService tentativasLoginService;
+    private final String hashUsuarioInexistente;
 
     public AutenticacaoService(
             UsuarioRepository usuarioRepository,
             UsuarioAcessoRepository usuarioAcessoRepository,
             PasswordEncoder passwordEncoder,
-            TokenService tokenService) {
+            TokenService tokenService,
+            TentativasLoginService tentativasLoginService) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.tentativasLoginService = tentativasLoginService;
+        this.hashUsuarioInexistente = passwordEncoder.encode(java.util.UUID.randomUUID().toString());
     }
 
     @Transactional
@@ -52,9 +57,17 @@ public class AutenticacaoService {
         Usuario usuario = usuarioRepository
                 .findByEmailIgnoreCase(email)
                 .filter(Usuario::isAtivo)
-                .orElseThrow(
-                        CredenciaisInvalidasException::new
-                );
+                .orElse(null);
+
+        if (usuario == null) {
+            passwordEncoder.matches(request.senha(), hashUsuarioInexistente);
+            throw new CredenciaisInvalidasException();
+        }
+
+        if (usuario.getBloqueadoAte() != null
+                && usuario.getBloqueadoAte().isAfter(LocalDateTime.now(ZONA_BRASILIA))) {
+            throw new CredenciaisInvalidasException();
+        }
 
         boolean senhaCorreta = passwordEncoder.matches(
                 request.senha(),
@@ -62,6 +75,7 @@ public class AutenticacaoService {
         );
 
         if (!senhaCorreta) {
+            tentativasLoginService.registrarFalha(email);
             throw new CredenciaisInvalidasException();
         }
 

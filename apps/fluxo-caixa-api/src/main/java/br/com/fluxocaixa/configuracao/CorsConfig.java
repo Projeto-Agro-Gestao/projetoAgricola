@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.net.URI;
 
 @Configuration
 public class CorsConfig {
@@ -33,7 +34,7 @@ public class CorsConfig {
         CorsConfiguration configuracao =
                 new CorsConfiguration();
 
-        configuracao.setAllowedOriginPatterns(
+        configuracao.setAllowedOrigins(
                 origensPermitidas()
         );
 
@@ -66,7 +67,7 @@ public class CorsConfig {
                 )
         );
 
-        configuracao.setAllowCredentials(true);
+        configuracao.setAllowCredentials(false);
 
         configuracao.setMaxAge(600L);
 
@@ -99,10 +100,18 @@ public class CorsConfig {
 
         origens.add("https://projeto-agricola-gamma.vercel.app");
         origens.add("https://projeto-agricola.vercel.app");
-        origens.add("https://*.vercel.app");
         origens.add("https://projetoagricola.tadeu-ar.workers.dev");
-        origens.add("http://localhost:*");
-        origens.add("http://127.0.0.1:*");
+        for (String origem : origens) {
+            URI uri = URI.create(origem);
+            if (origem.contains("*") || uri.getHost() == null || uri.getUserInfo() != null
+                    || uri.getQuery() != null || uri.getFragment() != null
+                    || (uri.getPath() != null && !uri.getPath().isEmpty())
+                    || !("https".equals(uri.getScheme())
+                    || ("http".equals(uri.getScheme()) && ("localhost".equals(uri.getHost())
+                    || "127.0.0.1".equals(uri.getHost()))))) {
+                throw new IllegalStateException("Configure CORS com origens exatas e HTTPS; HTTP apenas local.");
+            }
+        }
 
         return new ArrayList<>(origens);
     }

@@ -73,6 +73,7 @@ public class TokenService {
                                 "tipoToken",
                                 "access"
                         )
+                        .claim("versaoAutenticacao", usuario.getVersaoAutenticacao())
                         .claim(
                                 "usuarioId",
                                 usuario.getId()

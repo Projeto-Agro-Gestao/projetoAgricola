@@ -1,0 +1,1 @@
+ALTER TABLE usuarios ADD COLUMN versao_autenticacao BIGINT NOT NULL DEFAULT 0;

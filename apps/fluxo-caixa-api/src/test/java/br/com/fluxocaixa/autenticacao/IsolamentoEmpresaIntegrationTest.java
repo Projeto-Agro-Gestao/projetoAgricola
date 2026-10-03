@@ -62,6 +62,7 @@ class IsolamentoEmpresaIntegrationTest {
     @Autowired private DocumentoAgroRepository documentos;
     @Autowired private MovimentacaoRepository movimentacoes;
     @Autowired private TokenService tokens;
+    @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     @Autowired private TransactionTemplate transaction;
 
     private Empresa propria;
@@ -232,6 +233,55 @@ class IsolamentoEmpresaIntegrationTest {
         assertThat(get("/api/v1/auth/me", token).statusCode()).isEqualTo(200);
         assertThat(get("/api/v1/colaboracao/empresas/" + propria.getId() + "/documentos", token)
                 .statusCode()).isEqualTo(200);
+    }
+
+    @Test
+    void alteracaoDaSenhaRevogaJwtAnteriorENovoTokenFunciona() throws Exception {
+        assertThat(get("/api/v1/auth/me", token).statusCode()).isEqualTo(200);
+        transaction.executeWithoutResult(status -> usuarios.findById(produtor.getId())
+                .orElseThrow().alterarSenha(passwordEncoder.encode("SenhaDeTesteSegura123!")));
+        assertThat(get("/api/v1/auth/me", token).statusCode()).isEqualTo(401);
+        Usuario atualizado = usuarios.findById(produtor.getId()).orElseThrow();
+        org.springframework.test.util.ReflectionTestUtils.setField(atualizado, "empresa", propria);
+        assertThat(get("/api/v1/auth/me", tokens.gerarToken(atualizado)).statusCode()).isEqualTo(200);
+    }
+
+    @Test
+    void falhasDeLoginPersistemMesmoComRollbackEBloqueiamSenhaCorreta() throws Exception {
+        transaction.executeWithoutResult(status -> usuarios.findById(produtor.getId())
+                .orElseThrow().alterarSenha(passwordEncoder.encode("SenhaDeTesteSegura123!")));
+        for (int i = 0; i < 5; i++) {
+            assertThat(login(produtor.getEmail(), "SenhaErrada123!").statusCode()).isEqualTo(401);
+        }
+        Usuario bloqueado = usuarios.findById(produtor.getId()).orElseThrow();
+        assertThat(bloqueado.getTentativasLogin()).isEqualTo(5);
+        assertThat(bloqueado.getBloqueadoAte()).isNotNull();
+        assertThat(login(produtor.getEmail(), "SenhaDeTesteSegura123!").statusCode()).isEqualTo(401);
+        transaction.executeWithoutResult(status -> org.springframework.test.util.ReflectionTestUtils.setField(
+                usuarios.findById(produtor.getId()).orElseThrow(), "bloqueadoAte", java.time.LocalDateTime.now().minusMinutes(1)));
+        assertThat(login(produtor.getEmail(), "SenhaDeTesteSegura123!").statusCode()).isEqualTo(200);
+        assertThat(usuarios.findById(produtor.getId()).orElseThrow().getTentativasLogin()).isZero();
+    }
+
+    @Test
+    void corsBloqueiaSiteEstrangeiroEApiTemCabecalhosDeProtecao() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/v1/auth/me"))
+                .header("Origin", "https://site-invasor.vercel.app")
+                .header("Access-Control-Request-Method", "GET")
+                .method("OPTIONS", HttpRequest.BodyPublishers.noBody()).build();
+        assertThat(http.send(request, HttpResponse.BodyHandlers.ofString()).statusCode()).isEqualTo(403);
+        HttpResponse<String> response = get("/api/v1/auth/me", token);
+        assertThat(response.headers().firstValue("X-Content-Type-Options").orElse("")).isEqualTo("nosniff");
+        assertThat(response.headers().firstValue("Content-Security-Policy").orElse("")).contains("frame-ancestors 'none'");
+        assertThat(response.headers().firstValue("Referrer-Policy").orElse("")).isEqualTo("no-referrer");
+    }
+
+    private HttpResponse<String> login(String email, String senha) throws Exception {
+        String body = new com.fasterxml.jackson.databind.ObjectMapper()
+                .writeValueAsString(java.util.Map.of("email", email, "senha", senha));
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/v1/auth/login"))
+                .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(body)).build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private Usuario usuario(Empresa empresa, PapelUsuario papel) {
