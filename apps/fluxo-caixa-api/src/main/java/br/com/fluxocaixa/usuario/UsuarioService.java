@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class UsuarioService {
@@ -149,37 +150,39 @@ public class UsuarioService {
                 request.telefone()
         );
 
-        usuario.alterarDados(nome, telefone);
-        usuario.getEmpresa().alterarNome(nomeEmpresa);
-        usuario.getEmpresa().alterarDadosCobranca(
-                normalizarDocumentoOpcional(
-                        request.documentoPagamento()
-                ),
-                normalizarDigitosOpcional(
-                        request.cepCobranca()
-                ),
-                normalizarTextoOpcional(
-                        request.ruaCobranca()
-                ),
-                normalizarTextoOpcional(
-                        request.numeroCobranca()
-                ),
+        Empresa empresa = usuario.getEmpresa();
+        // Dados legados inalterados nao devem bloquear edicoes independentes do perfil.
+        String documento = empresa.getDocumento();
+        if (request.documentoPagamento() != null
+                && !Objects.equals(request.documentoPagamento(), documento)) {
+            documento = normalizarDocumentoOpcional(request.documentoPagamento());
+            if (documento != null && !Objects.equals(documento, empresa.getDocumento())) {
+                empresaRepository.findByDocumento(documento).ifPresent(existente -> {
+                    if (!existente.getId().equals(empresa.getId())) {
+                        throw new DocumentoJaCadastradoException();
+                    }
+                });
+            }
+        }
+        usuario.alterarDados(nome, request.telefone() == null ? usuario.getTelefone() : telefone);
+        empresa.alterarNome(nomeEmpresa);
+        empresa.alterarDadosCobranca(
+                documento,
+                request.cepCobranca() == null ? empresa.getCepCobranca()
+                        : normalizarDigitosOpcional(request.cepCobranca()),
+                textoAtualizado(request.ruaCobranca(), empresa.getRuaCobranca()),
+                textoAtualizado(request.numeroCobranca(), empresa.getNumeroCobranca()),
                 (request.numeroCobranca() == null || request.numeroCobranca().isBlank())
-                        && usuario.getEmpresa().isSemNumeroCobranca(),
-                usuario.getEmpresa().getComplementoCobranca(),
-                normalizarTextoOpcional(
-                        request.bairroCobranca()
-                ),
-                normalizarTextoOpcional(
-                        request.cidadeCobranca()
-                ),
-                normalizarEstadoOpcional(
-                        request.estadoCobranca()
-                ),
-                usuario.getEmpresa().getObservacoesEnderecoCobranca()
+                        && empresa.isSemNumeroCobranca(),
+                empresa.getComplementoCobranca(),
+                textoAtualizado(request.bairroCobranca(), empresa.getBairroCobranca()),
+                textoAtualizado(request.cidadeCobranca(), empresa.getCidadeCobranca()),
+                request.estadoCobranca() == null ? empresa.getEstadoCobranca()
+                        : normalizarEstadoOpcional(request.estadoCobranca()),
+                empresa.getObservacoesEnderecoCobranca()
         );
         usuario.getEmpresa().alterarDadosFiscais(
-                normalizarDocumentoOpcional(request.documentoPagamento()),
+                documento,
                 request.inscricaoEstadual() == null
                         ? usuario.getEmpresa().getInscricaoEstadual()
                         : normalizarTextoOpcional(request.inscricaoEstadual()),
@@ -226,6 +229,10 @@ public class UsuarioService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Usuario nao encontrado"
                 ));
+    }
+
+    private String textoAtualizado(String recebido, String atual) {
+        return recebido == null ? atual : normalizarTextoOpcional(recebido);
     }
 
     private String normalizarEmail(String email) {

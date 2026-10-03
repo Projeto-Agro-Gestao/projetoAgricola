@@ -7,6 +7,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Perfil.css'
 import { limparSessao } from '../servicos/sessao.js'
+import { criarAtualizacaoPerfil } from '../servicos/perfil.js'
 
 function obterSessao() {
     try {
@@ -64,6 +65,7 @@ function Perfil() {
         pecuariaAtiva: false,
     })
     const [mensagem, setMensagem] = useState('')
+    const [perfilOriginal, setPerfilOriginal] = useState({})
     const [carregando, setCarregando] = useState(true)
     const [salvando, setSalvando] = useState(false)
 
@@ -120,7 +122,7 @@ function Perfil() {
     }, [sessao])
 
     function preencherFormulario(usuario) {
-        setFormulario({
+        const dados = {
             nomeEmpresa: usuario.nomeEmpresa ?? '',
             nome: usuario.nome ?? '',
             email: usuario.email ?? '',
@@ -141,7 +143,9 @@ function Perfil() {
                 usuario.agriculturaAtiva ?? true,
             pecuariaAtiva:
                 usuario.pecuariaAtiva ?? false,
-        })
+        }
+        setFormulario(dados)
+        setPerfilOriginal(dados)
     }
 
     function atualizarCampo(campo, valor) {
@@ -178,29 +182,7 @@ function Perfil() {
                         'Content-Type':
                             'application/json; charset=utf-8',
                     },
-                    body: JSON.stringify({
-                        nomeEmpresa: formulario.nomeEmpresa,
-                        nome: formulario.nome,
-                        telefone: formulario.telefone,
-                        documentoPagamento:
-                            formulario.documentoPagamento,
-                        cepCobranca:
-                            formulario.cepCobranca,
-                        ruaCobranca:
-                            formulario.ruaCobranca,
-                        numeroCobranca:
-                            formulario.numeroCobranca,
-                        bairroCobranca:
-                            formulario.bairroCobranca,
-                        cidadeCobranca:
-                            formulario.cidadeCobranca,
-                        estadoCobranca:
-                            formulario.estadoCobranca,
-                        agriculturaAtiva:
-                            formulario.agriculturaAtiva,
-                        pecuariaAtiva:
-                            formulario.pecuariaAtiva,
-                    }),
+                    body: JSON.stringify(criarAtualizacaoPerfil(formulario, perfilOriginal)),
                 },
             )
 

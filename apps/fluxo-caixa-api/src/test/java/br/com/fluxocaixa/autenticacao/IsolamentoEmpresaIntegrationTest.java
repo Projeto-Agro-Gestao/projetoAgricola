@@ -330,6 +330,57 @@ class IsolamentoEmpresaIntegrationTest {
         assertThat(response.headers().firstValue("Referrer-Policy").orElse("")).isEqualTo("no-referrer");
     }
 
+    @Test
+    void contaAntigaSalvaTelefoneSemRevalidarDocumentoLegadoInalterado() throws Exception {
+        String legado = "LEGADO-" + propria.getId();
+        transaction.executeWithoutResult(status -> empresas.findById(propria.getId()).orElseThrow()
+                .alterarDadosCobranca(legado, "88813600", "Rua antiga", "10", false,
+                        "Casa", "Centro", "Criciuma", "SC", "Observacao"));
+        var response = atualizarPerfil("\"documentoPagamento\":\"" + legado + "\",");
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        assertThat(usuarios.findById(produtor.getId()).orElseThrow().getTelefone()).isEqualTo("48999999999");
+        Empresa salva = empresas.findById(propria.getId()).orElseThrow();
+        assertThat(salva.getDocumento()).isEqualTo(legado);
+        assertThat(salva.getRuaCobranca()).isEqualTo("Rua antiga");
+        assertThat(salva.getCepCobranca()).isEqualTo("88813600");
+        assertThat(salva.getNumeroCobranca()).isEqualTo("10");
+        assertThat(salva.getEstadoCobranca()).isEqualTo("SC");
+    }
+
+    @Test
+    void perfilPreservaDocumentoOmitidoERejeitaNovoDocumentoInvalidoSemSalvarTelefone() throws Exception {
+        String legado = "ANTIGO-" + propria.getId();
+        transaction.executeWithoutResult(status -> empresas.findById(propria.getId()).orElseThrow()
+                .alterarDadosFiscais(legado, null, false, null, false));
+        var invalido = atualizarPerfil("\"documentoPagamento\":\"123\",");
+        assertThat(invalido.statusCode()).isEqualTo(400);
+        assertThat(usuarios.findById(produtor.getId()).orElseThrow().getTelefone()).isNull();
+        assertThat(atualizarPerfil("").statusCode()).isEqualTo(200);
+        assertThat(empresas.findById(propria.getId()).orElseThrow().getDocumento()).isEqualTo(legado);
+    }
+
+    @Test
+    void perfilNaoPodeUsarDocumentoDeOutraEmpresa() throws Exception {
+        String documento = String.format("%011d", terceira.getId());
+        transaction.executeWithoutResult(status -> empresas.findById(terceira.getId()).orElseThrow()
+                .alterarDadosFiscais(documento, null, false, null, false));
+        var response = atualizarPerfil("\"documentoPagamento\":\"" + documento + "\",");
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(409);
+        assertThat(response.body()).doesNotContain(terceira.getNome(), documento);
+        assertThat(empresas.findById(propria.getId()).orElseThrow().getDocumento()).isNull();
+        assertThat(usuarios.findById(produtor.getId()).orElseThrow().getTelefone()).isNull();
+    }
+
+    private HttpResponse<String> atualizarPerfil(String campos) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/v1/usuarios/meu-perfil"))
+                .header("Authorization", "Bearer " + token).header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("{" + campos
+                        + "\"nomeEmpresa\":\"Propriedade\",\"nome\":\"Responsavel\","
+                        + "\"telefone\":\"48999999999\",\"agriculturaAtiva\":true,\"pecuariaAtiva\":false}"))
+                .build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     private HttpResponse<String> login(String email, String senha) throws Exception {
         String body = new com.fasterxml.jackson.databind.ObjectMapper()
                 .writeValueAsString(java.util.Map.of("email", email, "senha", senha));
