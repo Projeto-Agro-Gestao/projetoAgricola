@@ -34,6 +34,8 @@ class AcessoEmpresaAuthorizationManagerTest {
                 .thenReturn(false);
         when(usuarioRepository.findByIdAndEmpresa_Id(10L, 1L))
                 .thenReturn(Optional.of(usuario));
+        when(usuario.isAtivo()).thenReturn(true);
+        when(usuario.isAcessoLiberado()).thenReturn(true);
         when(usuario.possuiAcessoValido(LocalDate.now()))
                 .thenReturn(true);
 
@@ -64,6 +66,8 @@ class AcessoEmpresaAuthorizationManagerTest {
                 .thenReturn(false);
         when(usuarioRepository.findByIdAndEmpresa_Id(10L, 1L))
                 .thenReturn(Optional.of(usuario));
+        when(usuario.isAtivo()).thenReturn(true);
+        when(usuario.isAcessoLiberado()).thenReturn(true);
         when(usuario.possuiAcessoValido(LocalDate.now()))
                 .thenReturn(false);
 

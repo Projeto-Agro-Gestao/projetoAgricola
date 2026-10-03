@@ -1,8 +1,9 @@
 package br.com.fluxocaixa.autenticacao;
 
 import br.com.fluxocaixa.assinatura.AssinaturaAcessoService;
-import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
+import br.com.fluxocaixa.usuario.Usuario;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationResult;
@@ -30,6 +31,7 @@ public class AcessoEmpresaAuthorizationManager
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AuthorizationResult authorize(
             Supplier<? extends Authentication> autenticacaoSupplier,
             RequestAuthorizationContext contexto) {
@@ -69,7 +71,16 @@ public class AcessoEmpresaAuthorizationManager
                 return new AuthorizationDecision(false);
             }
 
-            if (isAdministrador(jwt)) {
+            Long usuarioId = obterUsuarioIdDoToken(jwt);
+            Usuario usuario = usuarioId == null ? null : usuarioRepository
+                    .findByIdAndEmpresa_Id(usuarioId, empresaIdSolicitada)
+                    .filter(Usuario::isAtivo).orElse(null);
+            if (usuario == null) {
+                return new AuthorizationDecision(false);
+            }
+
+            if (AcessoUsuarioAuthorizationManager.isAdministrador(usuario)
+                    && usuario.isAcessoLiberado()) {
                 return new AuthorizationDecision(true);
             }
 
@@ -77,10 +88,11 @@ public class AcessoEmpresaAuthorizationManager
                 return new AuthorizationDecision(true);
             }
 
-            if (usuarioTemAcessoDiretoValido(
-                    jwt,
-                    empresaIdSolicitada
-            )) {
+            if (!usuario.isAcessoLiberado()) {
+                return new AuthorizationDecision(false);
+            }
+
+            if (usuario.possuiAcessoValido(LocalDate.now())) {
                 return new AuthorizationDecision(true);
             }
 
@@ -120,14 +132,6 @@ public class AcessoEmpresaAuthorizationManager
 
     private Long obterUsuarioIdDoToken(Jwt jwt) {
 
-        Object usuarioId = jwt
-                .getClaims()
-                .get("usuarioId");
-
-        if (usuarioId instanceof Number numero) {
-            return numero.longValue();
-        }
-
         String subject = jwt.getSubject();
 
         if (subject == null || subject.isBlank()) {
@@ -135,40 +139,12 @@ public class AcessoEmpresaAuthorizationManager
         }
 
         try {
-            return Long.valueOf(subject);
+            Long id = Long.valueOf(subject);
+            Object claim = jwt.getClaim("usuarioId");
+            return claim == null || id.toString().equals(claim.toString()) ? id : null;
         } catch (NumberFormatException exception) {
             return null;
         }
-    }
-
-    private boolean usuarioTemAcessoDiretoValido(
-            Jwt jwt,
-            Long empresaId) {
-
-        Long usuarioId = obterUsuarioIdDoToken(jwt);
-
-        if (usuarioId == null) {
-            return false;
-        }
-
-        return usuarioRepository
-                .findByIdAndEmpresa_Id(
-                        usuarioId,
-                        empresaId
-                )
-                .map(usuario -> usuario.possuiAcessoValido(
-                        LocalDate.now()
-                ))
-                .orElse(false);
-    }
-
-    private boolean isAdministrador(Jwt jwt) {
-
-        String papel =
-                jwt.getClaimAsString("papel");
-
-        return PapelUsuario.ADMINISTRADOR.name().equals(papel)
-                || PapelUsuario.SUPER_ADMIN.name().equals(papel);
     }
 
     private boolean rotaLiberadaParaPagamento(

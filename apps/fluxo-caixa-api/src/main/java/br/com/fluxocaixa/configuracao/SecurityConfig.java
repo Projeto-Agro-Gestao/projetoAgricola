@@ -1,6 +1,7 @@
 package br.com.fluxocaixa.configuracao;
 
 import br.com.fluxocaixa.autenticacao.AcessoEmpresaAuthorizationManager;
+import br.com.fluxocaixa.autenticacao.AcessoUsuarioAuthorizationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,7 +26,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AcessoEmpresaAuthorizationManager
-                    acessoEmpresaAuthorizationManager)
+                    acessoEmpresaAuthorizationManager,
+            AcessoUsuarioAuthorizationManager acessoUsuarioAuthorizationManager)
             throws Exception {
 
         http
@@ -56,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/me"
                         )
-                        .authenticated()
+                        .access(acessoUsuarioAuthorizationManager)
                         .requestMatchers(
                                 "/api/v1/webhooks/asaas"
                         )
@@ -64,7 +66,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/admin/**"
                         )
-                        .authenticated()
+                        .access(acessoUsuarioAuthorizationManager)
+                        .requestMatchers("/api/v1/empresas")
+                        .access(acessoUsuarioAuthorizationManager)
                         .requestMatchers(
                                 "/api/v1/empresas/{empresaId}",
                                 "/api/v1/empresas/{empresaId}/**"
@@ -75,7 +79,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/**"
                         )
-                        .authenticated()
+                        .access(acessoUsuarioAuthorizationManager)
                         .anyRequest()
                         .denyAll()
                 )

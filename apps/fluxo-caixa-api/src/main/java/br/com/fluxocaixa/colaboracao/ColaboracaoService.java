@@ -1445,6 +1445,8 @@ public class ColaboracaoService {
 
         Long usuarioId = jwt.getClaim("usuarioId");
         return usuarioRepository.findById(usuarioId)
+                .filter(Usuario::isAtivo)
+                .filter(Usuario::isAcessoLiberado)
                 .orElseThrow(() ->
                         new AccessDeniedException(
                                 "Usuario nao encontrado."
@@ -1461,12 +1463,12 @@ public class ColaboracaoService {
                         usuario.getEmpresa() != null
                                 && usuario.getEmpresa().getId().equals(empresaId)
                 )
-                || contadorEmpresaRepository
+                || (usuario.getPapel() == PapelUsuario.CONTADOR && contadorEmpresaRepository
                         .existsByContador_IdAndEmpresa_IdAndStatus(
                                 usuario.getId(),
                                 empresaId,
                                 StatusVinculoContador.ATIVO
-                        )) {
+                        ))) {
             return;
         }
 
