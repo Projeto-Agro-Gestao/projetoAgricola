@@ -88,11 +88,65 @@ class IsolamentoEmpresaIntegrationTest {
     }
 
     @Test
+    void salvaPerfilComPayloadDaTelaSemCamposFiscaisOpcionais() throws Exception {
+        transaction.executeWithoutResult(status -> {
+            Empresa empresa = empresas.findById(propria.getId()).orElseThrow();
+            empresa.alterarDadosFiscais("52998224725", "IE existente", false, "IM existente", true);
+            empresa.alterarDadosCobranca("52998224725", "88813600", "Rua anterior", null,
+                    true, "Casa dos fundos", "Centro", "Criciuma", "SC", "Portao lateral");
+        });
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/v1/usuarios/meu-perfil"))
+                .header("Authorization", "Bearer " + token).header("Content-Type", "application/json; charset=utf-8")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("""
+                        {"nomeEmpresa":"Propriedade atualizada","nome":"Responsavel atualizado",
+                         "telefone":"48999999999","documentoPagamento":"529.982.247-25",
+                         "cepCobranca":"88813-600","ruaCobranca":"Rua atualizada","numeroCobranca":"",
+                         "bairroCobranca":"Centro","cidadeCobranca":"Criciuma","estadoCobranca":"sc",
+                         "agriculturaAtiva":true,"pecuariaAtiva":true}
+                        """)).build();
+        var response = http.send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        assertThat(get("/api/v1/usuarios/meu-perfil", token).body()).contains("Propriedade atualizada", "Responsavel atualizado");
+        Empresa salva = empresas.findById(propria.getId()).orElseThrow();
+        assertThat(salva.getDocumento()).isEqualTo("52998224725");
+        assertThat(salva.getRuaCobranca()).isEqualTo("Rua atualizada");
+        assertThat(salva.getEstadoCobranca()).isEqualTo("SC");
+        assertThat(salva.getInscricaoEstadual()).isEqualTo("IE existente");
+        assertThat(salva.getInscricaoMunicipal()).isNull();
+        assertThat(salva.isIsentoInscricaoMunicipal()).isTrue();
+        assertThat(salva.isSemNumeroCobranca()).isTrue();
+        assertThat(salva.getComplementoCobranca()).isEqualTo("Casa dos fundos");
+        assertThat(salva.getObservacoesEnderecoCobranca()).isEqualTo("Portao lateral");
+    }
+
+    @Test
     void listagemNaoVazaNomeOuDocumentoDeOutraEmpresa() throws Exception {
         HttpResponse<String> response = get("/api/v1/empresas", token);
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains(propria.getNome()).doesNotContain(terceira.getNome());
         assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+    }
+
+    @Test
+    void perfilPermiteAlterarIsencaoFiscalQuandoEnviadaExplicitamente() throws Exception {
+        transaction.executeWithoutResult(status -> empresas.findById(propria.getId()).orElseThrow()
+                .alterarDadosFiscais("11144477735", null, true, null, true));
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/v1/usuarios/meu-perfil"))
+                .header("Authorization", "Bearer " + token).header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("""
+                        {"nomeEmpresa":"Propriedade","nome":"Responsavel","documentoPagamento":"11144477735",
+                         "agriculturaAtiva":true,"pecuariaAtiva":false,
+                         "inscricaoEstadual":"123","isentoInscricaoEstadual":false,
+                         "inscricaoMunicipal":"456","isentoInscricaoMunicipal":false}
+                        """)).build();
+        var response = http.send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        Empresa salva = empresas.findById(propria.getId()).orElseThrow();
+        assertThat(salva.isIsentoInscricaoEstadual()).isFalse();
+        assertThat(salva.isIsentoInscricaoMunicipal()).isFalse();
+        assertThat(salva.getInscricaoEstadual()).isEqualTo("123");
+        assertThat(salva.getInscricaoMunicipal()).isEqualTo("456");
+        assertThat(usuarios.findById(produtor.getId()).orElseThrow().getPapel()).isEqualTo(PapelUsuario.PRODUTOR);
     }
 
     @Test

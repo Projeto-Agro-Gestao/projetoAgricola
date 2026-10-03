@@ -164,8 +164,9 @@ public class UsuarioService {
                 normalizarTextoOpcional(
                         request.numeroCobranca()
                 ),
-                false,
-                null,
+                (request.numeroCobranca() == null || request.numeroCobranca().isBlank())
+                        && usuario.getEmpresa().isSemNumeroCobranca(),
+                usuario.getEmpresa().getComplementoCobranca(),
                 normalizarTextoOpcional(
                         request.bairroCobranca()
                 ),
@@ -175,14 +176,22 @@ public class UsuarioService {
                 normalizarEstadoOpcional(
                         request.estadoCobranca()
                 ),
-                null
+                usuario.getEmpresa().getObservacoesEnderecoCobranca()
         );
         usuario.getEmpresa().alterarDadosFiscais(
                 normalizarDocumentoOpcional(request.documentoPagamento()),
-                normalizarTextoOpcional(request.inscricaoEstadual()),
-                request.isentoInscricaoEstadual(),
-                normalizarTextoOpcional(request.inscricaoMunicipal()),
-                request.isentoInscricaoMunicipal()
+                request.inscricaoEstadual() == null
+                        ? usuario.getEmpresa().getInscricaoEstadual()
+                        : normalizarTextoOpcional(request.inscricaoEstadual()),
+                request.isentoInscricaoEstadual() == null
+                        ? usuario.getEmpresa().isIsentoInscricaoEstadual()
+                        : request.isentoInscricaoEstadual(),
+                request.inscricaoMunicipal() == null
+                        ? usuario.getEmpresa().getInscricaoMunicipal()
+                        : normalizarTextoOpcional(request.inscricaoMunicipal()),
+                request.isentoInscricaoMunicipal() == null
+                        ? usuario.getEmpresa().isIsentoInscricaoMunicipal()
+                        : request.isentoInscricaoMunicipal()
         );
         usuario.getEmpresa().configurarAtividades(
                 request.agriculturaAtiva(),

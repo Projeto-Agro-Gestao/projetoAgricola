@@ -57,12 +57,12 @@ public record AtualizarPerfilRequest(
         @Size(max = 40, message = "A inscricao estadual deve possuir no maximo 40 caracteres")
         String inscricaoEstadual,
 
-        boolean isentoInscricaoEstadual,
+        Boolean isentoInscricaoEstadual,
 
         @Size(max = 40, message = "A inscricao municipal deve possuir no maximo 40 caracteres")
         String inscricaoMunicipal,
 
-        boolean isentoInscricaoMunicipal,
+        Boolean isentoInscricaoMunicipal,
 
         boolean agriculturaAtiva,
         boolean pecuariaAtiva
