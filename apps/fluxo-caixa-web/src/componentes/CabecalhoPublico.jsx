@@ -3,31 +3,41 @@ import {
     Link,
     useLocation,
 } from 'react-router'
-import {
-    IconeFechar,
-    IconeFolha,
-    IconeMenu,
-} from './Icones.jsx'
 import '../App.css'
 
 const MENU = [
+    ['Início', 'inicio'],
     ['Para produtores', 'produtores'],
     ['Para contadores', 'contadores'],
-    ['Como funciona', 'como-funciona'],
     ['Recursos', 'recursos'],
+    ['FAQ', 'faq'],
 ]
 
+function Simbolo({ nome, tamanho }) {
+    return (
+        <span
+            aria-hidden="true"
+            className="material-symbols-outlined"
+            style={tamanho ? { fontSize: `${tamanho}px` } : undefined}
+        >
+            {nome}
+        </span>
+    )
+}
+
 function LinkMenu({ ancora, caminho, aoClicar, children }) {
+    const destino = ancora === 'inicio' ? '' : `#${ancora}`
+
     if (caminho === '/') {
         return (
-            <a href={`#${ancora}`} onClick={aoClicar}>
+            <a href={ancora === 'inicio' ? '#' : destino} onClick={aoClicar}>
                 {children}
             </a>
         )
     }
 
     return (
-        <Link onClick={aoClicar} to={`/#${ancora}`}>
+        <Link onClick={aoClicar} to={`/${destino}`}>
             {children}
         </Link>
     )
@@ -55,52 +65,16 @@ function CabecalhoPublico() {
     }
 
     return (
-        <header className="publica-cabecalho">
-            <Link className="publica-marca" to="/">
-                <span className="publica-marca-icone">
-                    <IconeFolha />
-                </span>
-                <span>AgroGestao</span>
-            </Link>
-
-            <nav className="publica-menu" aria-label="Principal">
-                {MENU.map(([rotulo, ancora]) => (
-                    <LinkMenu
-                        aoClicar={fecharMenu}
-                        ancora={ancora}
-                        caminho={pathname}
-                        key={ancora}
-                    >
-                        {rotulo}
-                    </LinkMenu>
-                ))}
-            </nav>
-
-            <div className="publica-acoes">
-                <Link className="publica-entrar" to="/login">
-                    Entrar
+        <header className="ag-cabecalho">
+            <div className="ag-cabecalho-interno">
+                <Link className="ag-marca" to="/">
+                    <span className="ag-marca-icone">
+                        <Simbolo nome="eco" tamanho={22} />
+                    </span>
+                    <span className="ag-marca-nome">Agro Gestão</span>
                 </Link>
 
-                <Link
-                    className="publica-botao publica-botao-pequeno"
-                    to="/cadastro"
-                >
-                    Quero conhecer
-                </Link>
-
-                <button
-                    aria-expanded={menuAberto}
-                    aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
-                    className="publica-menu-mobile-botao"
-                    onClick={() => setMenuAberto((valorAtual) => !valorAtual)}
-                    type="button"
-                >
-                    {menuAberto ? <IconeFechar /> : <IconeMenu />}
-                </button>
-            </div>
-
-            {menuAberto && (
-                <nav className="publica-menu-mobile" aria-label="Menu mobile">
+                <nav className="ag-nav" aria-label="Principal">
                     {MENU.map(([rotulo, ancora]) => (
                         <LinkMenu
                             aoClicar={fecharMenu}
@@ -111,6 +85,43 @@ function CabecalhoPublico() {
                             {rotulo}
                         </LinkMenu>
                     ))}
+                </nav>
+
+                <div className="ag-cabecalho-acoes">
+                    <Link className="ag-entrar" to="/login">
+                        Entrar
+                    </Link>
+                    <Link className="ag-botao ag-botao-primario ag-botao-pequeno" to="/cadastro">
+                        Quero conhecer
+                    </Link>
+
+                    <button
+                        aria-expanded={menuAberto}
+                        aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+                        className="ag-menu-mobile-botao"
+                        onClick={() => setMenuAberto((valor) => !valor)}
+                        type="button"
+                    >
+                        <Simbolo nome={menuAberto ? 'close' : 'menu'} tamanho={24} />
+                    </button>
+                </div>
+            </div>
+
+            {menuAberto && (
+                <nav className="ag-menu-mobile" aria-label="Menu mobile">
+                    {MENU.map(([rotulo, ancora]) => (
+                        <LinkMenu
+                            aoClicar={fecharMenu}
+                            ancora={ancora}
+                            caminho={pathname}
+                            key={ancora}
+                        >
+                            {rotulo}
+                        </LinkMenu>
+                    ))}
+                    <Link className="ag-botao ag-botao-primario" onClick={fecharMenu} to="/cadastro">
+                        Quero conhecer
+                    </Link>
                 </nav>
             )}
         </header>

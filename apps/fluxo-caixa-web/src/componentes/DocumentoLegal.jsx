@@ -78,7 +78,7 @@ function DocumentoLegal({ etiqueta, titulo, descricao, secoes, relacionado }) {
                             Voltar ao início
                         </Link>
 
-                        <span className="publica-etiqueta">{etiqueta}</span>
+                        <span className="ag-eyebrow">{etiqueta}</span>
 
                         <h1>{titulo}</h1>
 
