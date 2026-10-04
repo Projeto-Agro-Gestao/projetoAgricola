@@ -8,6 +8,7 @@ import {
 import './EscolhaModulo.css'
 import '../App.css'
 import { limparSessao, obterSessao } from '../servicos/sessao.js'
+import ModalAnimado from '../componentes/ModalAnimado.jsx'
 
 function Icone({ nome, tamanho }) {
     return (
@@ -24,6 +25,7 @@ function Icone({ nome, tamanho }) {
 function EscolhaModulo() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
+    const [confirmandoSaida, setConfirmandoSaida] = useState(false)
 
     useEffect(() => {
         if (!sessao) {
@@ -156,7 +158,7 @@ function EscolhaModulo() {
                         <Icone nome="credit_card" tamanho={20} />
                         Plano e pagamentos
                     </button>
-                    <button className="ag-dash-nav-item ag-dash-sair" onClick={sair} type="button">
+                    <button className="ag-dash-nav-item ag-dash-sair" onClick={() => setConfirmandoSaida(true)} type="button">
                         <Icone nome="logout" tamanho={20} />
                         Sair
                     </button>
@@ -246,6 +248,43 @@ function EscolhaModulo() {
                     </section>
                 </main>
             </div>
+
+            <ModalAnimado
+                aberto={confirmandoSaida}
+                aoFechar={() => setConfirmandoSaida(false)}
+                classeFundo="ag-dash-modal-fundo"
+            >
+                <section
+                    aria-modal="true"
+                    className="ag-dash-modal"
+                    role="dialog"
+                >
+                    <span className="ag-dash-modal-icone">
+                        <Icone nome="logout" tamanho={26} />
+                    </span>
+                    <h2>Sair da conta?</h2>
+                    <p>
+                        Sua sessão será encerrada e será necessário fazer login
+                        novamente para acessar o Agro Gestão.
+                    </p>
+                    <div className="ag-dash-modal-acoes">
+                        <button
+                            className="ag-dash-modal-cancelar"
+                            onClick={() => setConfirmandoSaida(false)}
+                            type="button"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            className="ag-dash-modal-confirmar"
+                            onClick={sair}
+                            type="button"
+                        >
+                            Sair da conta
+                        </button>
+                    </div>
+                </section>
+            </ModalAnimado>
         </div>
     )
 }
