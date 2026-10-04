@@ -562,33 +562,59 @@
  */
 
 .autenticacao-dados-fiscais {
-    display: grid;
     min-width: 0;
     margin: 2px 0 0;
     padding: 14px 16px;
-    gap: 12px;
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) * 1.15);
     background: color-mix(in oklch, var(--card) 80%, var(--background));
 }
 
-.autenticacao-dados-fiscais legend {
-    padding: 0 6px;
-    color: var(--foreground);
-    font-size: 0.73rem;
+.autenticacao-dados-fiscais summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 0.78rem;
     font-weight: 700;
 }
 
+.autenticacao-dados-fiscais summary::-webkit-details-marker {
+    display: none;
+}
+
+/* seta indicadora antes do texto do summary */
+.autenticacao-dados-fiscais summary::before {
+    content: "+";
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--primary) 14%, transparent);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.autenticacao-dados-fiscais[open] summary::before {
+    content: "\2212"; /* minus */
+}
+
+.autenticacao-dados-fiscais[open] summary {
+    margin-bottom: 12px;
+}
+
 .autenticacao-dados-fiscais > p {
-    margin: 0 0 2px;
+    margin: 0 0 12px;
     color: var(--muted-foreground);
     font-size: 0.67rem;
     line-height: 1.5;
 }
 
-.autenticacao-dados-fiscais:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
+.autenticacao-dados-fiscais > .autenticacao-campo + .autenticacao-campo {
+    margin-top: 12px;
 }
 
 .autenticacao-isento {
@@ -890,7 +916,7 @@
     display: flex;
     align-items: center;
     border-radius: var(--ag-radius-lg);
-    background: var(--ag-surface-low);
+    background: var(--ag-campo);
     transition: background 160ms ease, box-shadow 160ms ease;
 }
 .ag-login-input:focus-within { background: var(--ag-surface-lowest); box-shadow: 0 0 0 3px rgb(59 123 0 / 0.15); }
@@ -984,7 +1010,7 @@
     padding: 11px;
     border: 1px solid var(--ag-outline-variant);
     border-radius: var(--ag-radius-lg);
-    background: var(--ag-surface-low);
+    background: var(--ag-campo);
     color: var(--ag-on-surface-variant);
     font-weight: 600;
     cursor: not-allowed;
@@ -995,7 +1021,7 @@
 .ag-login-rodape {
     width: 100%;
     padding: 20px 0;
-    background: var(--ag-surface-low);
+    background: var(--ag-campo);
     box-shadow: 0 -1px 6px rgb(15 23 42 / 0.02);
 }
 .ag-login-rodape-interno {
@@ -1019,3 +1045,128 @@
     .ag-login-main { padding: 16px; }
     .ag-login-card-form { padding: 24px; }
 }
+
+
+/* ================================================================ */
+/* Tela de Cadastro — reusa .ag-login-* com extras .ag-cad-*.       */
+/* ================================================================ */
+
+/* No cadastro o formulário é maior: dá mais espaço à coluna direita */
+@media (min-width: 1024px) {
+    .ag-cad-grid { grid-template-columns: 5fr 7fr; align-items: start; }
+    .ag-cad-grid .ag-login-institucional { position: sticky; top: 96px; }
+}
+
+/* Features do painel esquerdo */
+.ag-cad-features { display: grid; gap: 12px; }
+.ag-cad-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: var(--ag-radius-xl);
+    background: var(--ag-surface-lowest);
+    box-shadow: var(--ag-shadow-1);
+}
+.ag-cad-feature-icone {
+    flex-shrink: 0;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: var(--ag-radius-lg);
+    background: var(--ag-surface-high);
+    color: var(--ag-primary);
+}
+.ag-cad-feature strong { display: block; font-size: 0.95rem; font-weight: 600; color: var(--ag-on-surface); }
+.ag-cad-feature small { display: block; margin-top: 2px; font-size: 0.78rem; line-height: 1.5; color: var(--ag-on-surface-variant); }
+
+/* Mensagem de sucesso */
+.ag-login-sucesso {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: var(--ag-radius-lg);
+    background: rgb(59 123 0 / 0.1);
+    color: var(--ag-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Campos lado a lado (email+telefone, senha+confirmar) */
+.ag-cad-dupla { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 560px) { .ag-cad-dupla { grid-template-columns: 1fr 1fr; } }
+
+/* Fieldset de atividades */
+.ag-cad-atividades {
+    margin: 0;
+    padding: 16px;
+    border: 1px solid var(--ag-surface-high);
+    border-radius: var(--ag-radius-xl);
+    background: var(--ag-campo);
+}
+.ag-cad-atividades-titulo {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ag-on-surface);
+}
+/* itens empilhados com respiro (fieldset não é mais grid) */
+.ag-cad-atividades .ag-cad-atividade + .ag-cad-atividade { margin-top: 10px; }
+.ag-cad-atividade {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--ag-radius-lg);
+    background: var(--ag-surface-lowest);
+    cursor: pointer;
+}
+.ag-cad-atividade input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--ag-primary); cursor: pointer; }
+.ag-cad-atividade strong { display: block; font-size: 0.88rem; font-weight: 600; color: var(--ag-on-surface); }
+.ag-cad-atividade small { display: block; margin-top: 1px; font-size: 0.75rem; color: var(--ag-on-surface-variant); }
+
+/* Details de dados fiscais */
+.ag-cad-fiscais {
+    padding: 16px;
+    border: 1px solid var(--ag-surface-high);
+    border-radius: var(--ag-radius-xl);
+    background: var(--ag-campo);
+}
+.ag-cad-fiscais summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    cursor: pointer;
+    color: var(--ag-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.ag-cad-fiscais summary::-webkit-details-marker { display: none; }
+.ag-cad-fiscais summary::before {
+    content: "+";
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgb(59 123 0 / 0.14);
+    font-weight: 700;
+    line-height: 1;
+}
+.ag-cad-fiscais[open] summary::before { content: "\2212"; }
+.ag-cad-fiscais[open] summary { margin-bottom: 12px; }
+.ag-cad-fiscais > p { margin: 0 0 12px; font-size: 0.75rem; line-height: 1.5; color: var(--ag-on-surface-variant); }
+.ag-cad-fiscais .ag-login-campo + .ag-login-campo { margin-top: 12px; }
+
+.ag-cad-isento {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--ag-on-surface-variant);
+    cursor: pointer;
+}
+.ag-cad-isento input { width: 15px; height: 15px; accent-color: var(--ag-primary); cursor: pointer; }
