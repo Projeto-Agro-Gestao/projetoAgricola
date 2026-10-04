@@ -6,39 +6,19 @@ import {
     useNavigate,
 } from 'react-router'
 import './EscolhaModulo.css'
-import { limparSessao } from '../servicos/sessao.js'
+import '../App.css'
+import { limparSessao, obterSessao } from '../servicos/sessao.js'
 
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo = localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
+function Icone({ nome, tamanho }) {
+    return (
+        <span
+            aria-hidden="true"
+            className="material-symbols-outlined"
+            style={tamanho ? { fontSize: `${tamanho}px` } : undefined}
+        >
+            {nome}
+        </span>
+    )
 }
 
 function EscolhaModulo() {
@@ -47,50 +27,9 @@ function EscolhaModulo() {
 
     useEffect(() => {
         if (!sessao) {
-            navigate('/login', {
-                replace: true,
-            })
+            navigate('/login', { replace: true })
         }
-    }, [
-        navigate,
-        sessao,
-    ])
-
-    function abrirControleInterno() {
-        navigate('/dashboard/financeiro')
-    }
-
-    function abrirContasFinanceiras() {
-        navigate('/dashboard/contas')
-    }
-
-    function abrirFornecedores() {
-        navigate('/dashboard/fornecedores')
-    }
-
-    function abrirPainelProdutor() {
-        navigate('/dashboard/produtor')
-    }
-
-    function abrirAreaContador() {
-        navigate('/contador')
-    }
-
-    function abrirAreaAdministrativa() {
-        navigate('/admin')
-    }
-
-    function abrirPerfil() {
-        navigate('/dashboard/perfil')
-    }
-
-    function abrirPlano() {
-        navigate('/dashboard/plano')
-    }
-
-    function abrirAppSimples() {
-        navigate('/app')
-    }
+    }, [navigate, sessao])
 
     if (!sessao) {
         return null
@@ -98,282 +37,213 @@ function EscolhaModulo() {
 
     const papel = sessao.usuario.papel
     const podeAdministrar =
-        papel === 'ADMINISTRADOR' ||
-        papel === 'SUPER_ADMIN'
+        papel === 'ADMINISTRADOR' || papel === 'SUPER_ADMIN'
+
+    function sair() {
+        limparSessao()
+        navigate('/login', { replace: true })
+    }
+
+    // Módulos reais do sistema (rotas existentes no roteador).
+    const modulos = [
+        {
+            icone: 'finance_mode',
+            categoria: 'Financeiro',
+            titulo: 'Controle interno financeiro',
+            descricao: 'Acompanhe receitas, despesas, saldo e resultado do período registrado.',
+            nota: 'Receitas, despesas e gráficos',
+            rota: '/dashboard/financeiro',
+            cor: 'verde',
+        },
+        {
+            icone: 'account_balance_wallet',
+            categoria: 'Planejamento',
+            titulo: 'Contas a pagar e receber',
+            descricao: 'Veja valores que ainda vão entrar ou sair e acompanhe vencimentos futuros.',
+            nota: 'Previsão e vencimentos',
+            rota: '/dashboard/contas',
+            cor: 'verde',
+        },
+        {
+            icone: 'local_shipping',
+            categoria: 'Compras',
+            titulo: 'Controle de fornecedores',
+            descricao: 'Cadastre onde comprou, compare preços e organize produtos por categoria.',
+            nota: 'Fornecedores e produtos',
+            rota: '/dashboard/fornecedores',
+            cor: 'ambar',
+        },
+        {
+            icone: 'potted_plant',
+            categoria: 'Produtor',
+            titulo: 'Painel do produtor',
+            descricao: 'Envie documentos, veja pendências do contador e a visão rápida do mês.',
+            nota: 'Documentos e pendências',
+            rota: '/dashboard/produtor',
+            cor: 'verde',
+        },
+        {
+            icone: 'calculate',
+            categoria: 'Contábil',
+            titulo: 'Área do contador',
+            descricao: 'Carteira de clientes, documentos, pendências, classificações e visão tributária.',
+            nota: 'Carteira e análise',
+            rota: '/contador',
+            cor: 'ambar',
+        },
+    ]
+
+    const navItens = [
+        { icone: 'grid_view', rotulo: 'Visão Geral', rota: '/dashboard', ativo: true },
+        { icone: 'receipt_long', rotulo: 'Lançamentos', rota: '/dashboard/movimentacoes' },
+        { icone: 'account_balance_wallet', rotulo: 'Contas', rota: '/dashboard/contas' },
+        { icone: 'account_balance', rotulo: 'LCDPR & Fiscal', rota: '/contador' },
+        { icone: 'tune', rotulo: 'Configurações', rota: '/dashboard/perfil' },
+    ]
 
     return (
-        <div className="escolha-modulo-pagina">
-            <div className="escolha-modulo-conteudo">
-                <header className="escolha-modulo-cabecalho">
-                    <div className="escolha-modulo-marca">
-                        <span aria-hidden="true">
-                            AG
+        <div className="ag-dash publica">
+            <aside className="ag-dash-sidebar">
+                <div className="ag-dash-sidebar-topo">
+                    <div className="ag-dash-marca">
+                        <span className="ag-dash-marca-icone">
+                            <Icone nome="eco" tamanho={22} />
                         </span>
-
                         <div>
-                            <strong>
-                                Agro Gestão
-                            </strong>
-
-                            <small>
-                                {sessao.usuario.nomeEmpresa}
-                            </small>
+                            <strong>Agro Gestão</strong>
+                            <small>Gestão rural</small>
                         </div>
                     </div>
 
-                    <div className="escolha-modulo-acoes-topo">
-                        {podeAdministrar && (
+                    <div className="ag-dash-propriedade">
+                        <span className="ag-dash-prop-icone">
+                            <Icone nome="agriculture" tamanho={20} />
+                        </span>
+                        <div className="ag-dash-prop-texto">
+                            <small>Propriedade ativa</small>
+                            <strong>{sessao.usuario.nomeEmpresa}</strong>
+                        </div>
+                    </div>
+
+                    <nav className="ag-dash-nav" aria-label="Navegação principal">
+                        <span className="ag-dash-nav-titulo">Navegação</span>
+                        {navItens.map((item) => (
                             <button
-                                className="escolha-modulo-admin"
-                                onClick={abrirAreaAdministrativa}
+                                className={`ag-dash-nav-item ${item.ativo ? 'ag-ativo' : ''}`}
+                                key={item.rotulo}
+                                onClick={() => navigate(item.rota)}
                                 type="button"
                             >
-                                Área administrativa
+                                <Icone nome={item.icone} tamanho={20} />
+                                {item.rotulo}
                             </button>
-                        )}
+                        ))}
+                    </nav>
+                </div>
 
+                <div className="ag-dash-sidebar-base">
+                    {podeAdministrar && (
                         <button
-                            className="escolha-modulo-perfil"
-                            onClick={abrirPerfil}
+                            className="ag-dash-nav-item"
+                            onClick={() => navigate('/admin')}
                             type="button"
                         >
-                            Meus dados
+                            <Icone nome="shield_person" tamanho={20} />
+                            Área administrativa
                         </button>
+                    )}
+                    <button className="ag-dash-nav-item" onClick={() => navigate('/dashboard/plano')} type="button">
+                        <Icone nome="credit_card" tamanho={20} />
+                        Plano e pagamentos
+                    </button>
+                    <button className="ag-dash-nav-item ag-dash-sair" onClick={sair} type="button">
+                        <Icone nome="logout" tamanho={20} />
+                        Sair
+                    </button>
+                </div>
+            </aside>
 
+            <div className="ag-dash-conteudo">
+                <header className="ag-dash-header">
+                    <div className="ag-dash-busca">
+                        <Icone nome="search" tamanho={18} />
+                        <span>Buscar operações, documentos, movimentações...</span>
+                    </div>
+
+                    <div className="ag-dash-header-acoes">
+                        <button className="ag-dash-icone-botao" onClick={() => navigate('/app')} type="button" title="App simples">
+                            <Icone nome="smartphone" tamanho={20} />
+                        </button>
                         <button
-                            className="escolha-modulo-perfil"
-                            onClick={abrirPlano}
+                            className="ag-dash-icone-botao"
                             type="button"
+                            title="Notificações (em breve)"
                         >
-                            Plano e pagamentos
+                            <Icone nome="notifications" tamanho={20} />
                         </button>
-
-                        <button
-                            className="escolha-modulo-perfil"
-                            onClick={abrirAppSimples}
-                            type="button"
-                        >
-                            App simples
+                        <div className="ag-dash-divisor" />
+                        <button className="ag-dash-usuario" onClick={() => navigate('/dashboard/perfil')} type="button">
+                            <div className="ag-dash-usuario-texto">
+                                <strong>{sessao.usuario.nome}</strong>
+                                <small>{papel === 'CONTADOR' ? 'Contador' : 'Produtor rural'}</small>
+                            </div>
+                            <span className="ag-dash-avatar">
+                                <Icone nome="person" tamanho={18} />
+                            </span>
                         </button>
-
                     </div>
                 </header>
 
-                <main>
-                    <div className="escolha-modulo-apresentacao">
-                        <p>
-                            Olá, {sessao.usuario.nome}
-                        </p>
-
-                        <h1>
-                            O que você deseja controlar agora?
-                        </h1>
-
-                        <span>
-                            Escolha uma área de trabalho. O produtor fica com
-                            telas simples; o contador tem uma visão mais
-                            organizada para acompanhar clientes e pendências.
-                        </span>
-                    </div>
-
-
-                    <section className="escolha-modulo-opcoes">
-                        <button
-                            className="escolha-modulo-card escolha-modulo-interno"
-                            onClick={abrirControleInterno}
-                            type="button"
-                        >
-                            <span className="escolha-modulo-icone">
-                                R$
-                            </span>
-
-                            <div className="escolha-modulo-card-texto">
-                                <small>
-                                    Dinheiro movimentado
-                                </small>
-
-                                <h2>
-                                    Controle interno financeiro
-                                </h2>
-
-                                <p>
-                                    Acompanhe receitas, despesas, saldo e
-                                    resultado do período registrado.
-                                </p>
-
-                                <ul>
-                                    <li>Receita — dinheiro entrando</li>
-                                    <li>Despesa — dinheiro saindo</li>
-                                    <li>Gráficos e relatórios</li>
-                                </ul>
-                            </div>
-
-                            <strong className="escolha-modulo-acao">
-                                Abrir controle interno
-                                <span aria-hidden="true">
-                                    -&gt;
+                <main className="ag-dash-main">
+                    <section className="ag-dash-modulos">
+                        <div className="ag-dash-modulos-topo">
+                            <div>
+                                <span className="ag-dash-eyebrow">
+                                    <Icone nome="hub" tamanho={18} />
+                                    Gestão integrada
                                 </span>
-                            </strong>
-                        </button>
-
-                        <button
-                            className="escolha-modulo-card escolha-modulo-contas"
-                            onClick={abrirContasFinanceiras}
-                            type="button"
-                        >
-                            <span className="escolha-modulo-icone">
-                                $
-                            </span>
-
-                            <div className="escolha-modulo-card-texto">
-                                <small>
-                                    Planejamento futuro
-                                </small>
-
-                                <h2>
-                                    Contas a pagar e receber
-                                </h2>
-
-                                <p>
-                                    Veja valores que ainda vão entrar ou sair e
-                                    acompanhe vencimentos futuros.
-                                </p>
-
-                                <ul>
-                                    <li>Contas a receber</li>
-                                    <li>Contas a pagar</li>
-                                    <li>Previsão futura</li>
-                                </ul>
+                                <h2>Módulos do sistema</h2>
                             </div>
-
-                            <strong className="escolha-modulo-acao">
-                                Abrir contas
-                                <span aria-hidden="true">
-                                    -&gt;
-                                </span>
-                            </strong>
-                        </button>
-
-                        <button
-                            className="escolha-modulo-card escolha-modulo-fornecedores"
-                            onClick={abrirFornecedores}
-                            type="button"
-                        >
-                            <span className="escolha-modulo-icone">
-                                F
-                            </span>
-
-                            <div className="escolha-modulo-card-texto">
-                                <small>
-                                    Compras e fornecedores
-                                </small>
-
-                                <h2>
-                                    Controle de fornecedores
-                                </h2>
-
-                                <p>
-                                    Cadastre onde comprou, compare preços e
-                                    organize produtos por categoria.
-                                </p>
-
-                                <ul>
-                                    <li>Fornecedor e produto</li>
-                                    <li>Comparação de preços</li>
-                                    <li>Relatórios de compra</li>
-                                </ul>
+                            <div className="ag-dash-modulos-info">
+                                <span className="ag-dash-ponto-ok" />
+                                {modulos.length} módulos disponíveis
                             </div>
+                        </div>
 
-                            <strong className="escolha-modulo-acao">
-                                Abrir fornecedores
-                                <span aria-hidden="true">
-                                    -&gt;
-                                </span>
-                            </strong>
-                        </button>
-
-                        <button
-                            className="escolha-modulo-card escolha-modulo-produtor"
-                            onClick={abrirPainelProdutor}
-                            type="button"
-                        >
-                            <span className="escolha-modulo-icone">
-                                P
-                            </span>
-
-                            <div className="escolha-modulo-card-texto">
-                                <small>
-                                    Produtor e contador
-                                </small>
-
-                                <h2>
-                                    Painel simples do produtor
-                                </h2>
-
-                                <p>
-                                    Envie documentos, veja pendências do
-                                    contador e acompanhe a visão rápida do mês.
-                                </p>
-
-                                <ul>
-                                    <li>Inbox de documentos</li>
-                                    <li>Pendências solicitadas</li>
-                                    <li>Propriedades e atividades</li>
-                                </ul>
-                            </div>
-
-                            <strong className="escolha-modulo-acao">
-                                Abrir painel do produtor
-                                <span aria-hidden="true">
-                                    -&gt;
-                                </span>
-                            </strong>
-                        </button>
-
-                        <button
-                            className="escolha-modulo-card escolha-modulo-contador"
-                            onClick={abrirAreaContador}
-                            type="button"
-                        >
-                            <span className="escolha-modulo-icone">
-                                C
-                            </span>
-
-                            <div className="escolha-modulo-card-texto">
-                                <small>
-                                    Carteira e análise
-                                </small>
-
-                                <h2>
-                                    Área do contador
-                                </h2>
-
-                                <p>
-                                    Acompanhe clientes, documentos,
-                                    pendências, classificações e visão
-                                    tributária resumida.
-                                </p>
-
-                                <ul>
-                                    <li>Carteira de clientes</li>
-                                    <li>Documentos em análise</li>
-                                    <li>Indicadores tributários</li>
-                                </ul>
-                            </div>
-
-                            <strong className="escolha-modulo-acao">
-                                Abrir área do contador
-                                <span aria-hidden="true">
-                                    -&gt;
-                                </span>
-                            </strong>
-                        </button>
+                        <div className="ag-dash-grid">
+                            {modulos.map((m) => (
+                                <article className="ag-dash-card" key={m.titulo}>
+                                    <div className="ag-dash-card-corpo">
+                                        <div className="ag-dash-card-topo">
+                                            <span className={`ag-dash-card-icone ag-icone-${m.cor}`}>
+                                                <Icone nome={m.icone} tamanho={28} />
+                                            </span>
+                                            <div className="ag-dash-card-tags">
+                                                <span className="ag-dash-tag-cat">{m.categoria}</span>
+                                                <span className="ag-dash-tag-ativo">
+                                                    <span className="ag-dash-ponto-ok" />
+                                                    Ativo
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <h3>{m.titulo}</h3>
+                                        <p>{m.descricao}</p>
+                                    </div>
+                                    <button
+                                        className="ag-dash-card-rodape"
+                                        onClick={() => navigate(m.rota)}
+                                        type="button"
+                                    >
+                                        <span>{m.nota}</span>
+                                        <span className="ag-dash-card-acessar">
+                                            Acessar
+                                            <Icone nome="arrow_forward" tamanho={18} />
+                                        </span>
+                                    </button>
+                                </article>
+                            ))}
+                        </div>
                     </section>
-
-                    <p className="escolha-modulo-ajuda">
-                        Você poderá voltar para esta tela e trocar de área
-                        quando quiser.
-                    </p>
                 </main>
             </div>
         </div>

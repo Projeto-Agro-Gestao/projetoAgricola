@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { API_BASE_URL as API_URL } from '../config.js'
 import {
     atualizarUsuarioSessao,
@@ -27,7 +27,6 @@ function rotaPublica(pathname) {
 function AppShell() {
     const location = useLocation()
     const navigate = useNavigate()
-    const [confirmandoSaida, setConfirmandoSaida] = useState(false)
     const sessao = obterSessao()
 
     useEffect(() => {
@@ -54,71 +53,10 @@ function AppShell() {
             .catch(() => {})
     }, [location.pathname, navigate, sessao])
 
-    if (rotaPublica(location.pathname) || !sessao) {
-        return null
-    }
-
-    function sair() {
-        limparSessao()
-        navigate('/login', { replace: true })
-    }
-
-    return (
-        <>
-            <nav
-                className="app-shell"
-                aria-label="Navegação da conta"
-            >
-                <button
-                    type="button"
-                    onClick={() => navigate('/dashboard')}
-                >
-                    Tela principal
-                </button>
-                <button
-                    type="button"
-                    className="app-shell-sair"
-                    onClick={() => setConfirmandoSaida(true)}
-                >
-                    Sair da conta
-                </button>
-            </nav>
-
-            {confirmandoSaida && (
-                <div
-                    className="app-shell-modal-fundo"
-                    role="presentation"
-                >
-                    <section
-                        aria-modal="true"
-                        className="app-shell-modal"
-                        role="dialog"
-                    >
-                        <h2>Tem certeza que deseja sair da sua conta?</h2>
-                        <p>
-                            Sua sessão será encerrada e será necessário fazer
-                            login novamente para acessar o AgroGestão.
-                        </p>
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => setConfirmandoSaida(false)}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="button"
-                                className="app-shell-sair"
-                                onClick={sair}
-                            >
-                                Sair da conta
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            )}
-        </>
-    )
+    // Componente sem UI: apenas valida a sessão (useEffect acima) e
+    // desloga em caso de token expirado. Os antigos botões flutuantes
+    // "Tela principal" / "Sair da conta" foram removidos.
+    return null
 }
 
 export default AppShell
