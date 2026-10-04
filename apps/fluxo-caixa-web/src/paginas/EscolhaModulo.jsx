@@ -38,6 +38,9 @@ function EscolhaModulo() {
     }
 
     const papel = sessao.usuario.papel
+    const hoje = new Date()
+    const anoSafra = hoje.getMonth() >= 6 ? hoje.getFullYear() : hoje.getFullYear() - 1
+    const safraAtual = `${anoSafra}/${anoSafra + 1}`
     const podeAdministrar =
         papel === 'ADMINISTRADOR' || papel === 'SUPER_ADMIN'
 
@@ -167,6 +170,11 @@ function EscolhaModulo() {
 
             <div className="ag-dash-conteudo">
                 <header className="ag-dash-header">
+                    <div className="ag-dash-safra">
+                        <span className="ag-dash-ponto-ok" />
+                        Safra: <strong>{safraAtual} Ativa</strong>
+                    </div>
+
                     <div className="ag-dash-busca">
                         <Icone nome="search" tamanho={18} />
                         <span>Buscar operações, documentos, movimentações...</span>
