@@ -27,4 +27,4 @@ jobs:
             -w "\nHTTP %{http_code}\n"
         env:
           HEALTH_URL: >-
-            ${{ inputs.health_url || vars.RENDER_HEALTH_URL || 'https://projeto-agricola.onrender.com/actuator/health' }}
+            ${{ inputs.health_url || vars.RENDER_HEALTH_URL || 'https://projetoagricola.onrender.com/actuator/health' }}
