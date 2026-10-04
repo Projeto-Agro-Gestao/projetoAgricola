@@ -16,7 +16,21 @@ import {
     salvarSessao,
 } from '../servicos/sessao.js'
 import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
+import MarcaAgro from '../componentes/MarcaAgro.jsx'
+import '../App.css'
 import './Autenticacao.css'
+
+function Simbolo({ nome, tamanho }) {
+    return (
+        <span
+            aria-hidden="true"
+            className="material-symbols-outlined"
+            style={tamanho ? { fontSize: `${tamanho}px` } : undefined}
+        >
+            {nome}
+        </span>
+    )
+}
 
 function mensagemDeFalhaConexao(erro, mensagemPadrao) {
     if (
@@ -137,7 +151,7 @@ function Login() {
                     ? '/admin'
                     : '/dashboard',
                 {
-                replace: true,
+                    replace: true,
                 },
             )
         } catch (erro) {
@@ -226,211 +240,199 @@ function Login() {
     }
 
     return (
-        <main className="autenticacao">
-            <section className="autenticacao-apresentacao">
-                <Link
-                    className="autenticacao-marca"
-                    to="/"
-                >
-                    <span className="autenticacao-marca-icone">
-                        ♧
-                    </span>
-
-                    <span>AgroGestão</span>
-                </Link>
-
-                <div className="autenticacao-mensagem">
-                    <h1>
-                        A gestão da sua propriedade, do campo ao caixa.
-                    </h1>
-
-                    <p>
-                        Organize as informações financeiras da sua
-                        propriedade em uma plataforma simples e
-                        inteligente.
-                    </p>
-
-                    <ul className="autenticacao-beneficios">
-                        <li>
-                            Receitas e despesas sempre organizadas
-                        </li>
-
-                        <li>
-                            Categorias personalizadas para sua atividade
-                        </li>
-
-                        <li>
-                            Resumo financeiro para decisões melhores
-                        </li>
-                    </ul>
+        <div className="ag-login publica">
+            <header className="ag-login-cabecalho">
+                <div className="ag-login-cabecalho-interno">
+                    <MarcaAgro to="/" />
+                    <Link className="ag-login-voltar" to="/">
+                        <Simbolo nome="arrow_back" tamanho={18} />
+                        Voltar para o site
+                    </Link>
                 </div>
+            </header>
 
-                <p className="autenticacao-direitos">
-                    © 2026 AgroGestão. Todos os direitos reservados.
-                </p>
-            </section>
+            <main className="ag-login-main">
+                <div className="ag-login-grid">
+                    {/* LADO ESQUERDO — institucional */}
+                    <section className="ag-login-institucional">
+                        <div className="ag-login-glow ag-login-glow-a" aria-hidden="true" />
+                        <div className="ag-login-glow ag-login-glow-b" aria-hidden="true" />
 
-            <section className="autenticacao-area-formulario">
-                <div className="autenticacao-formulario-container">
-                    <h2>Entrar na conta</h2>
+                        <div className="ag-login-institucional-conteudo">
+                            <div className="ag-login-institucional-topo">
+                                <h1>Acesse sua conta e mantenha a gestão da fazenda em dia</h1>
+                                <p>
+                                    Conecte o manejo da lavoura e da pecuária
+                                    diretamente ao escritório contábil e elimine
+                                    o retrabalho no fim do ano fiscal.
+                                </p>
+                            </div>
 
-                    <p className="autenticacao-subtitulo">
-                        Acesse o painel de gestão da sua propriedade.
-                    </p>
+                            <div className="ag-login-cards">
+                                <div className="ag-login-card">
+                                    <span className="ag-login-card-icone ag-login-card-icone-verde">
+                                        <Simbolo nome="agriculture" tamanho={24} />
+                                    </span>
+                                    <h3>Para o Produtor</h3>
+                                    <p>
+                                        Lançamentos simplificados no pasto ou na
+                                        lavoura, captura de notas e documentos em
+                                        poucos toques.
+                                    </p>
+                                    <div className="ag-login-card-selo ag-verde">
+                                        <Simbolo nome="verified" tamanho={18} />
+                                        Foco na colheita e produtividade
+                                    </div>
+                                </div>
 
-                    {mensagem && (
-                        <div
-                            className="autenticacao-sucesso"
-                            role="alert"
-                        >
-                            {mensagem}
-                        </div>
-                    )}
+                                <div className="ag-login-card">
+                                    <span className="ag-login-card-icone ag-login-card-icone-ambar">
+                                        <Simbolo nome="receipt_long" tamanho={24} />
+                                    </span>
+                                    <h3>Para o Contador</h3>
+                                    <p>
+                                        Carteira de clientes centralizada,
+                                        documentos sempre anexados e organização
+                                        para o Livro Caixa Digital (LCDPR).
+                                    </p>
+                                    <div className="ag-login-card-selo ag-ambar">
+                                        <Simbolo nome="analytics" tamanho={18} />
+                                        Pronto para o LCDPR
+                                    </div>
+                                </div>
+                            </div>
 
-                    <form
-                        className="autenticacao-formulario"
-                        onSubmit={entrar}
-                    >
-                        <div className="autenticacao-campo">
-                            <label htmlFor="emailLogin">
-                                E-mail
-                            </label>
-
-                            <input
-                                autoComplete="email"
-                                disabled={carregando}
-                                id="emailLogin"
-                                name="email"
-                                onChange={(evento) =>
-                                    setEmail(evento.target.value)
-                                }
-                                placeholder="produtor@fazenda.com.br"
-                                required
-                                type="email"
-                                value={email}
+                            <div
+                                className="ag-login-foto"
+                                role="img"
+                                aria-label="Produtora rural inspecionando a lavoura ao entardecer"
                             />
-                        </div>
 
-                        <div className="autenticacao-campo">
-                            <label htmlFor="senhaLogin">
-                                Senha
-                            </label>
-
-                            <div className="autenticacao-senha">
-                                <input
-                                    autoComplete="current-password"
-                                    disabled={carregando}
-                                    id="senhaLogin"
-                                    minLength="6"
-                                    name="senha"
-                                    onChange={(evento) =>
-                                        setSenha(evento.target.value)
-                                    }
-                                    placeholder="Digite sua senha"
-                                    required
-                                    type={
-                                        mostrarSenha
-                                            ? 'text'
-                                            : 'password'
-                                    }
-                                    value={senha}
-                                />
-
-                                <button
-                                    aria-label={
-                                        mostrarSenha
-                                            ? 'Ocultar senha'
-                                            : 'Mostrar senha'
-                                    }
-                                    className="autenticacao-mostrar-senha"
-                                    disabled={carregando}
-                                    onClick={() =>
-                                        setMostrarSenha(
-                                            (valorAtual) =>
-                                                !valorAtual,
-                                        )
-                                    }
-                                    type="button"
-                                >
-                                    {mostrarSenha ? '●' : '○'}
-                                </button>
+                            <div className="ag-login-seguranca">
+                                <Simbolo nome="verified_user" tamanho={16} />
+                                Ambiente seguro e criptografado
                             </div>
                         </div>
+                    </section>
 
-                        <label className="autenticacao-lembrar">
-                            <input
-                                checked={lembrarAcesso}
-                                disabled={carregando}
-                                onChange={(evento) =>
-                                    setLembrarAcesso(
-                                        evento.target.checked,
-                                    )
-                                }
-                                type="checkbox"
-                            />
+                    {/* LADO DIREITO — formulário */}
+                    <section className="ag-login-form-area">
+                        <div className="ag-login-card-form">
+                            <div className="ag-login-form-cabecalho">
+                                <h2>Entrar na plataforma</h2>
+                                <p>
+                                    Ainda não tem acesso?
+                                    <Link to="/cadastro"> Criar conta agora</Link>
+                                </p>
+                            </div>
 
-                            <span>Lembrar meu acesso</span>
-                        </label>
+                            {mensagem && (
+                                <div className="ag-login-alerta" role="alert">
+                                    {mensagem}
+                                </div>
+                            )}
 
-                        <button
-                            className="autenticacao-botao"
-                            disabled={
-                                carregando ||
-                                carregandoGoogle
-                            }
-                            type="submit"
-                        >
-                            <span>→</span>
+                            <form className="ag-login-form" onSubmit={entrar}>
+                                <div className="ag-login-campo">
+                                    <label htmlFor="emailLogin">E-mail</label>
+                                    <div className="ag-login-input">
+                                        <Simbolo nome="badge" tamanho={20} />
+                                        <input
+                                            autoComplete="email"
+                                            disabled={carregando}
+                                            id="emailLogin"
+                                            name="email"
+                                            onChange={(evento) => setEmail(evento.target.value)}
+                                            placeholder="seu.email@exemplo.com"
+                                            required
+                                            type="email"
+                                            value={email}
+                                        />
+                                    </div>
+                                </div>
 
-                            {carregando
-                                ? 'Entrando...'
-                                : 'Entrar'}
-                        </button>
-                    </form>
+                                <div className="ag-login-campo">
+                                    <div className="ag-login-campo-topo">
+                                        <label htmlFor="senhaLogin">Senha de acesso</label>
+                                        <Link className="ag-login-link" to="/esqueci-senha">
+                                            Esqueceu a senha?
+                                        </Link>
+                                    </div>
+                                    <div className="ag-login-input">
+                                        <Simbolo nome="key" tamanho={20} />
+                                        <input
+                                            autoComplete="current-password"
+                                            disabled={carregando}
+                                            id="senhaLogin"
+                                            minLength="6"
+                                            name="senha"
+                                            onChange={(evento) => setSenha(evento.target.value)}
+                                            placeholder="Digite sua senha"
+                                            required
+                                            type={mostrarSenha ? 'text' : 'password'}
+                                            value={senha}
+                                        />
+                                        <button
+                                            aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                                            className="ag-login-olho"
+                                            disabled={carregando}
+                                            onClick={() => setMostrarSenha((v) => !v)}
+                                            type="button"
+                                        >
+                                            <Simbolo nome={mostrarSenha ? 'visibility' : 'visibility_off'} tamanho={20} />
+                                        </button>
+                                    </div>
+                                </div>
 
-                    <div className="autenticacao-divisor">
-                        <span>ou</span>
-                    </div>
+                                <label className="ag-login-lembrar">
+                                    <input
+                                        checked={lembrarAcesso}
+                                        disabled={carregando}
+                                        onChange={(evento) => setLembrarAcesso(evento.target.checked)}
+                                        type="checkbox"
+                                    />
+                                    <span>Lembrar este dispositivo</span>
+                                </label>
 
-                    <div className="autenticacao-google-area">
-                        {googleDisponivel ? (
-                            <div id="google-login-botao" />
-                        ) : (
-                            <button
-                                className="autenticacao-google-placeholder"
-                                disabled
-                                type="button"
-                            >
-                                Entrar com Google indisponivel
-                            </button>
-                        )}
+                                <button
+                                    className="ag-login-botao"
+                                    disabled={carregando || carregandoGoogle}
+                                    type="submit"
+                                >
+                                    {carregando ? 'Entrando...' : 'Entrar no Agro Gestão'}
+                                    <Simbolo nome="arrow_forward" tamanho={20} />
+                                </button>
+                            </form>
 
-                        {carregandoGoogle && (
-                            <p>Validando conta Google...</p>
-                        )}
-                    </div>
+                            <div className="ag-login-divisor">
+                                <span>ou acesse com</span>
+                            </div>
 
-                    <p className="autenticacao-alternativa">
-                        <Link to="/esqueci-senha">
-                            Esqueci minha senha
-                        </Link>
-                    </p>
-
-                    <p className="autenticacao-alternativa">
-                        Ainda não tem conta?{' '}
-                        <Link to="/cadastro">
-                            Cadastre-se
-                        </Link>
-                    </p>
-
-                    <p className="autenticacao-alternativa">
-                        <Link to="/">
-                            ← Voltar para a página inicial
-                        </Link>
-                    </p>
+                            <div className="ag-login-google">
+                                {googleDisponivel ? (
+                                    <div id="google-login-botao" />
+                                ) : (
+                                    <button className="ag-login-google-indisponivel" disabled type="button">
+                                        Entrar com Google indisponível
+                                    </button>
+                                )}
+                                {carregandoGoogle && <p>Validando conta Google...</p>}
+                            </div>
+                        </div>
+                    </section>
                 </div>
-            </section>
-        </main>
+            </main>
+
+            <footer className="ag-login-rodape">
+                <div className="ag-login-rodape-interno">
+                    <span>© 2026 Agro Gestão. Todos os direitos reservados.</span>
+                    <div className="ag-login-rodape-links">
+                        <Link to="/termos-de-uso">Termos de Serviço</Link>
+                        <Link to="/politica-de-privacidade">Política de Privacidade</Link>
+                    </div>
+                </div>
+            </footer>
+        </div>
     )
 }
 

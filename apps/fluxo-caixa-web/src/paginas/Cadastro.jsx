@@ -14,6 +14,7 @@ import {
     GOOGLE_CLIENT_ID,
 } from '../config.js'
 import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
+import MarcaAgro from '../componentes/MarcaAgro.jsx'
 import './Autenticacao.css'
 
 async function obterMensagemDeErro(
@@ -500,16 +501,7 @@ function Cadastro() {
     return (
         <main className="autenticacao">
             <section className="autenticacao-apresentacao">
-                <Link
-                    className="autenticacao-marca"
-                    to="/"
-                >
-                    <span className="autenticacao-marca-icone">
-                        ♧
-                    </span>
-
-                    <span>AgroGestão</span>
-                </Link>
+                <MarcaAgro to="/" />
 
                 <div className="autenticacao-mensagem">
                     <h1>

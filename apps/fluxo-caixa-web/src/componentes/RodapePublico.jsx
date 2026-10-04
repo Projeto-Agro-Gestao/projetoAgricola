@@ -1,17 +1,6 @@
 import { Link } from 'react-router'
+import MarcaAgro from './MarcaAgro.jsx'
 import '../App.css'
-
-function IconeMarca({ nome, tamanho = 22 }) {
-    return (
-        <span
-            aria-hidden="true"
-            className="material-symbols-outlined"
-            style={{ fontSize: `${tamanho}px` }}
-        >
-            {nome}
-        </span>
-    )
-}
 
 // Logos oficiais (Simple Icons, CC0).
 function IconeWhatsApp() {
@@ -36,12 +25,7 @@ function RodapePublico() {
             <div className="ag-rodape-interno">
                 <div className="ag-rodape-cols">
                     <div className="ag-rodape-marca">
-                        <Link className="ag-marca ag-marca-clara" to="/">
-                            <span className="ag-marca-icone">
-                                <IconeMarca nome="eco" tamanho={22} />
-                            </span>
-                            <span className="ag-marca-nome">Agro Gestão</span>
-                        </Link>
+                        <MarcaAgro clara to="/" />
                         <p>Mais conexão entre o campo e a contabilidade.</p>
                     </div>
 

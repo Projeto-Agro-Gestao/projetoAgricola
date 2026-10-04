@@ -3,6 +3,7 @@ import {
     Link,
     useLocation,
 } from 'react-router'
+import MarcaAgro from './MarcaAgro.jsx'
 import '../App.css'
 
 const MENU = [
@@ -12,6 +13,9 @@ const MENU = [
     ['Recursos', 'recursos'],
     ['FAQ', 'faq'],
 ]
+
+// Âncoras que existem como seções na página (inicio = topo).
+const SECOES = ['produtores', 'contadores', 'recursos', 'faq']
 
 function Simbolo({ nome, tamanho }) {
     return (
@@ -25,19 +29,30 @@ function Simbolo({ nome, tamanho }) {
     )
 }
 
-function LinkMenu({ ancora, caminho, aoClicar, children }) {
+function LinkMenu({ ancora, caminho, ativo, aoClicar, children }) {
     const destino = ancora === 'inicio' ? '' : `#${ancora}`
+    const classe = ativo ? 'ag-nav-ativo' : undefined
 
     if (caminho === '/') {
         return (
-            <a href={ancora === 'inicio' ? '#' : destino} onClick={aoClicar}>
+            <a
+                aria-current={ativo ? 'true' : undefined}
+                className={classe}
+                href={ancora === 'inicio' ? '#' : destino}
+                onClick={aoClicar}
+            >
                 {children}
             </a>
         )
     }
 
     return (
-        <Link onClick={aoClicar} to={`/${destino}`}>
+        <Link
+            aria-current={ativo ? 'true' : undefined}
+            className={classe}
+            onClick={aoClicar}
+            to={`/${destino}`}
+        >
             {children}
         </Link>
     )
@@ -45,6 +60,7 @@ function LinkMenu({ ancora, caminho, aoClicar, children }) {
 
 function CabecalhoPublico() {
     const [menuAberto, setMenuAberto] = useState(false)
+    const [ativo, setAtivo] = useState('inicio')
     const { pathname, hash } = useLocation()
 
     useEffect(() => {
@@ -60,25 +76,60 @@ function CabecalhoPublico() {
         }
     }, [pathname, hash])
 
+    // Marca o item da seção visível na tela (scroll spy).
+    useEffect(() => {
+        if (pathname !== '/') {
+            return undefined
+        }
+
+        const alvos = SECOES
+            .map((id) => document.getElementById(id))
+            .filter(Boolean)
+
+        if (alvos.length === 0) {
+            return undefined
+        }
+
+        const observador = new IntersectionObserver(
+            (entradas) => {
+                const visivel = entradas
+                    .filter((e) => e.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+
+                if (visivel) {
+                    setAtivo(visivel.target.id)
+                } else if (window.scrollY < 200) {
+                    setAtivo('inicio')
+                }
+            },
+            { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+        )
+
+        alvos.forEach((alvo) => observador.observe(alvo))
+
+        return () => observador.disconnect()
+    }, [pathname])
+
     function fecharMenu() {
         setMenuAberto(false)
+    }
+
+    function aoClicarItem(ancora) {
+        setAtivo(ancora)
+        fecharMenu()
     }
 
     return (
         <header className="ag-cabecalho">
             <div className="ag-cabecalho-interno">
-                <Link className="ag-marca" to="/">
-                    <span className="ag-marca-icone">
-                        <Simbolo nome="eco" tamanho={22} />
-                    </span>
-                    <span className="ag-marca-nome">Agro Gestão</span>
-                </Link>
+                <MarcaAgro to="/" />
 
-                <nav className="ag-nav" aria-label="Principal">
+                <nav aria-label="Principal" className="ag-nav">
                     {MENU.map(([rotulo, ancora]) => (
                         <LinkMenu
-                            aoClicar={fecharMenu}
                             ancora={ancora}
+                            aoClicar={() => aoClicarItem(ancora)}
+                            ativo={ativo === ancora}
                             caminho={pathname}
                             key={ancora}
                         >
@@ -88,11 +139,11 @@ function CabecalhoPublico() {
                 </nav>
 
                 <div className="ag-cabecalho-acoes">
-                    <Link className="ag-entrar" to="/login">
-                        Entrar
-                    </Link>
                     <Link className="ag-botao ag-botao-primario ag-botao-pequeno" to="/cadastro">
                         Quero conhecer
+                    </Link>
+                    <Link className="ag-entrar" to="/login">
+                        Entrar
                     </Link>
 
                     <button
@@ -111,8 +162,9 @@ function CabecalhoPublico() {
                 <nav className="ag-menu-mobile" aria-label="Menu mobile">
                     {MENU.map(([rotulo, ancora]) => (
                         <LinkMenu
-                            aoClicar={fecharMenu}
                             ancora={ancora}
+                            aoClicar={() => aoClicarItem(ancora)}
+                            ativo={ativo === ancora}
                             caminho={pathname}
                             key={ancora}
                         >
