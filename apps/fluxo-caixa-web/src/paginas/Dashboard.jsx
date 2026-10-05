@@ -6,10 +6,22 @@ import {
 import {
     useNavigate,
 } from 'react-router'
-import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
+import ShellDashboard from '../componentes/ShellDashboard.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './Dashboard.css'
 import { limparSessao } from '../servicos/sessao.js'
+
+function Icone({ nome, tamanho }) {
+    return (
+        <span
+            aria-hidden="true"
+            className="material-symbols-outlined"
+            style={tamanho ? { fontSize: `${tamanho}px` } : undefined}
+        >
+            {nome}
+        </span>
+    )
+}
 
 const LARGURA_GRAFICO = 720
 const ALTURA_GRAFICO = 220
@@ -30,28 +42,6 @@ const AREAS_DASHBOARD = [
         rotulo: 'Pecuária',
     },
 ]
-
-function IconeLixeira() {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            height="18"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width="18"
-        >
-            <path d="M3 6h18" />
-            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-        </svg>
-    )
-}
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -381,6 +371,11 @@ function Dashboard() {
 
     const [erro, setErro] =
         useState('')
+
+    const [
+        abaLancamentos,
+        setAbaLancamentos,
+    ] = useState('TODOS')
 
     const periodoSelecionado = useMemo(() => {
         if (
@@ -831,7 +826,7 @@ function Dashboard() {
 
     if (carregando) {
         return (
-            <div className="dashboard-carregando">
+            <div className="ag-fin-estado publica">
                 <p>
                     Carregando informações financeiras...
                 </p>
@@ -841,8 +836,8 @@ function Dashboard() {
 
     if (erro) {
         return (
-            <div className="dashboard-erro">
-                <div className="dashboard-erro-conteudo">
+            <div className="ag-fin-estado publica">
+                <div className="ag-fin-estado-caixa">
                     <h1>
                         Não foi possível carregar o dashboard
                     </h1>
@@ -850,7 +845,7 @@ function Dashboard() {
                     <p>{erro}</p>
 
                     <button
-                        className="dashboard-voltar"
+                        className="ag-fin-botao"
                         onClick={() =>
                             window.location.reload()
                         }
@@ -879,92 +874,86 @@ function Dashboard() {
     const ultimaData =
         fluxoCaixa.at(-1)?.data
 
+    const lancamentosFiltrados =
+        movimentacoes
+            .filter((movimentacao) =>
+                abaLancamentos === 'TODOS'
+                || movimentacao.tipo === abaLancamentos
+            )
+            .slice(0, 8)
+
+    const abasLancamentos = [
+        { valor: 'TODOS', rotulo: 'Todos' },
+        { valor: 'RECEITA', rotulo: 'Receitas' },
+        { valor: 'DESPESA', rotulo: 'Despesas' },
+    ]
+
     return (
-        <div className="dashboard">
-            <div className="dashboard-conteudo">
-                <header className="dashboard-cabecalho">
-                    <div className="dashboard-marca">
-                        <div className="dashboard-marca-icone">
-                            ♧
-                        </div>
-
-                        <div>
-                            <strong>AgroGestão</strong>
-
-                            <span>
-                                {
-                                    sessao.usuario
-                                        .nomeEmpresa
-                                }
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="dashboard-cabecalho-acoes">
-                        <AlternadorModulos />
-                    </div>
-                </header>
-
-                <section className="dashboard-apresentacao">
-                    <div>
-                        <p className="dashboard-etiqueta">
-                            Visão geral
-                        </p>
+        <ShellDashboard sessao={sessao} ativo="visao-geral">
+            <div className="ag-fin">
+                <section className="ag-fin-topo">
+                    <div className="ag-fin-topo-texto">
+                        <span className="ag-fin-eyebrow">
+                            Gestão financeira
+                        </span>
 
                         <h1>
-                            Dashboard financeiro
+                            Controle interno financeiro
                         </h1>
 
-                        <p className="dashboard-descricao">
-                            Olá, {
-                            sessao.usuario.nome
-                        }. Veja quanto entrou,
-                            quanto saiu e qual foi o
-                            resultado da sua
-                            propriedade.
+                        <p className="ag-fin-saudacao">
+                            Olá, {sessao.usuario.nome}. Veja
+                            quanto entrou, quanto saiu e qual
+                            foi o resultado da sua propriedade.
                         </p>
 
-                        <div className="dashboard-perfil-atividade">
+                        <div className="ag-fin-perfil">
+                            <Icone nome="agriculture" tamanho={18} />
                             <strong>
                                 {perfilAtividade.titulo}
                             </strong>
-
                             <span>
                                 {perfilAtividade.descricao}
                             </span>
                         </div>
                     </div>
 
-                    <div className="dashboard-acoes">
+                    <div className="ag-fin-topo-acoes">
                         <button
-                            className="dashboard-botao dashboard-botao-secundario"
-                            onClick={
-                                abrirNovaDespesa
-                            }
+                            className="ag-fin-botao ag-fin-botao-neutro"
+                            onClick={abrirNovaDespesa}
                             type="button"
                         >
-                            Nova despesa — dinheiro saindo
+                            <Icone nome="remove" tamanho={18} />
+                            Nova despesa
                         </button>
 
                         <button
-                            className="dashboard-botao"
-                            onClick={
-                                abrirNovaReceita
-                            }
+                            className="ag-fin-botao"
+                            onClick={abrirNovaReceita}
                             type="button"
                         >
-                            Nova receita — dinheiro entrando
+                            <Icone nome="add" tamanho={18} />
+                            Nova receita
+                        </button>
+
+                        <button
+                            className="ag-fin-botao ag-fin-botao-contorno"
+                            onClick={abrirMovimentacoes}
+                            type="button"
+                        >
+                            Ver todas as movimentações
+                            <Icone nome="arrow_forward" tamanho={18} />
                         </button>
                     </div>
                 </section>
 
-                <section className="dashboard-resumo">
-                    <article className="dashboard-card">
-                        <div className="dashboard-card-cabecalho">
+                <section className="ag-fin-kpis">
+                    <article className="ag-fin-kpi">
+                        <div className="ag-fin-kpi-topo">
                             <p>Total que entrou</p>
-
-                            <span className="dashboard-card-icone">
-                                ↓
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="south_east" tamanho={22} />
                             </span>
                         </div>
 
@@ -979,12 +968,11 @@ function Dashboard() {
                         </small>
                     </article>
 
-                    <article className="dashboard-card dashboard-card-saida">
-                        <div className="dashboard-card-cabecalho">
+                    <article className="ag-fin-kpi ag-fin-kpi-saida">
+                        <div className="ag-fin-kpi-topo">
                             <p>Total que saiu</p>
-
-                            <span className="dashboard-card-icone">
-                                ↑
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="north_east" tamanho={22} />
                             </span>
                         </div>
 
@@ -1000,21 +988,18 @@ function Dashboard() {
                     </article>
 
                     <article
-                        className={`dashboard-card ${
+                        className={`ag-fin-kpi ${
                             Number(
                                 resumo?.quantoSobrou
                                 ?? 0,
                             ) < 0
-                                ? 'dashboard-card-saida'
-                                : 'dashboard-card-saldo'
+                                ? 'ag-fin-kpi-saida'
+                                : 'ag-fin-kpi-saldo'
                         }`}
                     >
-                        <div className="dashboard-card-cabecalho">
+                        <div className="ag-fin-kpi-topo">
                             <p>Quanto sobrou</p>
-
-                            <span className="dashboard-card-icone">
-                                R$
-                            </span>
+                            <span className="ag-fin-kpi-icone">R$</span>
                         </div>
 
                         <strong>
@@ -1029,18 +1014,15 @@ function Dashboard() {
                     </article>
 
                     <article
-                        className={`dashboard-card ${
+                        className={`ag-fin-kpi ${
                             margemNegativa
-                                ? 'dashboard-card-saida'
-                                : 'dashboard-card-saldo'
+                                ? 'ag-fin-kpi-saida'
+                                : 'ag-fin-kpi-saldo'
                         }`}
                     >
-                        <div className="dashboard-card-cabecalho">
+                        <div className="ag-fin-kpi-topo">
                             <p>Margem de lucro</p>
-
-                            <span className="dashboard-card-icone">
-                                %
-                            </span>
+                            <span className="ag-fin-kpi-icone">%</span>
                         </div>
 
                         <strong>
@@ -1062,20 +1044,15 @@ function Dashboard() {
                     </article>
 
                     <article
-                        className={`dashboard-card ${
+                        className={`ag-fin-kpi ${
                             ganhoNegativo
-                                ? 'dashboard-card-saida'
-                                : 'dashboard-card-saldo'
+                                ? 'ag-fin-kpi-saida'
+                                : 'ag-fin-kpi-saldo'
                         }`}
                     >
-                        <div className="dashboard-card-cabecalho">
-                            <p>
-                                Ganho sobre o custo
-                            </p>
-
-                            <span className="dashboard-card-icone">
-                                %
-                            </span>
+                        <div className="ag-fin-kpi-topo">
+                            <p>Ganho sobre o custo</p>
+                            <span className="ag-fin-kpi-icone">%</span>
                         </div>
 
                         <strong>
@@ -1097,12 +1074,13 @@ function Dashboard() {
                     </article>
                 </section>
 
-                <section className="dashboard-grafico-painel">
-                    <div className="dashboard-grafico-topo">
+                <section className="ag-fin-analytics">
+                <article className="ag-fin-grafico">
+                    <div className="ag-fin-grafico-topo">
                         <div>
-                            <p className="dashboard-etiqueta">
+                            <span className="ag-fin-eyebrow">
                                 Dados da propriedade
-                            </p>
+                            </span>
 
                             <h2>
                                 Fluxo de caixa
@@ -1116,7 +1094,7 @@ function Dashboard() {
                         </div>
 
                         <div
-                            className="dashboard-grafico-periodos"
+                            className="ag-fin-periodos"
                             aria-label="Período do gráfico"
                         >
                             <button
@@ -1142,7 +1120,7 @@ function Dashboard() {
                                         className={
                                             !periodoSelecionado.personalizado
                                             && periodoGrafico === dias
-                                                ? 'dashboard-grafico-periodo-ativo'
+                                                ? 'ag-fin-periodo-ativo'
                                                 : ''
                                         }
                                         disabled={
@@ -1168,7 +1146,7 @@ function Dashboard() {
                             )}
                         </div>
 
-                        <div className="dashboard-periodo-personalizado">
+                        <div className="ag-fin-periodo-personalizado">
                             <label>
                                 De
                                 <input
@@ -1222,13 +1200,13 @@ function Dashboard() {
 
                         <div
                             aria-label="Área produtiva"
-                            className="dashboard-area-filtro"
+                            className="ag-fin-area-filtro"
                         >
                             {AREAS_DASHBOARD.map((area) => (
                                 <button
                                     className={
                                         areaSelecionada === area.valor
-                                            ? 'dashboard-area-filtro-ativo'
+                                            ? 'ag-fin-area-filtro-ativo'
                                             : ''
                                     }
                                     disabled={carregandoGrafico}
@@ -1247,14 +1225,14 @@ function Dashboard() {
                     </div>
 
                     {graficoVisivel && (
-                        <div className="dashboard-grafico-legenda">
+                        <div className="ag-fin-grafico-legenda">
                             <span>
-                                <i className="dashboard-grafico-cor dashboard-grafico-cor-receita" />
+                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-receita" />
                                 Receita — dinheiro entrando
                             </span>
 
                             <span>
-                                <i className="dashboard-grafico-cor dashboard-grafico-cor-despesa" />
+                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-despesa" />
                                 Despesa — dinheiro saindo
                             </span>
 
@@ -1274,11 +1252,11 @@ function Dashboard() {
 
                     {graficoVisivel && (
                         carregandoGrafico ? (
-                            <div className="dashboard-grafico-vazio">
+                            <div className="ag-fin-grafico-vazio">
                                 Atualizando o gráfico...
                             </div>
                         ) : !dadosGrafico.possuiMovimentacoes ? (
-                            <div className="dashboard-grafico-vazio">
+                            <div className="ag-fin-grafico-vazio">
                                 <strong>
                                     Ainda não existem movimentações nesse período.
                                 </strong>
@@ -1289,7 +1267,7 @@ function Dashboard() {
                             </div>
                         ) : (
                             <>
-                                <div className="dashboard-grafico-valores">
+                                <div className="ag-fin-grafico-valores">
                                     <span>
                                         {formatarDinheiroCompacto(
                                             dadosGrafico.maiorValor,
@@ -1306,7 +1284,7 @@ function Dashboard() {
                                     <span>R$ 0</span>
                                 </div>
 
-                                <div className="dashboard-grafico-area-real">
+                                <div className="ag-fin-grafico-area-real">
                                     <svg
                                         aria-label="Gráfico real do dinheiro entrando e do dinheiro saindo da propriedade"
                                         preserveAspectRatio="none"
@@ -1314,7 +1292,7 @@ function Dashboard() {
                                         viewBox={`0 0 ${LARGURA_GRAFICO} ${ALTURA_GRAFICO}`}
                                     >
                                         <line
-                                            className="dashboard-grafico-grade"
+                                            className="ag-fin-grafico-grade"
                                             x1="0"
                                             x2={LARGURA_GRAFICO}
                                             y1="18"
@@ -1322,7 +1300,7 @@ function Dashboard() {
                                         />
 
                                         <line
-                                            className="dashboard-grafico-grade"
+                                            className="ag-fin-grafico-grade"
                                             x1="0"
                                             x2={LARGURA_GRAFICO}
                                             y1="110"
@@ -1330,7 +1308,7 @@ function Dashboard() {
                                         />
 
                                         <line
-                                            className="dashboard-grafico-grade"
+                                            className="ag-fin-grafico-grade"
                                             x1="0"
                                             x2={LARGURA_GRAFICO}
                                             y1="200"
@@ -1338,7 +1316,7 @@ function Dashboard() {
                                         />
 
                                         <path
-                                            className="dashboard-grafico-linha-receita"
+                                            className="ag-fin-grafico-linha-receita"
                                             d={
                                                 dadosGrafico
                                                     .caminhoReceitas
@@ -1346,7 +1324,7 @@ function Dashboard() {
                                         />
 
                                         <path
-                                            className="dashboard-grafico-linha-despesa"
+                                            className="ag-fin-grafico-linha-despesa"
                                             d={
                                                 dadosGrafico
                                                     .caminhoDespesas
@@ -1359,7 +1337,7 @@ function Dashboard() {
                                                 .map(
                                                     (ponto) => (
                                                         <circle
-                                                            className="dashboard-grafico-ponto-receita"
+                                                            className="ag-fin-grafico-ponto-receita"
                                                             cx={ponto.x}
                                                             cy={ponto.y}
                                                             key={`receita-${ponto.data}`}
@@ -1386,7 +1364,7 @@ function Dashboard() {
                                                 .map(
                                                     (ponto) => (
                                                         <circle
-                                                            className="dashboard-grafico-ponto-despesa"
+                                                            className="ag-fin-grafico-ponto-despesa"
                                                             cx={ponto.x}
                                                             cy={ponto.y}
                                                             key={`despesa-${ponto.data}`}
@@ -1409,7 +1387,7 @@ function Dashboard() {
                                     </svg>
                                 </div>
 
-                                <div className="dashboard-grafico-datas">
+                                <div className="ag-fin-grafico-datas">
                                     <span>
                                         {formatarDataCurta(
                                             primeiraData,
@@ -1425,251 +1403,242 @@ function Dashboard() {
                             </>
                         )
                     )}
+                </article>
+
+                <aside className="ag-fin-acoes">
+                    <div className="ag-fin-acoes-topo">
+                        <h2>Acesso rápido</h2>
+                    </div>
+
+                    <div className="ag-fin-atalhos">
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirNovaReceita}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone ag-fin-atalho-receita">
+                                <Icone nome="add" tamanho={20} />
+                            </span>
+                            Cadastrar receita — dinheiro entrando
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirNovaDespesa}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone ag-fin-atalho-despesa">
+                                <Icone nome="remove" tamanho={20} />
+                            </span>
+                            Cadastrar despesa — dinheiro saindo
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirMovimentacoes}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="table_rows" tamanho={20} />
+                            </span>
+                            Ver todas as movimentações
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirLixeiraMovimentacoes}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="delete" tamanho={20} />
+                            </span>
+                            Lixeira
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirCategorias}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="sell" tamanho={20} />
+                            </span>
+                            Gerenciar categorias
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirFornecedores}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="groups" tamanho={20} />
+                            </span>
+                            Gerenciar fornecedores
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            onClick={abrirPlanoPagamentos}
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="credit_card" tamanho={20} />
+                            </span>
+                            Plano e pagamentos
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            disabled={
+                                Boolean(baixandoRelatorio)
+                            }
+                            onClick={() =>
+                                baixarRelatorio('excel')
+                            }
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="table_view" tamanho={20} />
+                            </span>
+                            {
+                                baixandoRelatorio === 'excel'
+                                    ? 'Gerando Excel...'
+                                    : 'Gerar relatório em Excel'
+                            }
+                        </button>
+
+                        <button
+                            className="ag-fin-atalho"
+                            disabled={
+                                Boolean(baixandoRelatorio)
+                            }
+                            onClick={() =>
+                                baixarRelatorio('pdf')
+                            }
+                            type="button"
+                        >
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="picture_as_pdf" tamanho={20} />
+                            </span>
+                            {
+                                baixandoRelatorio === 'pdf'
+                                    ? 'Gerando PDF...'
+                                    : 'Gerar relatório em PDF'
+                            }
+                        </button>
+                    </div>
+                </aside>
                 </section>
 
-                <section className="dashboard-paineis">
-                    <article className="dashboard-painel">
-                        <div className="dashboard-painel-topo">
-                            <h2>
-                                Movimentações recentes
-                            </h2>
+                <section className="ag-fin-lancamentos">
+                    <div className="ag-fin-lancamentos-topo">
+                        <div>
+                            <span className="ag-fin-eyebrow">
+                                Movimentações
+                            </span>
+                            <h2>Lançamentos recentes</h2>
+                        </div>
 
+                        <button
+                            className="ag-fin-link"
+                            onClick={abrirMovimentacoes}
+                            type="button"
+                        >
+                            Ver todas as movimentações
+                            <Icone nome="arrow_forward" tamanho={16} />
+                        </button>
+                    </div>
+
+                    <div
+                        className="ag-fin-abas"
+                        aria-label="Filtrar lançamentos"
+                    >
+                        {abasLancamentos.map((aba) => (
                             <button
-                                className="dashboard-link-botao"
-                                onClick={
-                                    abrirMovimentacoes
+                                className={
+                                    abaLancamentos === aba.valor
+                                        ? 'ag-fin-aba-ativa'
+                                        : ''
+                                }
+                                key={aba.valor}
+                                onClick={() =>
+                                    setAbaLancamentos(aba.valor)
                                 }
                                 type="button"
                             >
-                                {movimentacoes.length}{' '}
-                                registros
+                                {aba.rotulo}
                             </button>
-                        </div>
+                        ))}
+                    </div>
 
-                        {
-                            movimentacoes.length
-                            === 0
-                                ? (
-                                    <p className="dashboard-vazio">
-                                        Nenhuma movimentação encontrada.
-                                    </p>
-                                )
-                                : (
-                                    <ul className="dashboard-lista">
-                                        {
-                                            movimentacoes.map(
-                                                (
-                                                    movimentacao,
-                                                ) => {
-                                                    const despesa =
-                                                        movimentacao.tipo
-                                                        === 'DESPESA'
+                    {
+                        lancamentosFiltrados.length === 0
+                            ? (
+                                <p className="ag-fin-vazio">
+                                    Nenhuma movimentação encontrada.
+                                </p>
+                            )
+                            : (
+                                <div className="ag-fin-tabela-area">
+                                    <table className="ag-fin-tabela">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Descrição</th>
+                                                <th>Categoria</th>
+                                                <th className="ag-fin-coluna-valor">
+                                                    Valor
+                                                </th>
+                                            </tr>
+                                        </thead>
 
-                                                    return (
-                                                        <li
-                                                            className={`dashboard-movimentacao ${
-                                                                despesa
-                                                                    ? 'dashboard-movimentacao-despesa'
-                                                                    : ''
-                                                            }`}
-                                                            key={
-                                                                movimentacao.id
-                                                            }
-                                                        >
-                                                            <div className="dashboard-movimentacao-info">
-                                                                <span className="dashboard-movimentacao-icone">
-                                                                    {
+                                        <tbody>
+                                            {
+                                                lancamentosFiltrados.map(
+                                                    (movimentacao) => {
+                                                        const despesa =
+                                                            movimentacao.tipo
+                                                            === 'DESPESA'
+
+                                                        return (
+                                                            <tr key={movimentacao.id}>
+                                                                <td>
+                                                                    {formatarData(
+                                                                        movimentacao.dataMovimentacao,
+                                                                    )}
+                                                                </td>
+                                                                <td className="ag-fin-celula-descricao">
+                                                                    {movimentacao.descricao}
+                                                                </td>
+                                                                <td>
+                                                                    {movimentacao.categoriaNome}
+                                                                </td>
+                                                                <td
+                                                                    className={`ag-fin-coluna-valor ag-fin-valor ${
                                                                         despesa
-                                                                            ? '↑'
-                                                                            : '↓'
-                                                                    }
-                                                                </span>
-
-                                                                <div>
-                                                                    <strong>
-                                                                        {
-                                                                            movimentacao.descricao
-                                                                        }
-                                                                    </strong>
-
-                                                                    <p>
-                                                                        {
-                                                                            movimentacao.categoriaNome
-                                                                        }
-                                                                        {' · '}
-                                                                        {
-                                                                            formatarData(
-                                                                                movimentacao.dataMovimentacao,
-                                                                            )
-                                                                        }
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-
-                                                            <span
-                                                                className={`dashboard-valor ${
-                                                                    despesa
-                                                                        ? 'dashboard-valor-despesa'
-                                                                        : ''
-                                                                }`}
-                                                            >
-                                                                {
-                                                                    despesa
-                                                                        ? '-'
-                                                                        : '+'
-                                                                }{' '}
-
-                                                                {
-                                                                    formatarDinheiro(
+                                                                            ? 'ag-fin-valor-despesa'
+                                                                            : 'ag-fin-valor-receita'
+                                                                    }`}
+                                                                >
+                                                                    {despesa ? '- ' : '+ '}
+                                                                    {formatarDinheiro(
                                                                         movimentacao.valor,
-                                                                    )
-                                                                }
-                                                            </span>
-                                                        </li>
-                                                    )
-                                                },
-                                            )
-                                        }
-                                    </ul>
-                                )
-                        }
-                    </article>
-
-                    <aside className="dashboard-painel">
-                        <div className="dashboard-painel-topo">
-                            <h2>
-                                Acesso rápido
-                            </h2>
-                        </div>
-
-                        <div className="dashboard-atalhos">
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirNovaReceita
-                                }
-                                type="button"
-                            >
-                                <span>＋</span>
-                                Cadastrar receita — dinheiro entrando
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirNovaDespesa
-                                }
-                                type="button"
-                            >
-                                <span>−</span>
-                                Cadastrar despesa — dinheiro saindo
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirMovimentacoes
-                                }
-                                type="button"
-                            >
-                                <span>☷</span>
-                                Ver todas as movimentações
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirLixeiraMovimentacoes
-                                }
-                                type="button"
-                            >
-                                <span><IconeLixeira /></span>
-                                Lixeira
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirCategorias
-                                }
-                                type="button"
-                            >
-                                <span>⌁</span>
-                                Gerenciar categorias
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirFornecedores
-                                }
-                                type="button"
-                            >
-                                <span>F</span>
-                                Gerenciar fornecedores
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                onClick={
-                                    abrirPlanoPagamentos
-                                }
-                                type="button"
-                            >
-                                <span>R$</span>
-                                Plano e pagamentos
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                disabled={
-                                    Boolean(
-                                        baixandoRelatorio,
-                                    )
-                                }
-                                onClick={() =>
-                                    baixarRelatorio(
-                                        'excel',
-                                    )
-                                }
-                                type="button"
-                            >
-                                <span>▦</span>
-                                {
-                                    baixandoRelatorio
-                                    === 'excel'
-                                        ? 'Gerando Excel...'
-                                        : 'Gerar relatório em Excel'
-                                }
-                            </button>
-
-                            <button
-                                className="dashboard-atalho"
-                                disabled={
-                                    Boolean(
-                                        baixandoRelatorio,
-                                    )
-                                }
-                                onClick={() =>
-                                    baixarRelatorio(
-                                        'pdf',
-                                    )
-                                }
-                                type="button"
-                            >
-                                <span>▤</span>
-                                {
-                                    baixandoRelatorio
-                                    === 'pdf'
-                                        ? 'Gerando PDF...'
-                                        : 'Gerar relatório em PDF'
-                                }
-                            </button>
-                        </div>
-                    </aside>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    },
+                                                )
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )
+                    }
                 </section>
             </div>
-        </div>
+        </ShellDashboard>
     )
 }
 
