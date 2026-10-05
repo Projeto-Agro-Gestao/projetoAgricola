@@ -125,34 +125,25 @@ function obterPeriodo(dias) {
     }
 }
 
-function obterPerfilAtividade(usuario) {
-    const agriculturaAtiva =
-        usuario?.agriculturaAtiva ?? true
-    const pecuariaAtiva =
-        usuario?.pecuariaAtiva ?? false
-
-    if (agriculturaAtiva && pecuariaAtiva) {
-        return {
-            titulo: 'Agricultura e pecuária',
-            descricao:
-                'Categorias preparadas para lavoura, criação e manejo.',
-        }
-    }
-
-    if (pecuariaAtiva) {
-        return {
-            titulo: 'Pecuária',
-            descricao:
-                'Categorias preparadas para animais, leite e manejo.',
-        }
-    }
+// Período do mês corrente (dia 1 até hoje).
+function obterPeriodoMes() {
+    const hoje = new Date()
+    const inicio = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        1,
+    )
 
     return {
-        titulo: 'Agricultura',
-        descricao:
-            'Categorias preparadas para lavoura, safra e insumos.',
+        dataInicial: formatarDataParaApi(inicio),
+        dataFinal: formatarDataParaApi(hoje),
     }
 }
+
+const MESES_PT = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
 
 function obterSessao() {
     try {
@@ -249,50 +240,6 @@ function obterNomeArquivo(
         ?? nomePadrao
 }
 
-function criarPontosDaLinha(
-    dados,
-    campo,
-    maiorValor,
-) {
-    if (dados.length === 0) {
-        return []
-    }
-
-    const alturaUtil =
-        ALTURA_GRAFICO
-        - ESPACO_SUPERIOR
-        - ESPACO_INFERIOR
-
-    return dados.map((ponto, indice) => {
-        const divisor =
-            Math.max(dados.length - 1, 1)
-
-        const x =
-            (indice / divisor)
-            * LARGURA_GRAFICO
-
-        const valor =
-            Number(ponto[campo] ?? 0)
-
-        const proporcao =
-            maiorValor > 0
-                ? valor / maiorValor
-                : 0
-
-        const y =
-            ALTURA_GRAFICO
-            - ESPACO_INFERIOR
-            - proporcao * alturaUtil
-
-        return {
-            x,
-            y,
-            valor,
-            data: ponto.data,
-        }
-    })
-}
-
 function criarCaminho(pontos) {
     if (pontos.length === 0) {
         return ''
@@ -308,13 +255,46 @@ function criarCaminho(pontos) {
         .join(' ')
 }
 
+// Barras de receita/despesa por ponto (estilo do design do Stitch).
+function criarBarras(dados, maiorValor) {
+    if (dados.length === 0) {
+        return []
+    }
+
+    const alturaUtil = ALTURA_GRAFICO - ESPACO_SUPERIOR - ESPACO_INFERIOR
+    const base = ALTURA_GRAFICO - ESPACO_INFERIOR
+    const larguraGrupo = LARGURA_GRAFICO / dados.length
+    // Duas barras por grupo, com folga lateral.
+    const larguraBarra = Math.min(18, (larguraGrupo * 0.6) / 2)
+    const folga = 3
+
+    return dados.map((ponto, indice) => {
+        const centro = larguraGrupo * (indice + 0.5)
+        const receita = Number(ponto.totalReceitas ?? 0)
+        const despesa = Number(ponto.totalDespesas ?? 0)
+        const altR = maiorValor > 0 ? (receita / maiorValor) * alturaUtil : 0
+        const altD = maiorValor > 0 ? (despesa / maiorValor) * alturaUtil : 0
+
+        return {
+            data: ponto.data,
+            receita,
+            despesa,
+            larguraBarra,
+            receitaX: centro - larguraBarra - folga / 2,
+            despesaX: centro + folga / 2,
+            receitaY: base - altR,
+            despesaY: base - altD,
+            receitaH: altR,
+            despesaH: altD,
+        }
+    })
+}
+
 function Dashboard() {
     const navigate = useNavigate()
 
     const [sessao] =
         useState(obterSessao)
-    const perfilAtividade =
-        obterPerfilAtividade(sessao?.usuario)
 
     const [resumo, setResumo] =
         useState(null)
@@ -400,6 +380,40 @@ function Dashboard() {
         dataInicialPersonalizada,
         periodoGrafico,
     ])
+
+    const hoje = new Date()
+    const rotuloMes = `${MESES_PT[hoje.getMonth()]} ${hoje.getFullYear()}`
+    const periodoMes = obterPeriodoMes()
+
+    // Qual pílula de período está ativa.
+    const pilulaAtiva = (() => {
+        if (periodoSelecionado.personalizado) {
+            if (
+                dataInicialPersonalizada === periodoMes.dataInicial
+                && dataFinalPersonalizada === periodoMes.dataFinal
+            ) {
+                return 'mes'
+            }
+            return 'personalizado'
+        }
+        if (periodoGrafico === 1) return 'hoje'
+        if (periodoGrafico === 7) return 'semana'
+        return 'personalizado'
+    })()
+
+    function selecionarPreset(dias) {
+        setDataInicialPersonalizada('')
+        setDataFinalPersonalizada('')
+        setPeriodoGrafico(dias)
+    }
+
+    function selecionarMes() {
+        setPeriodoGrafico(30)
+        setDataInicialPersonalizada(periodoMes.dataInicial)
+        setDataFinalPersonalizada(periodoMes.dataFinal)
+    }
+
+    const [mostrarDatas, setMostrarDatas] = useState(false)
 
     useEffect(() => {
         if (!sessao) {
@@ -610,19 +624,39 @@ function Dashboard() {
                 ),
             )
 
-        const pontosReceitas =
-            criarPontosDaLinha(
-                fluxoCaixa,
-                'totalReceitas',
-                maiorValor,
-            )
+        // Saldo acumulado: soma progressiva do saldo diário.
+        let acumulado = 0
+        const saldoAcumulado = fluxoCaixa.map((ponto) => {
+            acumulado += Number(ponto.saldoDoDia ?? 0)
+            return { data: ponto.data, valor: acumulado }
+        })
 
-        const pontosDespesas =
-            criarPontosDaLinha(
-                fluxoCaixa,
-                'totalDespesas',
-                maiorValor,
-            )
+        // Escala do eixo: maior entre barras e o pico do saldo acumulado.
+        const maiorAcumulado = saldoAcumulado.reduce(
+            (maior, ponto) => Math.max(maior, ponto.valor),
+            0,
+        )
+        const escala = Math.max(maiorValor, maiorAcumulado, 1)
+
+        const barras = criarBarras(fluxoCaixa, escala)
+
+        // Pontos da linha de saldo acumulado, centralizados em cada grupo.
+        const larguraGrupo =
+            fluxoCaixa.length > 0
+                ? LARGURA_GRAFICO / fluxoCaixa.length
+                : LARGURA_GRAFICO
+        const alturaUtil =
+            ALTURA_GRAFICO - ESPACO_SUPERIOR - ESPACO_INFERIOR
+        const base = ALTURA_GRAFICO - ESPACO_INFERIOR
+        const pontosSaldo = saldoAcumulado.map((ponto, indice) => {
+            const proporcao = escala > 0 ? ponto.valor / escala : 0
+            return {
+                x: larguraGrupo * (indice + 0.5),
+                y: base - Math.max(0, proporcao) * alturaUtil,
+                valor: ponto.valor,
+                data: ponto.data,
+            }
+        })
 
         const possuiMovimentacoes =
             fluxoCaixa.some(
@@ -638,17 +672,10 @@ function Dashboard() {
             )
 
         return {
-            maiorValor,
-            pontosReceitas,
-            pontosDespesas,
-            caminhoReceitas:
-                criarCaminho(
-                    pontosReceitas,
-                ),
-            caminhoDespesas:
-                criarCaminho(
-                    pontosDespesas,
-                ),
+            maiorValor: escala,
+            barras,
+            pontosSaldo,
+            caminhoSaldo: criarCaminho(pontosSaldo),
             possuiMovimentacoes,
         }
     }, [fluxoCaixa])
@@ -891,186 +918,296 @@ function Dashboard() {
     return (
         <ShellDashboard sessao={sessao} ativo="visao-geral">
             <div className="ag-fin">
-                <section className="ag-fin-topo">
-                    <div className="ag-fin-topo-texto">
-                        <span className="ag-fin-eyebrow">
-                            Gestão financeira
-                        </span>
+                <header className="ag-fin-topo">
+                    <span className="ag-fin-eyebrow">
+                        Gestão Financeira &amp; Fiscal
+                        <i className="ag-fin-eyebrow-ponto" />
+                        <strong>Fluxo de Caixa Rural</strong>
+                    </span>
+                    <h1>Controle Interno Financeiro</h1>
+                </header>
 
-                        <h1>
-                            Controle interno financeiro
-                        </h1>
-
-                        <p className="ag-fin-saudacao">
-                            Olá, {sessao.usuario.nome}. Veja
-                            quanto entrou, quanto saiu e qual
-                            foi o resultado da sua propriedade.
-                        </p>
-
-                        <div className="ag-fin-perfil">
-                            <Icone nome="agriculture" tamanho={18} />
-                            <strong>
-                                {perfilAtividade.titulo}
-                            </strong>
-                            <span>
-                                {perfilAtividade.descricao}
-                            </span>
-                        </div>
+                <section className="ag-fin-filtros">
+                    <div className="ag-fin-pilulas">
+                        <button
+                            className={`ag-fin-pilula ${pilulaAtiva === 'hoje' ? 'ag-ativo' : ''}`}
+                            disabled={carregandoGrafico}
+                            onClick={() => selecionarPreset(1)}
+                            type="button"
+                        >
+                            Hoje
+                        </button>
+                        <button
+                            className={`ag-fin-pilula ${pilulaAtiva === 'semana' ? 'ag-ativo' : ''}`}
+                            disabled={carregandoGrafico}
+                            onClick={() => selecionarPreset(7)}
+                            type="button"
+                        >
+                            Esta Semana
+                        </button>
+                        <button
+                            className={`ag-fin-pilula ${pilulaAtiva === 'mes' ? 'ag-ativo' : ''}`}
+                            disabled={carregandoGrafico}
+                            onClick={selecionarMes}
+                            type="button"
+                        >
+                            Este Mês ({rotuloMes})
+                        </button>
+                        <button
+                            className={`ag-fin-pilula ${pilulaAtiva === 'personalizado' ? 'ag-ativo' : ''}`}
+                            onClick={() => setMostrarDatas((v) => !v)}
+                            type="button"
+                        >
+                            Personalizado
+                            <Icone nome="calendar_today" tamanho={16} />
+                        </button>
                     </div>
 
-                    <div className="ag-fin-topo-acoes">
-                        <button
-                            className="ag-fin-botao ag-fin-botao-neutro"
-                            onClick={abrirNovaDespesa}
-                            type="button"
-                        >
-                            <Icone nome="remove" tamanho={18} />
-                            Nova despesa
-                        </button>
+                    <div className="ag-fin-filtros-direita">
+                        <div className="ag-fin-area-dropdown">
+                            <Icone nome="domain" tamanho={16} />
+                            <select
+                                aria-label="Área produtiva"
+                                disabled={carregandoGrafico}
+                                onChange={(evento) =>
+                                    setAreaSelecionada(evento.target.value)
+                                }
+                                value={areaSelecionada}
+                            >
+                                {AREAS_DASHBOARD.map((area) => (
+                                    <option key={area.valor} value={area.valor}>
+                                        {area.valor === 'TODAS'
+                                            ? 'Todas as áreas'
+                                            : area.rotulo}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
                         <button
-                            className="ag-fin-botao"
-                            onClick={abrirNovaReceita}
+                            className="ag-fin-filtro-icone"
+                            disabled={!!baixandoRelatorio}
+                            onClick={() => baixarRelatorio('pdf')}
+                            title="Exportar relatório"
                             type="button"
                         >
-                            <Icone nome="add" tamanho={18} />
-                            Nova receita
-                        </button>
-
-                        <button
-                            className="ag-fin-botao ag-fin-botao-contorno"
-                            onClick={abrirMovimentacoes}
-                            type="button"
-                        >
-                            Ver todas as movimentações
-                            <Icone nome="arrow_forward" tamanho={18} />
+                            <Icone nome="file_download" tamanho={20} />
                         </button>
                     </div>
                 </section>
 
+                {mostrarDatas && (
+                    <section className="ag-fin-datas-personalizado">
+                        <label>
+                            De
+                            <input
+                                disabled={carregandoGrafico}
+                                onChange={(evento) =>
+                                    setDataInicialPersonalizada(evento.target.value)
+                                }
+                                type="date"
+                                value={dataInicialPersonalizada}
+                            />
+                        </label>
+                        <label>
+                            Até
+                            <input
+                                disabled={carregandoGrafico}
+                                onChange={(evento) =>
+                                    setDataFinalPersonalizada(evento.target.value)
+                                }
+                                type="date"
+                                value={dataFinalPersonalizada}
+                            />
+                        </label>
+                        {(dataInicialPersonalizada || dataFinalPersonalizada) && (
+                            <button
+                                disabled={carregandoGrafico}
+                                onClick={() => {
+                                    setDataInicialPersonalizada('')
+                                    setDataFinalPersonalizada('')
+                                }}
+                                type="button"
+                            >
+                                Limpar datas
+                            </button>
+                        )}
+                    </section>
+                )}
+
                 <section className="ag-fin-kpis">
                     <article className="ag-fin-kpi">
                         <div className="ag-fin-kpi-topo">
-                            <p>Total que entrou</p>
+                            <span className="ag-fin-kpi-eyebrow">Receita Realizada</span>
                             <span className="ag-fin-kpi-icone">
                                 <Icone nome="south_east" tamanho={22} />
                             </span>
                         </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo?.totalEntrou,
-                            )}
+                        <h3 className="ag-fin-kpi-titulo">Total que entrou</h3>
+
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            {formatarDinheiro(resumo?.totalEntrou).replace('R$', '').trim()}
                         </strong>
 
                         <small>
                             Receita — dinheiro entrando — registrada no período
                         </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-verde">
+                                <Icone nome="south_east" tamanho={14} />
+                                Entradas do período
+                            </span>
+                        </div>
                     </article>
 
                     <article className="ag-fin-kpi ag-fin-kpi-saida">
                         <div className="ag-fin-kpi-topo">
-                            <p>Total que saiu</p>
+                            <span className="ag-fin-kpi-eyebrow">Despesas &amp; Custos</span>
                             <span className="ag-fin-kpi-icone">
                                 <Icone nome="north_east" tamanho={22} />
                             </span>
                         </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo?.totalSaiu,
-                            )}
+                        <h3 className="ag-fin-kpi-titulo">Total que saiu</h3>
+
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            {formatarDinheiro(resumo?.totalSaiu).replace('R$', '').trim()}
                         </strong>
 
                         <small>
                             Despesa — dinheiro saindo — registrada no período
                         </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-ambar">
+                                <Icone nome="north_east" tamanho={14} />
+                                Saídas do período
+                            </span>
+                        </div>
                     </article>
 
                     <article
                         className={`ag-fin-kpi ${
-                            Number(
-                                resumo?.quantoSobrou
-                                ?? 0,
-                            ) < 0
+                            Number(resumo?.quantoSobrou ?? 0) < 0
                                 ? 'ag-fin-kpi-saida'
-                                : 'ag-fin-kpi-saldo'
+                                : ''
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <p>Quanto sobrou</p>
+                            <span className="ag-fin-kpi-eyebrow">Saldo Líquido</span>
                             <span className="ag-fin-kpi-icone">R$</span>
                         </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo?.quantoSobrou,
-                            )}
+                        <h3 className="ag-fin-kpi-titulo">Quanto sobrou</h3>
+
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            {formatarDinheiro(resumo?.quantoSobrou).replace('R$', '').trim()}
                         </strong>
 
                         <small>
-                            Entradas menos as saídas
+                            Entradas menos as saídas consolidadas no caixa
                         </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            {Number(resumo?.quantoSobrou ?? 0) < 0 ? (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-ambar">
+                                    <Icone nome="trending_down" tamanho={14} />
+                                    Déficit no período
+                                </span>
+                            ) : (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-verde">
+                                    <Icone nome="check_circle" tamanho={14} />
+                                    Superávit no período
+                                </span>
+                            )}
+                        </div>
                     </article>
 
                     <article
                         className={`ag-fin-kpi ${
-                            margemNegativa
-                                ? 'ag-fin-kpi-saida'
-                                : 'ag-fin-kpi-saldo'
+                            margemNegativa ? 'ag-fin-kpi-saida' : ''
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <p>Margem de lucro</p>
+                            <span className="ag-fin-kpi-eyebrow">Rentabilidade</span>
                             <span className="ag-fin-kpi-icone">%</span>
                         </div>
 
-                        <strong>
-                            {formatarPercentual(
-                                resumo?.margemLucro,
-                            )}
+                        <h3 className="ag-fin-kpi-titulo">Margem de lucro</h3>
+
+                        <strong className="ag-fin-kpi-valor">
+                            {formatarPercentual(resumo?.margemLucro)}
                         </strong>
 
                         <small>
                             {
-                                resumo?.margemLucro
-                                === null
+                                resumo?.margemLucro === null
                                     ? 'Registre uma receita — dinheiro entrando — para calcular'
                                     : margemNegativa
                                         ? 'O resultado do período foi negativo'
                                         : 'Quanto sobrou de cada R$ 100,00 vendidos'
                             }
                         </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            {resumo?.margemLucro === null ? (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-neutro">
+                                    Sem receita no período
+                                </span>
+                            ) : (
+                                <span className={`ag-fin-kpi-badge ${margemNegativa ? 'ag-fin-kpi-badge-ambar' : 'ag-fin-kpi-badge-verde'}`}>
+                                    <Icone nome={margemNegativa ? 'trending_down' : 'trending_up'} tamanho={14} />
+                                    {margemNegativa ? 'Margem negativa' : 'Margem positiva'}
+                                </span>
+                            )}
+                        </div>
                     </article>
 
                     <article
                         className={`ag-fin-kpi ${
-                            ganhoNegativo
-                                ? 'ag-fin-kpi-saida'
-                                : 'ag-fin-kpi-saldo'
+                            ganhoNegativo ? 'ag-fin-kpi-saida' : ''
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <p>Ganho sobre o custo</p>
-                            <span className="ag-fin-kpi-icone">%</span>
+                            <span className="ag-fin-kpi-eyebrow">Multiplicador</span>
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="stacked_line_chart" tamanho={22} />
+                            </span>
                         </div>
 
-                        <strong>
-                            {formatarPercentual(
-                                resumo?.ganhoSobreCusto,
-                            )}
+                        <h3 className="ag-fin-kpi-titulo">Ganho sobre o custo</h3>
+
+                        <strong className="ag-fin-kpi-valor">
+                            {formatarPercentual(resumo?.ganhoSobreCusto)}
                         </strong>
 
                         <small>
                             {
-                                resumo?.ganhoSobreCusto
-                                === null
+                                resumo?.ganhoSobreCusto === null
                                     ? 'Registre uma despesa — dinheiro saindo — para calcular'
                                     : ganhoNegativo
                                         ? 'O dinheiro que saiu foi maior que o dinheiro que entrou'
                                         : 'Quanto ganhou em relação ao valor gasto'
                             }
                         </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            {resumo?.ganhoSobreCusto === null ? (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-neutro">
+                                    Sem despesa no período
+                                </span>
+                            ) : (
+                                <span className={`ag-fin-kpi-badge ${ganhoNegativo ? 'ag-fin-kpi-badge-ambar' : 'ag-fin-kpi-badge-verde'}`}>
+                                    <Icone nome="stacked_line_chart" tamanho={14} />
+                                    Retorno sobre o custo
+                                </span>
+                            )}
+                        </div>
                     </article>
                 </section>
 
@@ -1078,162 +1215,47 @@ function Dashboard() {
                 <article className="ag-fin-grafico">
                     <div className="ag-fin-grafico-topo">
                         <div>
-                            <span className="ag-fin-eyebrow">
-                                Dados da propriedade
-                            </span>
-
                             <h2>
-                                Fluxo de caixa
+                                Evolução do Fluxo de Caixa
                             </h2>
 
                             <p>
-                                Receita — dinheiro entrando —
-                                e despesa — dinheiro saindo —
+                                Entradas e saídas operacionais
                                 registradas no período.
                             </p>
                         </div>
 
-                        <div
-                            className="ag-fin-periodos"
-                            aria-label="Período do gráfico"
+                        <button
+                            className="ag-fin-grafico-toggle"
+                            aria-expanded={graficoVisivel}
+                            onClick={() =>
+                                setGraficoVisivel(
+                                    (visivelAtual) => !visivelAtual,
+                                )
+                            }
+                            type="button"
                         >
-                            <button
-                                aria-expanded={
-                                    graficoVisivel
-                                }
-                                onClick={() =>
-                                    setGraficoVisivel(
-                                        (visivelAtual) =>
-                                            !visivelAtual,
-                                    )
-                                }
-                                type="button"
-                            >
-                                {graficoVisivel
-                                    ? 'Ocultar gráfico'
-                                    : 'Mostrar gráfico'}
-                            </button>
-
-                            {[7, 30, 90].map(
-                                (dias) => (
-                                    <button
-                                        className={
-                                            !periodoSelecionado.personalizado
-                                            && periodoGrafico === dias
-                                                ? 'ag-fin-periodo-ativo'
-                                                : ''
-                                        }
-                                        disabled={
-                                            carregandoGrafico
-                                        }
-                                        key={dias}
-                                        onClick={() => {
-                                            setDataInicialPersonalizada(
-                                                '',
-                                            )
-                                            setDataFinalPersonalizada(
-                                                '',
-                                            )
-                                            setPeriodoGrafico(
-                                                dias,
-                                            )
-                                        }}
-                                        type="button"
-                                    >
-                                        {dias} dias
-                                    </button>
-                                ),
-                            )}
-                        </div>
-
-                        <div className="ag-fin-periodo-personalizado">
-                            <label>
-                                De
-                                <input
-                                    disabled={carregandoGrafico}
-                                    onChange={(evento) =>
-                                        setDataInicialPersonalizada(
-                                            evento.target.value,
-                                        )
-                                    }
-                                    type="date"
-                                    value={
-                                        dataInicialPersonalizada
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                Até
-                                <input
-                                    disabled={carregandoGrafico}
-                                    onChange={(evento) =>
-                                        setDataFinalPersonalizada(
-                                            evento.target.value,
-                                        )
-                                    }
-                                    type="date"
-                                    value={
-                                        dataFinalPersonalizada
-                                    }
-                                />
-                            </label>
-
-                            {(dataInicialPersonalizada
-                                || dataFinalPersonalizada) && (
-                                <button
-                                    disabled={carregandoGrafico}
-                                    onClick={() => {
-                                        setDataInicialPersonalizada(
-                                            '',
-                                        )
-                                        setDataFinalPersonalizada(
-                                            '',
-                                        )
-                                    }}
-                                    type="button"
-                                >
-                                    Limpar datas
-                                </button>
-                            )}
-                        </div>
-
-                        <div
-                            aria-label="Área produtiva"
-                            className="ag-fin-area-filtro"
-                        >
-                            {AREAS_DASHBOARD.map((area) => (
-                                <button
-                                    className={
-                                        areaSelecionada === area.valor
-                                            ? 'ag-fin-area-filtro-ativo'
-                                            : ''
-                                    }
-                                    disabled={carregandoGrafico}
-                                    key={area.valor}
-                                    onClick={() =>
-                                        setAreaSelecionada(
-                                            area.valor,
-                                        )
-                                    }
-                                    type="button"
-                                >
-                                    {area.rotulo}
-                                </button>
-                            ))}
-                        </div>
+                            {graficoVisivel
+                                ? 'Ocultar gráfico'
+                                : 'Mostrar gráfico'}
+                        </button>
                     </div>
 
                     {graficoVisivel && (
                         <div className="ag-fin-grafico-legenda">
                             <span>
                                 <i className="ag-fin-grafico-cor ag-fin-grafico-cor-receita" />
-                                Receita — dinheiro entrando
+                                Receitas
                             </span>
 
                             <span>
                                 <i className="ag-fin-grafico-cor ag-fin-grafico-cor-despesa" />
-                                Despesa — dinheiro saindo
+                                Despesas
+                            </span>
+
+                            <span>
+                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-saldo" />
+                                Saldo Acumulado
                             </span>
 
                             {primeiraData && ultimaData && (
@@ -1286,7 +1308,7 @@ function Dashboard() {
 
                                 <div className="ag-fin-grafico-area-real">
                                     <svg
-                                        aria-label="Gráfico real do dinheiro entrando e do dinheiro saindo da propriedade"
+                                        aria-label="Gráfico de receitas e despesas por período com a linha de saldo acumulado"
                                         preserveAspectRatio="none"
                                         role="img"
                                         viewBox={`0 0 ${LARGURA_GRAFICO} ${ALTURA_GRAFICO}`}
@@ -1315,75 +1337,56 @@ function Dashboard() {
                                             y2="200"
                                         />
 
-                                        <path
-                                            className="ag-fin-grafico-linha-receita"
-                                            d={
-                                                dadosGrafico
-                                                    .caminhoReceitas
-                                            }
-                                        />
+                                        {dadosGrafico.barras.map((barra) => (
+                                            <g key={`barra-${barra.data}`}>
+                                                <rect
+                                                    className="ag-fin-grafico-barra-receita"
+                                                    x={barra.receitaX}
+                                                    y={barra.receitaY}
+                                                    width={barra.larguraBarra}
+                                                    height={Math.max(0, barra.receitaH)}
+                                                    rx="2"
+                                                >
+                                                    <title>
+                                                        {formatarData(barra.data)}
+                                                        {` — Receitas: ${formatarDinheiro(barra.receita)}`}
+                                                    </title>
+                                                </rect>
+                                                <rect
+                                                    className="ag-fin-grafico-barra-despesa"
+                                                    x={barra.despesaX}
+                                                    y={barra.despesaY}
+                                                    width={barra.larguraBarra}
+                                                    height={Math.max(0, barra.despesaH)}
+                                                    rx="2"
+                                                >
+                                                    <title>
+                                                        {formatarData(barra.data)}
+                                                        {` — Despesas: ${formatarDinheiro(barra.despesa)}`}
+                                                    </title>
+                                                </rect>
+                                            </g>
+                                        ))}
 
                                         <path
-                                            className="ag-fin-grafico-linha-despesa"
-                                            d={
-                                                dadosGrafico
-                                                    .caminhoDespesas
-                                            }
+                                            className="ag-fin-grafico-linha-saldo"
+                                            d={dadosGrafico.caminhoSaldo}
                                         />
 
-                                        {
-                                            dadosGrafico
-                                                .pontosReceitas
-                                                .map(
-                                                    (ponto) => (
-                                                        <circle
-                                                            className="ag-fin-grafico-ponto-receita"
-                                                            cx={ponto.x}
-                                                            cy={ponto.y}
-                                                            key={`receita-${ponto.data}`}
-                                                            r="4"
-                                                        >
-                                                            <title>
-                                                                {
-                                                                    formatarData(
-                                                                        ponto.data,
-                                                                    )
-                                                                }
-                                                                {
-                                                                    ` — Receita — dinheiro entrando: ${formatarDinheiro(ponto.valor)}`
-                                                                }
-                                                            </title>
-                                                        </circle>
-                                                    ),
-                                                )
-                                        }
-
-                                        {
-                                            dadosGrafico
-                                                .pontosDespesas
-                                                .map(
-                                                    (ponto) => (
-                                                        <circle
-                                                            className="ag-fin-grafico-ponto-despesa"
-                                                            cx={ponto.x}
-                                                            cy={ponto.y}
-                                                            key={`despesa-${ponto.data}`}
-                                                            r="4"
-                                                        >
-                                                            <title>
-                                                                {
-                                                                    formatarData(
-                                                                        ponto.data,
-                                                                    )
-                                                                }
-                                                                {
-                                                                    ` — Despesa — dinheiro saindo: ${formatarDinheiro(ponto.valor)}`
-                                                                }
-                                                            </title>
-                                                        </circle>
-                                                    ),
-                                                )
-                                        }
+                                        {dadosGrafico.pontosSaldo.map((ponto) => (
+                                            <circle
+                                                className="ag-fin-grafico-ponto-saldo"
+                                                cx={ponto.x}
+                                                cy={ponto.y}
+                                                key={`saldo-${ponto.data}`}
+                                                r="4"
+                                            >
+                                                <title>
+                                                    {formatarData(ponto.data)}
+                                                    {` — Saldo acumulado: ${formatarDinheiro(ponto.valor)}`}
+                                                </title>
+                                            </circle>
+                                        ))}
                                     </svg>
                                 </div>
 
@@ -1534,9 +1537,6 @@ function Dashboard() {
                 <section className="ag-fin-lancamentos">
                     <div className="ag-fin-lancamentos-topo">
                         <div>
-                            <span className="ag-fin-eyebrow">
-                                Movimentações
-                            </span>
                             <h2>Lançamentos recentes</h2>
                         </div>
 

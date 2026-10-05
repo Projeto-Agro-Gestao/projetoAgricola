@@ -10,62 +10,200 @@
 }
 
 .ag-fin-eyebrow {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--ag-primary);
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: var(--ag-on-surface-variant);
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+}
+.ag-fin-eyebrow strong { color: var(--ag-primary); font-weight: 700; }
+.ag-fin-eyebrow-ponto {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--ag-outline-variant);
 }
 
 /* ---- Topo ------------------------------------------------------- */
 
 .ag-fin-topo {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
+    margin-bottom: 16px;
 }
 
-.ag-fin-topo-texto h1 {
+.ag-fin-topo h1 {
     margin: 0;
     color: var(--ag-on-surface);
-    font-size: clamp(1.6rem, 3.4vw, 2.1rem);
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
 }
 
-.ag-fin-saudacao {
-    max-width: 620px;
-    margin: 10px 0 0;
-    color: var(--ag-on-surface-variant);
-    line-height: 1.6;
-}
+/* ---- Barra de filtros (pílulas + área + export) ----------------- */
 
-.ag-fin-perfil {
-    display: inline-flex;
+.ag-fin-filtros {
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 10px;
-    margin-top: 14px;
-    padding: 10px 14px;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 8px;
+    border-radius: var(--ag-radius-xl);
+    background: var(--ag-surface-lowest);
+    box-shadow: var(--ag-shadow-1);
+}
+
+.ag-fin-pilulas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.ag-fin-pilula {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: var(--ag-radius-lg);
+    background: transparent;
+    color: var(--ag-on-surface-variant);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+}
+.ag-fin-pilula:hover { background: var(--ag-surface-low); color: var(--ag-on-surface); }
+.ag-fin-pilula.ag-ativo {
+    background: var(--ag-primary);
+    color: var(--ag-on-primary);
+    box-shadow: var(--ag-shadow-sm);
+}
+.ag-fin-pilula:disabled { opacity: 0.6; cursor: default; }
+
+.ag-fin-filtros-direita {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ag-fin-area-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-radius: var(--ag-radius-lg);
+    background: var(--ag-campo);
+    color: var(--ag-on-surface-variant);
+}
+.ag-fin-area-dropdown select {
+    border: none;
+    background: transparent;
+    padding: 8px 2px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ag-on-surface);
+    cursor: pointer;
+    outline: none;
+}
+
+.ag-fin-filtro-icone {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: var(--ag-radius-lg);
+    background: transparent;
+    color: var(--ag-on-surface-variant);
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+}
+.ag-fin-filtro-icone:hover { background: var(--ag-surface-high); color: var(--ag-on-surface); }
+.ag-fin-filtro-icone:disabled { opacity: 0.5; cursor: default; }
+
+/* Painel de datas personalizadas (aparece ao clicar em "Personalizado") */
+.ag-fin-datas-personalizado {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    margin: -8px 0 20px;
+    padding: 16px 18px;
+    width: fit-content;
+    max-width: 100%;
+    border: 1px solid var(--ag-surface-high);
+    border-radius: var(--ag-radius-xl);
+    background: var(--ag-surface-lowest);
+    box-shadow: var(--ag-shadow-2);
+}
+.ag-fin-datas-personalizado label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ag-on-surface-variant);
+}
+.ag-fin-datas-personalizado input {
+    min-height: 40px;
+    padding: 8px 12px;
     border: 1px solid var(--ag-outline-variant);
     border-radius: var(--ag-radius-lg);
+    background: var(--ag-campo);
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--ag-on-surface);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.ag-fin-datas-personalizado input:focus {
+    outline: none;
+    border-color: var(--ag-primary);
+    box-shadow: 0 0 0 3px rgb(59 123 0 / 0.15);
+}
+.ag-fin-datas-personalizado > button {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    background: var(--ag-surface-lowest);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ag-on-surface-variant);
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
+}
+.ag-fin-datas-personalizado > button:hover {
     background: var(--ag-surface-low);
     color: var(--ag-primary);
 }
 
-.ag-fin-perfil strong {
-    color: var(--ag-primary);
-    font-size: 0.86rem;
-}
-
-.ag-fin-perfil span {
+.ag-fin-grafico-toggle {
+    padding: 7px 14px;
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    background: var(--ag-surface-lowest);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--ag-on-surface-variant);
-    font-size: 0.84rem;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease;
 }
+.ag-fin-grafico-toggle:hover { background: var(--ag-surface-low); color: var(--ag-on-surface); }
 
 .ag-fin-topo-acoes {
     display: flex;
@@ -157,22 +295,29 @@
     background: var(--ag-secondary);
 }
 
-.ag-fin-kpi-saldo {
-    background: var(--ag-surface-low);
-}
-
 .ag-fin-kpi-topo {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
 }
 
-.ag-fin-kpi-topo p {
-    margin: 0;
+.ag-fin-kpi-eyebrow {
     color: var(--ag-on-surface-variant);
-    font-size: 0.82rem;
-    font-weight: 650;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    line-height: 1.3;
+}
+
+.ag-fin-kpi-titulo {
+    margin: 14px 0 0;
+    color: var(--ag-on-surface);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
 }
 
 .ag-fin-kpi-icone {
@@ -193,13 +338,22 @@
     color: var(--ag-secondary);
 }
 
-.ag-fin-kpi strong {
-    display: block;
-    margin-top: 16px;
+.ag-fin-kpi-valor {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-top: 14px;
     color: var(--ag-on-surface);
-    font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+    font-size: clamp(1.6rem, 2.8vw, 2rem);
     font-weight: 700;
     letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.ag-fin-kpi-moeda {
+    color: var(--ag-on-surface-variant);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .ag-fin-kpi small {
@@ -209,6 +363,25 @@
     font-size: 0.76rem;
     line-height: 1.4;
 }
+
+/* Rodapé do KPI (badge honesto) */
+.ag-fin-kpi-rodape {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ag-surface-high);
+}
+.ag-fin-kpi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--ag-radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.ag-fin-kpi-badge-verde { background: var(--ag-surface-container); color: var(--ag-primary); }
+.ag-fin-kpi-badge-ambar { background: var(--ag-secondary-fixed); color: var(--ag-secondary); }
+.ag-fin-kpi-badge-neutro { background: var(--ag-campo); color: var(--ag-on-surface-variant); }
 
 /* ---- Analytics (gráfico + ações) -------------------------------- */
 
@@ -412,6 +585,10 @@
     background: var(--ag-secondary);
 }
 
+.ag-fin-grafico-cor-saldo {
+    background: #0f766e;
+}
+
 .ag-fin-grafico-valores {
     display: flex;
     justify-content: space-between;
@@ -448,44 +625,32 @@
     vector-effect: non-scaling-stroke;
 }
 
-.ag-fin-grafico-linha-receita,
-.ag-fin-grafico-linha-despesa {
+/* Barras de receita e despesa */
+.ag-fin-grafico-barra-receita { fill: var(--ag-primary); transition: opacity 160ms ease; }
+.ag-fin-grafico-barra-despesa { fill: var(--ag-secondary); transition: opacity 160ms ease; }
+.ag-fin-grafico-barra-receita:hover,
+.ag-fin-grafico-barra-despesa:hover { opacity: 0.82; }
+
+/* Linha de saldo acumulado */
+.ag-fin-grafico-linha-saldo {
     fill: none;
+    stroke: #0f766e;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 3;
     vector-effect: non-scaling-stroke;
 }
 
-.ag-fin-grafico-linha-receita {
-    stroke: var(--ag-primary);
-}
-
-.ag-fin-grafico-linha-despesa {
-    stroke: var(--ag-secondary);
-}
-
-.ag-fin-grafico-ponto-receita,
-.ag-fin-grafico-ponto-despesa {
+.ag-fin-grafico-ponto-saldo {
+    fill: #0f766e;
     stroke: var(--ag-surface-lowest);
     stroke-width: 2;
     vector-effect: non-scaling-stroke;
-    transition:
-            opacity 160ms ease,
-            r 160ms ease;
+    transition: opacity 160ms ease, r 160ms ease;
 }
 
-.ag-fin-grafico-ponto-receita {
-    fill: var(--ag-primary);
-}
-
-.ag-fin-grafico-ponto-despesa {
-    fill: var(--ag-secondary);
-}
-
-.ag-fin-grafico-ponto-receita:hover,
-.ag-fin-grafico-ponto-despesa:hover {
-    opacity: 0.8;
+.ag-fin-grafico-ponto-saldo:hover {
+    opacity: 0.85;
     r: 6px;
 }
 
@@ -916,8 +1081,7 @@
         height: 210px;
     }
 
-    .ag-fin-grafico-ponto-receita,
-    .ag-fin-grafico-ponto-despesa {
+    .ag-fin-grafico-ponto-saldo {
         r: 3px;
     }
 }
