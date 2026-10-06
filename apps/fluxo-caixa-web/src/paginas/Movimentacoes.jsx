@@ -10,7 +10,8 @@ import {
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Movimentacoes.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { limparSessao, obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function formatarDinheiro(valor) {
@@ -49,51 +50,6 @@ function formatarData(data) {
 
     const [ano, mes, dia] = data.split('-')
     return `${dia}/${mes}/${ano}`
-}
-
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem('agrogestao_token')
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
 }
 
 async function obterMensagemDeErro(
@@ -232,20 +188,6 @@ function Movimentacoes() {
         String(categoriaOriginalRestauracao.id) &&
         !novaCategoriaNome.trim()
 
-    function criarCabecalhos(possuiCorpo = false) {
-        const cabecalhos = {
-            Authorization:
-                `${sessao.tipoToken} ${sessao.token}`,
-        }
-
-        if (possuiCorpo) {
-            cabecalhos['Content-Type'] =
-                'application/json; charset=utf-8'
-        }
-
-        return cabecalhos
-    }
-
     useEffect(() => {
         if (!sessao || !empresaId) {
             navigate('/login', {
@@ -276,24 +218,7 @@ function Movimentacoes() {
 
         async function carregarMovimentacoes() {
             try {
-                const resposta = await fetch(endereco, {
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                })
-
-                if (
-                    resposta.status === 401
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
+                const resposta = await apiFetch(endereco)
 
                 if (!resposta.ok) {
                     const mensagem =
@@ -359,24 +284,9 @@ function Movimentacoes() {
         setErro('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/movimentacoes/lixeira`,
-                {
-                    headers: criarCabecalhos(),
-                },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -429,28 +339,12 @@ function Movimentacoes() {
         setErro('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacao.id}`,
                 {
                     method: 'DELETE',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 const mensagem =
@@ -497,25 +391,12 @@ function Movimentacoes() {
         setErro('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacao.id}/permanente`,
                 {
                     method: 'DELETE',
-                    headers: criarCabecalhos(),
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -617,24 +498,9 @@ function Movimentacoes() {
         try {
             setCarregandoCategoriasConversao(true)
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/categorias?tipo=${tipoDestino}`,
-                {
-                    headers: criarCabecalhos(),
-                },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -763,15 +629,14 @@ function Movimentacoes() {
                 categoriaConversaoId
 
             if (novaCategoriaNome.trim()) {
-                const respostaCategoria = await fetch(
+                const respostaCategoria = await apiFetch(
                     `${API_URL}/empresas/${empresaId}/categorias`,
                     {
                         method: 'POST',
-                        headers: criarCabecalhos(true),
-                        body: JSON.stringify({
+                        body: {
                             nome: novaCategoriaNome.trim(),
                             tipo: tipoDestino,
-                        }),
+                        },
                     },
                 )
 
@@ -801,29 +666,16 @@ function Movimentacoes() {
                         ? 'converter-tipo'
                         : 'categoria'
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacaoParaConverter.id}/${caminho}`,
                 {
                     method: 'PATCH',
-                    headers: criarCabecalhos(true),
-                    body: JSON.stringify({
+                    body: {
                         categoriaId:
                             Number(categoriaDestinoId),
-                    }),
+                    },
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(

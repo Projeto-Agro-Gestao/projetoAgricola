@@ -8,39 +8,8 @@ import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ProdutorColaborativo.css'
-import { limparSessao } from '../servicos/sessao.js'
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo = localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 
 async function mensagemErro(resposta, padrao) {
     const dados = await resposta.json().catch(() => null)
@@ -62,12 +31,6 @@ function formatarData(data) {
     return new Intl.DateTimeFormat('pt-BR', {
         timeZone: 'UTC',
     }).format(new Date(`${data}T00:00:00`))
-}
-
-function obterHeaders(sessao) {
-    return {
-        Authorization: `${sessao.tipoToken} ${sessao.token}`,
-    }
 }
 
 function ProdutorColaborativo() {
@@ -115,7 +78,6 @@ function ProdutorColaborativo() {
         setErro('')
 
         try {
-            const headers = obterHeaders(sessao)
             const [
                 respostaDashboard,
                 respostaPendencias,
@@ -124,14 +86,13 @@ function ProdutorColaborativo() {
                 respostaAtividades,
                 respostaMovimentacoes,
             ] = await Promise.all([
-                fetch(`${baseUrl}/produtor/dashboard`, { headers }),
-                fetch(`${baseUrl}/pendencias`, { headers }),
-                fetch(`${baseUrl}/documentos`, { headers }),
-                fetch(`${baseUrl}/propriedades`, { headers }),
-                fetch(`${baseUrl}/atividades`, { headers }),
-                fetch(
+                apiFetch(`${baseUrl}/produtor/dashboard`),
+                apiFetch(`${baseUrl}/pendencias`),
+                apiFetch(`${baseUrl}/documentos`),
+                apiFetch(`${baseUrl}/propriedades`),
+                apiFetch(`${baseUrl}/atividades`),
+                apiFetch(
                     `${API_URL}/empresas/${empresaId}/movimentacoes?size=50`,
-                    { headers },
                 ),
             ])
 
@@ -188,15 +149,11 @@ function ProdutorColaborativo() {
         setMensagem('')
         setErro('')
 
-        const resposta = await fetch(`${baseUrl}/propriedades`, {
+        const resposta = await apiFetch(`${baseUrl}/propriedades`, {
             method: 'POST',
-            headers: {
-                ...obterHeaders(sessao),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+            body: {
                 nome: novaPropriedade.trim(),
-            }),
+            },
         })
 
         if (!resposta.ok) {
@@ -225,16 +182,12 @@ function ProdutorColaborativo() {
         setMensagem('')
         setErro('')
 
-        const resposta = await fetch(`${baseUrl}/atividades`, {
+        const resposta = await apiFetch(`${baseUrl}/atividades`, {
             method: 'POST',
-            headers: {
-                ...obterHeaders(sessao),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+            body: {
                 nome: novaAtividade.trim(),
                 tipo: tipoAtividade,
-            }),
+            },
         })
 
         if (!resposta.ok) {
@@ -275,9 +228,8 @@ function ProdutorColaborativo() {
             dados.append('movimentacaoId', documentoMovimentacaoId)
         }
 
-        const resposta = await fetch(`${baseUrl}/documentos`, {
+        const resposta = await apiFetch(`${baseUrl}/documentos`, {
             method: 'POST',
-            headers: obterHeaders(sessao),
             body: dados,
         })
 
@@ -307,11 +259,8 @@ function ProdutorColaborativo() {
         setErro('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${baseUrl}/documentos/${documento.id}/download`,
-                {
-                    headers: obterHeaders(sessao),
-                },
             )
 
             if (!resposta.ok) {

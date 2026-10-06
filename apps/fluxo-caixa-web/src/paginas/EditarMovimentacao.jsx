@@ -10,7 +10,8 @@ import {
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaMovimentacao.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { limparSessao, obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function completarComZero(numero) {
@@ -31,51 +32,6 @@ function obterDataAtual() {
     )
 
     return `${ano}-${mes}-${dia}`
-}
-
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem('agrogestao_token')
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
 }
 
 async function obterMensagemDeErro(
@@ -181,11 +137,6 @@ function EditarMovimentacao() {
 
         let componenteAtivo = true
 
-        const cabecalhos = {
-            Authorization:
-                `${sessao.tipoToken} ${sessao.token}`,
-        }
-
         async function carregarDados() {
             try {
                 const [
@@ -194,49 +145,22 @@ function EditarMovimentacao() {
                     respostaPropriedades,
                     respostaAtividades,
                 ] = await Promise.all([
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacaoId}`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/categorias/todas`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/colaboracao/empresas/${empresaId}/propriedades`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/colaboracao/empresas/${empresaId}/atividades`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
                 ])
-
-                if (
-                    respostaMovimentacao.status === 401  ||
-                    respostaCategorias.status === 401  ||
-                    respostaPropriedades.status === 401  ||
-                    respostaAtividades.status === 401
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!respostaMovimentacao.ok) {
                     const mensagem =
@@ -465,32 +389,13 @@ function EditarMovimentacao() {
         try {
             setSalvando(true)
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/movimentacoes/${movimentacaoId}`,
                 {
                     method: 'PUT',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-
-                        'Content-Type':
-                            'application/json; charset=utf-8',
-                    },
-                    body: JSON.stringify(corpo),
+                    body: corpo,
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 const mensagem =

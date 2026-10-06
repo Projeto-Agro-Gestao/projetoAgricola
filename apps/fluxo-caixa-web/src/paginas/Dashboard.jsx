@@ -10,7 +10,8 @@ import ShellDashboard from '../componentes/ShellDashboard.jsx'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './Dashboard.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 
 function Icone({ nome, tamanho }) {
     return (
@@ -145,57 +146,6 @@ const MESES_PT = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
-
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem(
-                'agrogestao_token',
-            )
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (
-            expiraEm
-            && Date.now() >= expiraEm
-        ) {
-            limparSessao()
-            return null
-        }
-
-        const usuario =
-            JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 async function obterMensagemDeErro(
     resposta,
@@ -426,11 +376,6 @@ function Dashboard() {
         const empresaId =
             sessao.usuario.empresaId
 
-        const cabecalhos = {
-            Authorization:
-                `${sessao.tipoToken} ${sessao.token}`,
-        }
-
         if (
             periodoSelecionado.dataInicial
             > periodoSelecionado.dataFinal
@@ -469,49 +414,18 @@ function Dashboard() {
                     respostaMovimentacoes,
                     respostaFluxoCaixa,
                 ] = await Promise.all([
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/dashboard/resumo?${parametrosGrafico}`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/movimentacoes`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/dashboard/fluxo-caixa?${parametrosGrafico}`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
                 ])
-
-                const respostas = [
-                    respostaResumo,
-                    respostaMovimentacoes,
-                    respostaFluxoCaixa,
-                ]
-
-                const acessoNegado =
-                    respostas.some(
-                        (resposta) =>
-                            resposta.status === 401
-                    )
-
-                if (acessoNegado) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!respostaResumo.ok) {
                     const mensagem =
@@ -766,28 +680,9 @@ function Dashboard() {
                 })
 
             const resposta =
-                await fetch(
+                await apiFetch(
                     `${API_URL}/empresas/${empresaId}/relatorios/${tipo}?${parametrosRelatorio}`,
-                    {
-                        headers: {
-                            Authorization:
-                                `${sessao.tipoToken} ${sessao.token}`,
-                        },
-                    },
                 )
-
-            if (
-                resposta.status === 401
-
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 const mensagem =

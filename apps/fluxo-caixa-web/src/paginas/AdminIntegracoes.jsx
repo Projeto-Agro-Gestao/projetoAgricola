@@ -1,34 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import './AdminPainel.css'
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-
-        if (!token) {
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
-
-function headers(sessao) {
-    return {
-        Authorization: `${sessao.tipoToken} ${sessao.token}`,
-    }
-}
 
 async function mensagemErro(resposta) {
     const dados = await resposta.json().catch(() => null)
@@ -54,12 +29,8 @@ function AdminIntegracoes() {
 
         try {
             const [statusResposta, setupResposta] = await Promise.all([
-                fetch(`${API_URL}/admin/integracoes/oficiais/status`, {
-                    headers: headers(sessao),
-                }),
-                fetch(`${API_URL}/admin/integracoes/oficiais/setup`, {
-                    headers: headers(sessao),
-                }),
+                apiFetch(`${API_URL}/admin/integracoes/oficiais/status`),
+                apiFetch(`${API_URL}/admin/integracoes/oficiais/setup`),
             ])
 
             if (!statusResposta.ok) {
@@ -88,11 +59,8 @@ function AdminIntegracoes() {
             return
         }
 
-        const resposta = await fetch(
+        const resposta = await apiFetch(
             `${API_URL}/admin/integracoes/oficiais/setup`,
-            {
-                headers: headers(sessao),
-            },
         )
 
         if (resposta.ok) {
@@ -109,11 +77,10 @@ function AdminIntegracoes() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/integracoes/oficiais/cnpj/testar`,
                 {
                     method: 'POST',
-                    headers: headers(sessao),
                 },
             )
 

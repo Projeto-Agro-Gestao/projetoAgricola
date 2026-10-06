@@ -10,7 +10,8 @@ import {
 import { API_BASE_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Categorias.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { limparSessao, obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const AREAS_CATEGORIA = [
@@ -32,51 +33,6 @@ function obterRotuloArea(area) {
     return AREAS_CATEGORIA.find(
         (item) => item.valor === area,
     )?.rotulo ?? 'Geral'
-}
-
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem('agrogestao_token')
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
 }
 
 function criarErro(mensagem, status) {
@@ -142,40 +98,6 @@ function Categorias() {
         ? `${API_BASE_URL}/empresas/${empresaId}/categorias`
         : null
 
-    const criarCabecalhos = useCallback(
-        (possuiCorpo = false) => {
-            const cabecalhos = {
-                Authorization:
-                    `${sessao.tipoToken} ${sessao.token}`,
-            }
-
-            if (possuiCorpo) {
-                cabecalhos['Content-Type'] =
-                    'application/json; charset=utf-8'
-            }
-
-            return cabecalhos
-        },
-        [sessao],
-    )
-
-    const tratarFalhaDeAutenticacao = useCallback(
-        (status) => {
-            if (status === 401 ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return true
-            }
-
-            return false
-        },
-        [navigate],
-    )
-
     const buscarCategoriasNaApi = useCallback(
         async () => {
             if (!sessao || !apiUrl) {
@@ -185,11 +107,8 @@ function Categorias() {
                 )
             }
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${apiUrl}/todas`,
-                {
-                    headers: criarCabecalhos(),
-                },
             )
 
             if (!resposta.ok) {
@@ -209,7 +128,6 @@ function Categorias() {
         },
         [
             apiUrl,
-            criarCabecalhos,
             sessao,
         ],
     )
@@ -223,14 +141,6 @@ function Categorias() {
                 setCategorias(dados)
                 setErro('')
             } catch (erroDaRequisicao) {
-                if (
-                    tratarFalhaDeAutenticacao(
-                        erroDaRequisicao.status,
-                    )
-                ) {
-                    return
-                }
-
                 setErro(
                     erroDaRequisicao.message ??
                     'Não foi possível carregar as categorias.',
@@ -239,7 +149,6 @@ function Categorias() {
         },
         [
             buscarCategoriasNaApi,
-            tratarFalhaDeAutenticacao,
         ],
     )
 
@@ -266,14 +175,6 @@ function Categorias() {
                     return
                 }
 
-                if (
-                    tratarFalhaDeAutenticacao(
-                        erroDaRequisicao.status,
-                    )
-                ) {
-                    return
-                }
-
                 setErro(
                     erroDaRequisicao.message ??
                     'Não foi possível carregar as categorias.',
@@ -292,7 +193,6 @@ function Categorias() {
         buscarCategoriasNaApi,
         navigate,
         sessao,
-        tratarFalhaDeAutenticacao,
     ])
 
     const categoriasDeReceita = categorias.filter(
@@ -380,10 +280,9 @@ function Categorias() {
         try {
             setSalvando(true)
 
-            const resposta = await fetch(endereco, {
+            const resposta = await apiFetch(endereco, {
                 method: editando ? 'PUT' : 'POST',
-                headers: criarCabecalhos(true),
-                body: JSON.stringify(corpo),
+                body: corpo,
             })
 
             if (!resposta.ok) {
@@ -412,14 +311,6 @@ function Categorias() {
 
             await carregarCategorias()
         } catch (erroDaRequisicao) {
-            if (
-                tratarFalhaDeAutenticacao(
-                    erroDaRequisicao.status,
-                )
-            ) {
-                return
-            }
-
             setErro(
                 erroDaRequisicao.message ??
                 'Não foi possível salvar a categoria.',
@@ -439,11 +330,10 @@ function Categorias() {
             setErro('')
             setSucesso('')
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${apiUrl}/${categoria.id}/${acao}`,
                 {
                     method: 'PATCH',
-                    headers: criarCabecalhos(),
                 },
             )
 
@@ -499,14 +389,6 @@ function Categorias() {
                 limparFormulario()
             }
         } catch (erroDaRequisicao) {
-            if (
-                tratarFalhaDeAutenticacao(
-                    erroDaRequisicao.status,
-                )
-            ) {
-                return
-            }
-
             setErro(
                 erroDaRequisicao.message ??
                 'Não foi possível alterar a categoria.',
@@ -522,11 +404,10 @@ function Categorias() {
             setErro('')
             setSucesso('')
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${apiUrl}/${categoria.id}`,
                 {
                     method: 'DELETE',
-                    headers: criarCabecalhos(),
                 },
             )
 
@@ -560,14 +441,6 @@ function Categorias() {
                 `A categoria "${categoria.nome}" foi excluída definitivamente.`,
             )
         } catch (erroDaRequisicao) {
-            if (
-                tratarFalhaDeAutenticacao(
-                    erroDaRequisicao.status,
-                )
-            ) {
-                return
-            }
-
             if (erroDaRequisicao.status === 409) {
                 await carregarCategorias()
                 setAvisoCategoriaBloqueada(

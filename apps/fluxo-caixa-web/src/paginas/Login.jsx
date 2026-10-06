@@ -105,6 +105,7 @@ function Login() {
 
             const resposta = await fetch(API_LOGIN_URL, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type':
                         'application/json; charset=utf-8',
@@ -112,6 +113,7 @@ function Login() {
                 body: JSON.stringify({
                     email: emailNormalizado,
                     senha,
+                    lembrar: lembrarAcesso,
                 }),
             })
 
@@ -177,6 +179,7 @@ function Login() {
         try {
             const resposta = await fetch(API_GOOGLE_AUTH_URL, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type':
                         'application/json; charset=utf-8',

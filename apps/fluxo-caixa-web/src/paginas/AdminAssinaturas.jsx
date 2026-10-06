@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './AdminAssinaturas.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 
 const FILTROS = [
     { valor: 'TODOS', rotulo: 'Todos' },
@@ -22,29 +23,6 @@ const FILTROS = [
     { valor: 'SUSPENDED', rotulo: 'Bloqueados' },
     { valor: 'CANCELLED', rotulo: 'Cancelados' },
 ]
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo =
-            localStorage.getItem('agrogestao_usuario')
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-            usuario: JSON.parse(usuarioSalvo),
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -127,14 +105,8 @@ function AdminAssinaturas() {
 
     async function carregar() {
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/assinaturas`,
-                {
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                },
             )
 
             if (!resposta.ok) {
@@ -181,14 +153,9 @@ function AdminAssinaturas() {
     async function enviar(url, metodo, corpo, sucesso) {
         try {
             setSalvando(true)
-            const resposta = await fetch(url, {
+            const resposta = await apiFetch(url, {
                 method: metodo,
-                headers: {
-                    Authorization:
-                        `${sessao.tipoToken} ${sessao.token}`,
-                    'Content-Type': 'application/json; charset=utf-8',
-                },
-                body: corpo ? JSON.stringify(corpo) : undefined,
+                body: corpo ?? undefined,
             })
 
             if (!resposta.ok) {

@@ -10,41 +10,9 @@ import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Fornecedores.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo =
-            localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        const usuario = JSON.parse(usuarioSalvo)
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 async function obterMensagemDeErro(
     resposta,
@@ -412,33 +380,17 @@ function Fornecedores() {
         sessao,
     ])
 
-    async function requisitar(
+    function requisitar(
         caminho,
         opcoes = {},
     ) {
-        const resposta = await fetch(
+        return apiFetch(
             `${API_URL}/empresas/${empresaId}${caminho}`,
             {
-                ...opcoes,
-                headers: {
-                    Authorization:
-                        `${sessao.tipoToken} ${sessao.token}`,
-                    ...(opcoes.headers ?? {}),
-                },
+                method: opcoes.method ?? 'GET',
+                body: opcoes.body,
             },
         )
-
-        if (
-            resposta.status === 401
-
-        ) {
-            limparSessao()
-            navigate('/login', {
-                replace: true,
-            })
-        }
-
-        return resposta
     }
 
     async function carregarTudo() {

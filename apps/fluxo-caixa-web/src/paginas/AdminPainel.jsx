@@ -6,7 +6,8 @@ import {
 import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './AdminPainel.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const STATUS_PAGAMENTO = [
@@ -35,38 +36,6 @@ const FILTROS_USUARIOS = [
     { valor: 'PRODUTORES', rotulo: 'Produtores' },
     { valor: 'CONTADORES', rotulo: 'Contadores' },
 ]
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ??
-            'Bearer'
-        const usuarioSalvo =
-            localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-            usuario: JSON.parse(usuarioSalvo),
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 async function obterMensagemDeErro(resposta) {
     const dados = await resposta.json().catch(() => null)
@@ -304,19 +273,13 @@ function AdminPainel() {
         }
     }, [navigate, sessao])
 
-    async function carregarUsuarios(sessaoAtual) {
+    async function carregarUsuarios() {
         setCarregando(true)
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/usuarios`,
-                {
-                    headers: {
-                        Authorization:
-                            `${sessaoAtual.tipoToken} ${sessaoAtual.token}`,
-                    },
-                },
             )
 
             if (!resposta.ok) {
@@ -343,7 +306,7 @@ function AdminPainel() {
             sessao?.usuario?.papel === 'SUPER_ADMIN'
         ) {
             void Promise.resolve().then(() =>
-                carregarUsuarios(sessao),
+                carregarUsuarios(),
             )
         }
     }, [sessao])
@@ -473,14 +436,8 @@ function AdminPainel() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/contadores/${usuario.id}/clientes`,
-                {
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                },
             )
 
             if (!resposta.ok) {
@@ -514,19 +471,13 @@ function AdminPainel() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/contadores/${vinculosContador.contador.id}/clientes`,
                 {
                     method: 'POST',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                        'Content-Type':
-                            'application/json; charset=utf-8',
-                    },
-                    body: JSON.stringify({
+                    body: {
                         empresaId: Number(empresaParaVincular),
-                    }),
+                    },
                 },
             )
 
@@ -569,14 +520,10 @@ function AdminPainel() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/contadores/${vinculosContador.contador.id}/clientes/${vinculo.empresaId}`,
                 {
                     method: 'DELETE',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
                 },
             )
 
@@ -620,15 +567,9 @@ function AdminPainel() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(url, {
+            const resposta = await apiFetch(url, {
                 method: 'PATCH',
-                headers: {
-                    Authorization:
-                        `${sessao.tipoToken} ${sessao.token}`,
-                    'Content-Type':
-                        'application/json; charset=utf-8',
-                },
-                body: JSON.stringify(corpo),
+                body: corpo,
             })
 
             if (!resposta.ok) {
@@ -709,17 +650,11 @@ function AdminPainel() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/admin/usuarios/${usuarioEmEdicao.id}/dados`,
                 {
                     method: 'PATCH',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                        'Content-Type':
-                            'application/json; charset=utf-8',
-                    },
-                    body: JSON.stringify(formularioEdicao),
+                    body: formularioEdicao,
                 },
             )
 

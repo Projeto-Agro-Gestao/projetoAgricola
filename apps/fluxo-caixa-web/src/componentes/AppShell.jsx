@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router'
 import { useEffect } from 'react'
 import { API_BASE_URL as API_URL } from '../config.js'
+import { apiFetch } from '../servicos/api.js'
 import {
     atualizarUsuarioSessao,
-    limparSessao,
     obterSessao,
 } from '../servicos/sessao.js'
 import './AppShell.css'
@@ -34,18 +34,8 @@ function AppShell() {
             return
         }
 
-        fetch(`${API_URL}/auth/me`, {
-            headers: {
-                Authorization: `${sessao.tipoToken} ${sessao.token}`,
-            },
-        })
+        apiFetch(`${API_URL}/auth/me`)
             .then(async (resposta) => {
-                if (resposta.status === 401) {
-                    limparSessao()
-                    navigate('/login', { replace: true })
-                    return
-                }
-
                 if (resposta.ok) {
                     atualizarUsuarioSessao(await resposta.json())
                 }

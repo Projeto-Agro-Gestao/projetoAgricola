@@ -13,6 +13,7 @@ import {
     API_LOGIN_URL,
     GOOGLE_CLIENT_ID,
 } from '../config.js'
+import { salvarSessao } from '../servicos/sessao.js'
 import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
 import MarcaAgro from '../componentes/MarcaAgro.jsx'
 import '../App.css'
@@ -55,19 +56,6 @@ async function obterMensagemDeErro(
     }
 
     return dadosErro?.mensagem ?? mensagemPadrao
-}
-
-function armazenarSessao(dados) {
-    const expiraEm =
-        Date.now() +
-        Number(
-            dados.expiraEmSegundos ?? 3600,
-        ) * 1000
-
-    localStorage.setItem('agrogestao_token', dados.token)
-    localStorage.setItem('agrogestao_tipo_token', dados.tipo ?? 'Bearer')
-    localStorage.setItem('agrogestao_usuario', JSON.stringify(dados.usuario))
-    localStorage.setItem('agrogestao_token_expira_em', String(expiraEm))
 }
 
 function aplicarMascaraDocumento(valor) {
@@ -234,6 +222,7 @@ function Cadastro() {
 
             const respostaLogin = await fetch(API_LOGIN_URL, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',
                 },
@@ -254,7 +243,12 @@ function Cadastro() {
                 throw new Error('A conta foi criada, mas o servidor retornou um login inválido.')
             }
 
-            armazenarSessao(dadosLogin)
+            salvarSessao({
+                token: dadosLogin.token,
+                tipoToken: dadosLogin.tipo ?? 'Bearer',
+                usuario: dadosLogin.usuario,
+                expiraEmSegundos: dadosLogin.expiraEmSegundos,
+            })
             navigate('/dashboard', { replace: true })
         } catch (erroDaRequisicao) {
             setMensagem('')
@@ -312,6 +306,7 @@ function Cadastro() {
         try {
             const resposta = await fetch(API_GOOGLE_AUTH_URL, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',
                 },
@@ -343,7 +338,12 @@ function Cadastro() {
                 throw new Error('O servidor retornou um login invalido.')
             }
 
-            armazenarSessao(dadosLogin)
+            salvarSessao({
+                token: dadosLogin.token,
+                tipoToken: dadosLogin.tipo ?? 'Bearer',
+                usuario: dadosLogin.usuario,
+                expiraEmSegundos: dadosLogin.expiraEmSegundos,
+            })
             navigate('/dashboard', { replace: true })
         } catch (erroDaRequisicao) {
             setErro(

@@ -6,32 +6,10 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './PlanoPagamentos.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import { gerarCobrancaComDados, salvarDadosPagamento } from '../servicos/pagamentos.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo =
-            localStorage.getItem('agrogestao_usuario')
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-            usuario: JSON.parse(usuarioSalvo),
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -219,21 +197,9 @@ function PlanoPagamentos() {
         try {
             setCarregando(true)
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/assinatura`,
-                {
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                },
             )
-
-            if (resposta.status === 401) {
-                limparSessao()
-                navigate('/login', { replace: true })
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -302,7 +268,7 @@ function PlanoPagamentos() {
             setMensagem('')
 
             const resposta = await gerarCobrancaComDados(
-                { apiUrl: API_URL, empresaId, sessao, dados: dadosCobranca },
+                { apiUrl: API_URL, empresaId, dados: dadosCobranca },
                 tipo,
                 obterMensagemDeErro,
             )
@@ -370,21 +336,9 @@ function PlanoPagamentos() {
             setConsultandoCep(true)
             setMensagem('Buscando endereco...')
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/assinatura/cep/${cep}`,
-                {
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
-                },
             )
-
-            if (resposta.status === 401) {
-                limparSessao()
-                navigate('/login', { replace: true })
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -472,7 +426,7 @@ function PlanoPagamentos() {
             }
 
             const resposta = await salvarDadosPagamento({
-                apiUrl: API_URL, empresaId, sessao, dados: dadosCobranca,
+                apiUrl: API_URL, empresaId, dados: dadosCobranca,
             })
 
             if (!resposta.ok) {
@@ -513,14 +467,10 @@ function PlanoPagamentos() {
             setEmitindoNota(true)
             setMensagem('')
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/assinatura/pagamentos/${pagamentoId}/nota-fiscal`,
                 {
                     method: 'POST',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                    },
                 },
             )
 

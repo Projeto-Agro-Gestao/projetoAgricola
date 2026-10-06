@@ -11,7 +11,8 @@ import {
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaMovimentacao.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { limparSessao, obterSessao } from '../servicos/sessao.js'
 
 function completarComZero(numero) {
     return String(numero).padStart(2, '0')
@@ -31,57 +32,6 @@ function obterDataAtual() {
     )
 
     return `${ano}-${mes}-${dia}`
-}
-
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem(
-                'agrogestao_token',
-            )
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (
-            expiraEm
-            && Date.now() >= expiraEm
-        ) {
-            limparSessao()
-            return null
-        }
-
-        const usuario =
-            JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
 }
 
 async function obterMensagemDeErro(
@@ -279,28 +229,9 @@ function NovaMovimentacao() {
                 setCarregandoCategorias(true)
 
                 const resposta =
-                    await fetch(
+                    await apiFetch(
                         `${API_URL}/empresas/${empresaId}/categorias?tipo=${tipo}`,
-                        {
-                            headers: {
-                                Authorization:
-                                    `${sessao.tipoToken} ${sessao.token}`,
-                            },
-                        },
                     )
-
-                if (
-                    resposta.status === 401
-
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!resposta.ok) {
                     throw new Error(
@@ -380,28 +311,9 @@ function NovaMovimentacao() {
                 setCarregandoFornecedores(true)
 
                 const resposta =
-                    await fetch(
+                    await apiFetch(
                         `${API_URL}/empresas/${empresaId}/fornecedores`,
-                        {
-                            headers: {
-                                Authorization:
-                                    `${sessao.tipoToken} ${sessao.token}`,
-                            },
-                        },
                     )
-
-                if (
-                    resposta.status === 401
-
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!resposta.ok) {
                     throw new Error(
@@ -457,40 +369,18 @@ function NovaMovimentacao() {
         let componenteAtivo = true
 
         async function carregarOrganizacaoRural() {
-            const headers = {
-                Authorization:
-                    `${sessao.tipoToken} ${sessao.token}`,
-            }
-
             try {
                 const [
                     respostaPropriedades,
                     respostaAtividades,
                 ] = await Promise.all([
-                    fetch(
+                    apiFetch(
                         `${API_URL}/colaboracao/empresas/${empresaId}/propriedades`,
-                        { headers },
                     ),
-                    fetch(
+                    apiFetch(
                         `${API_URL}/colaboracao/empresas/${empresaId}/atividades`,
-                        { headers },
                     ),
                 ])
-
-                if (
-                    respostaPropriedades.status === 401
-
-                    || respostaAtividades.status === 401
-
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 const dadosPropriedades =
                     respostaPropriedades.ok
@@ -625,38 +515,15 @@ function NovaMovimentacao() {
             setSucessoFornecedor('')
 
             const resposta =
-                await fetch(
+                await apiFetch(
                     `${API_URL}/empresas/${empresaId}/fornecedores`,
                     {
                         method: 'POST',
-
-                        headers: {
-                            Authorization:
-                                `${sessao.tipoToken} ${sessao.token}`,
-
-                            'Content-Type':
-                                'application/json; charset=utf-8',
+                        body: {
+                            nome: nomeNormalizado,
                         },
-
-                        body:
-                            JSON.stringify({
-                                nome: nomeNormalizado,
-                            }),
                     },
                 )
-
-            if (
-                resposta.status === 401
-
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -733,41 +600,16 @@ function NovaMovimentacao() {
             setSalvandoCategoria(true)
 
             const resposta =
-                await fetch(
+                await apiFetch(
                     `${API_URL}/empresas/${empresaId}/categorias`,
                     {
                         method: 'POST',
-
-                        headers: {
-                            Authorization:
-                                `${sessao.tipoToken} ${sessao.token}`,
-
-                            'Content-Type':
-                                'application/json; charset=utf-8',
+                        body: {
+                            nome: nomeNormalizado,
+                            tipo,
                         },
-
-                        body:
-                            JSON.stringify({
-                                nome:
-                                nomeNormalizado,
-
-                                tipo,
-                            }),
                     },
                 )
-
-            if (
-                resposta.status === 401
-
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -947,36 +789,13 @@ function NovaMovimentacao() {
             setSalvando(true)
 
             const resposta =
-                await fetch(
+                await apiFetch(
                     `${API_URL}/empresas/${empresaId}/movimentacoes`,
                     {
                         method: 'POST',
-
-                        headers: {
-                            Authorization:
-                                `${sessao.tipoToken} ${sessao.token}`,
-
-                            'Content-Type':
-                                'application/json; charset=utf-8',
-                        },
-
-                        body:
-                            JSON.stringify(corpo),
+                        body: corpo,
                     },
                 )
-
-            if (
-                resposta.status === 401
-
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(

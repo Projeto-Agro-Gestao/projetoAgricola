@@ -108,16 +108,23 @@ export function salvarSessao({
     usuario,
     expiraEmSegundos,
 }) {
+    const expiraEm = Number(expiraEmSegundos)
     localStorage.setItem(CHAVE_TOKEN, token)
     localStorage.setItem(CHAVE_TIPO_TOKEN, tipoToken)
     localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario))
-    localStorage.setItem(
-        CHAVE_EXPIRA_EM,
-        String(
-            Date.now() +
-                Number(expiraEmSegundos ?? 3600) * 1000,
-        ),
-    )
+    if (Number.isFinite(expiraEm) && expiraEm > 0) {
+        localStorage.setItem(
+            CHAVE_EXPIRA_EM,
+            String(Date.now() + expiraEm * 1000),
+        )
+    } else {
+        localStorage.removeItem(CHAVE_EXPIRA_EM)
+        if (import.meta.env?.DEV) {
+            console.warn(
+                'salvarSessao: expiraEmSegundos ausente/inválido; sessão sem expiração conhecida',
+            )
+        }
+    }
 }
 
 export function atualizarUsuarioSessao(usuario) {

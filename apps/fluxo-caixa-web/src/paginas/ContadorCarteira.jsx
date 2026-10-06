@@ -8,7 +8,8 @@ import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContadorCarteira.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const ABAS = [
@@ -150,43 +151,6 @@ const REFERENCIAS_TRIBUTARIAS = {
             ],
         ],
     },
-}
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ?? 'Bearer'
-        const usuarioSalvo = localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-            usuario: JSON.parse(usuarioSalvo),
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
-
-function headers(sessao, json = false) {
-    return {
-        Authorization: `${sessao.tipoToken} ${sessao.token}`,
-        ...(json ? { 'Content-Type': 'application/json' } : {}),
-    }
 }
 
 function formatarDinheiro(valor) {
@@ -408,12 +372,9 @@ function ContadorCarteira() {
     }, [navigate, sessao])
 
     async function requisicaoJson(url, opcoes = {}) {
-        const resposta = await fetch(url, {
-            ...opcoes,
-            headers: {
-                ...headers(sessao, opcoes.json),
-                ...(opcoes.headers ?? {}),
-            },
+        const resposta = await apiFetch(url, {
+            method: opcoes.method ?? 'GET',
+            body: opcoes.body,
         })
 
         if (!resposta.ok) {
@@ -916,11 +877,8 @@ function ContadorCarteira() {
         setErro('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/colaboracao/empresas/${clienteSelecionado.empresaId}/documentos/${documento.id}/download`,
-                {
-                    headers: headers(sessao),
-                },
             )
 
             if (!resposta.ok) {

@@ -1,7 +1,7 @@
 export const API_BASE_URL =
-    import.meta.env.VITE_API_URL?.trim() ||
+    import.meta.env?.VITE_API_URL?.trim() ||
     (
-        import.meta.env.PROD
+        import.meta.env?.PROD
             ? 'https://projetoagricola.onrender.com/api/v1'
             : 'http://localhost:8080/api/v1'
     )
@@ -21,5 +21,11 @@ export const API_ESQUECI_SENHA_URL =
 export const API_REDEFINIR_SENHA_URL =
     `${API_BASE_URL}/auth/redefinir-senha`
 
+export const API_REFRESH_URL =
+    `${API_BASE_URL}/auth/refresh`
+
+export const API_LOGOUT_URL =
+    `${API_BASE_URL}/auth/logout`
+
 export const GOOGLE_CLIENT_ID =
-    import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || ''
+    import.meta.env?.VITE_GOOGLE_CLIENT_ID?.trim() || ''

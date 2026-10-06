@@ -11,7 +11,8 @@ import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContasFinanceiras.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const LARGURA_GRAFICO = 900
@@ -302,57 +303,6 @@ function GraficoProjecaoContas({ pontos }) {
     )
 }
 
-function obterSessao() {
-    try {
-        const token =
-            localStorage.getItem(
-                'agrogestao_token',
-            )
-
-        const tipoToken =
-            localStorage.getItem(
-                'agrogestao_tipo_token',
-            ) ?? 'Bearer'
-
-        const usuarioSalvo =
-            localStorage.getItem(
-                'agrogestao_usuario',
-            )
-
-        const expiraEm =
-            Number(
-                localStorage.getItem(
-                    'agrogestao_token_expira_em',
-                ),
-            )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (
-            expiraEm
-            && Date.now() >= expiraEm
-        ) {
-            limparSessao()
-            return null
-        }
-
-        const usuario =
-            JSON.parse(usuarioSalvo)
-
-
-        return {
-            token,
-            tipoToken,
-            usuario,
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
-
 async function obterMensagemDeErro(
     resposta,
     mensagemPadrao,
@@ -583,20 +533,6 @@ function ContasFinanceiras() {
         setBaixandoRelatorio,
     ] = useState('')
 
-    function criarCabecalhos(possuiCorpo = false) {
-        const cabecalhos = {
-            Authorization:
-                `${sessao.tipoToken} ${sessao.token}`,
-        }
-
-        if (possuiCorpo) {
-            cabecalhos['Content-Type'] =
-                'application/json; charset=utf-8'
-        }
-
-        return cabecalhos
-    }
-
     const carregarDados =
         useCallback(async () => {
             if (!sessao) {
@@ -609,11 +545,6 @@ function ContasFinanceiras() {
 
                 const empresaId =
                     sessao.usuario.empresaId
-
-                const cabecalhos = {
-                    Authorization:
-                        `${sessao.tipoToken} ${sessao.token}`,
-                }
 
                 const parametros =
                     new URLSearchParams()
@@ -656,57 +587,20 @@ function ContasFinanceiras() {
                     respostaLembretes,
                     respostaProjecao,
                 ] = await Promise.all([
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/contas-financeiras/resumo`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
-                        enderecoContas,
-                        {
-                            headers: cabecalhos,
-                        },
-                    ),
+                    apiFetch(enderecoContas),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/contas-financeiras/lembretes`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
 
-                    fetch(
+                    apiFetch(
                         `${API_URL}/empresas/${empresaId}/contas-financeiras/projecao?${parametrosGrafico}`,
-                        {
-                            headers: cabecalhos,
-                        },
                     ),
                 ])
-
-                const respostas = [
-                    respostaResumo,
-                    respostaContas,
-                    respostaLembretes,
-                    respostaProjecao,
-                ]
-
-                const acessoNegado =
-                    respostas.some(
-                        (resposta) =>
-                            resposta.status === 401
-                    )
-
-                if (acessoNegado) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!respostaResumo.ok) {
                     throw new Error(
@@ -786,7 +680,6 @@ function ContasFinanceiras() {
                 setCarregando(false)
             }
         }, [
-            navigate,
             diasGrafico,
             sessao,
             situacao,
@@ -806,25 +699,9 @@ function ContasFinanceiras() {
                 const empresaId =
                     sessao.usuario.empresaId
 
-                const resposta = await fetch(
+                const resposta = await apiFetch(
                     `${API_URL}/empresas/${empresaId}/contas-financeiras/lixeira`,
-                    {
-                        headers: criarCabecalhos(),
-                    },
                 )
-
-                if (
-                    resposta.status === 401
-
-                ) {
-                    limparSessao()
-
-                    navigate('/login', {
-                        replace: true,
-                    })
-
-                    return
-                }
 
                 if (!resposta.ok) {
                     throw new Error(
@@ -853,7 +730,6 @@ function ContasFinanceiras() {
                 setCarregando(false)
             }
         }, [
-            navigate,
             sessao,
         ])
 
@@ -1006,25 +882,9 @@ function ContasFinanceiras() {
             setErro('')
 
             const resposta =
-                await fetch(
+                await apiFetch(
                     `${API_URL}/empresas/${empresaId}/relatorios/${tipoRelatorio}?${parametros}`,
-                    {
-                        headers: criarCabecalhos(),
-                    },
                 )
-
-            if (
-                resposta.status === 401
-
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1088,24 +948,9 @@ function ContasFinanceiras() {
             const empresaId =
                 sessao.usuario.empresaId
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/categorias?tipo=${tipoCategoria}`,
-                {
-                    headers: criarCabecalhos(),
-                },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1204,28 +1049,13 @@ function ContasFinanceiras() {
                         : null,
             }
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaLiquidar.id}/liquidacoes`,
                 {
                     method: 'POST',
-                    headers:
-                        criarCabecalhos(true),
-                    body:
-                        JSON.stringify(corpo),
+                    body: corpo,
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1275,25 +1105,12 @@ function ContasFinanceiras() {
             const empresaId =
                 sessao.usuario.empresaId
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaCancelar.id}/cancelar`,
                 {
                     method: 'PATCH',
-                    headers: criarCabecalhos(),
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1329,25 +1146,12 @@ function ContasFinanceiras() {
             const empresaId =
                 sessao.usuario.empresaId
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/contas-financeiras/${conta.id}/restaurar`,
                 {
                     method: 'PATCH',
-                    headers: criarCabecalhos(),
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1401,25 +1205,12 @@ function ContasFinanceiras() {
             const empresaId =
                 sessao.usuario.empresaId
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaExcluirPermanente.id}/permanente`,
                 {
                     method: 'DELETE',
-                    headers: criarCabecalhos(),
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(
@@ -1510,28 +1301,13 @@ function ContasFinanceiras() {
                     || null,
             }
 
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaEnviarFinanceiro.id}/enviar-financeiro`,
                 {
                     method: 'POST',
-                    headers:
-                        criarCabecalhos(true),
-                    body:
-                        JSON.stringify(corpo),
+                    body: corpo,
                 },
             )
-
-            if (
-                resposta.status === 401
-            ) {
-                limparSessao()
-
-                navigate('/login', {
-                    replace: true,
-                })
-
-                return
-            }
 
             if (!resposta.ok) {
                 throw new Error(

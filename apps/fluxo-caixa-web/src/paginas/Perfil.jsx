@@ -6,41 +6,10 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Perfil.css'
-import { limparSessao } from '../servicos/sessao.js'
+import { apiFetch } from '../servicos/api.js'
+import { obterSessao } from '../servicos/sessao.js'
 import { criarAtualizacaoPerfil } from '../servicos/perfil.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
-
-function obterSessao() {
-    try {
-        const token = localStorage.getItem('agrogestao_token')
-        const tipoToken =
-            localStorage.getItem('agrogestao_tipo_token') ??
-            'Bearer'
-        const usuarioSalvo =
-            localStorage.getItem('agrogestao_usuario')
-        const expiraEm = Number(
-            localStorage.getItem('agrogestao_token_expira_em'),
-        )
-
-        if (!token || !usuarioSalvo) {
-            return null
-        }
-
-        if (expiraEm && Date.now() >= expiraEm) {
-            limparSessao()
-            return null
-        }
-
-        return {
-            token,
-            tipoToken,
-            usuario: JSON.parse(usuarioSalvo),
-        }
-    } catch {
-        limparSessao()
-        return null
-    }
-}
 
 async function obterMensagemDeErro(resposta) {
     const dados = await resposta.json().catch(() => null)
@@ -86,14 +55,8 @@ function Perfil() {
             setMensagem('')
 
             try {
-                const resposta = await fetch(
+                const resposta = await apiFetch(
                     `${API_URL}/usuarios/meu-perfil`,
-                    {
-                        headers: {
-                            Authorization:
-                                `${sessao.tipoToken} ${sessao.token}`,
-                        },
-                    },
                 )
 
                 if (!resposta.ok) {
@@ -173,17 +136,11 @@ function Perfil() {
         setMensagem('')
 
         try {
-            const resposta = await fetch(
+            const resposta = await apiFetch(
                 `${API_URL}/usuarios/meu-perfil`,
                 {
                     method: 'PATCH',
-                    headers: {
-                        Authorization:
-                            `${sessao.tipoToken} ${sessao.token}`,
-                        'Content-Type':
-                            'application/json; charset=utf-8',
-                    },
-                    body: JSON.stringify(criarAtualizacaoPerfil(formulario, perfilOriginal)),
+                    body: criarAtualizacaoPerfil(formulario, perfilOriginal),
                 },
             )
 
