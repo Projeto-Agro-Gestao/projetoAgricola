@@ -18,6 +18,7 @@ import br.com.fluxocaixa.movimentacao.MovimentacaoNaoEncontradaException;
 import br.com.fluxocaixa.movimentacao.PeriodoInvalidoException;
 import br.com.fluxocaixa.movimentacao.TipoMovimentacaoIncompativelException;
 import br.com.fluxocaixa.recuperacaosenha.TokenRecuperacaoSenhaInvalidoException;
+import br.com.fluxocaixa.refreshtoken.RefreshTokenInvalidoException;
 import br.com.fluxocaixa.usuario.EmailJaCadastradoException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -341,6 +342,23 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.BAD_REQUEST,
                 "Período inválido",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(
+            RefreshTokenInvalidoException.class
+    )
+    public ResponseEntity<ErroResposta>
+    tratarRefreshTokenInvalido(
+            RefreshTokenInvalidoException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.UNAUTHORIZED,
+                "Acesso não autorizado",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()

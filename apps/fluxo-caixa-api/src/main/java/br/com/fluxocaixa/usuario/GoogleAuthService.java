@@ -57,7 +57,7 @@ public class GoogleAuthService {
     }
 
     @Transactional
-    public EntrarResponse autenticar(GoogleAuthRequest request) {
+    public br.com.fluxocaixa.autenticacao.SessaoEmitida autenticar(GoogleAuthRequest request) {
 
         if (!googleOAuthProperties.habilitado()) {
             throw new IllegalArgumentException(
@@ -74,7 +74,7 @@ public class GoogleAuthService {
                 .findByEmailIgnoreCase(email)
                 .map(usuario -> {
                     usuario.marcarEmailVerificado();
-                    return autenticacaoService.emitirSessao(usuario);
+                    return autenticacaoService.emitirSessao(usuario, false);
                 })
                 .orElseGet(() -> cadastrarNovoUsuario(
                         request,
@@ -83,7 +83,7 @@ public class GoogleAuthService {
                 ));
     }
 
-    private EntrarResponse cadastrarNovoUsuario(
+    private br.com.fluxocaixa.autenticacao.SessaoEmitida cadastrarNovoUsuario(
             GoogleAuthRequest request,
             GoogleTokenInfo tokenInfo,
             String email) {
@@ -165,7 +165,7 @@ public class GoogleAuthService {
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
-        return autenticacaoService.emitirSessao(usuarioSalvo);
+        return autenticacaoService.emitirSessao(usuarioSalvo, false);
     }
 
     private GoogleTokenInfo validarToken(String credential) {

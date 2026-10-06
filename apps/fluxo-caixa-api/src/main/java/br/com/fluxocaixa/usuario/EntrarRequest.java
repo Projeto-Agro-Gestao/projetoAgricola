@@ -19,7 +19,15 @@ public record EntrarRequest(
                 max = 72,
                 message = "A senha deve possuir no máximo 72 caracteres"
         )
-        String senha
+        String senha,
+
+        Boolean lembrar
 
 ) {
+
+    // lembrar é opcional no corpo: ausente/null vira false (RNF-6), sem forçar
+    // o cliente a enviá-lo nem fazer o Jackson falhar com primitivo faltante.
+    public EntrarRequest {
+        lembrar = lembrar != null && lembrar;
+    }
 }

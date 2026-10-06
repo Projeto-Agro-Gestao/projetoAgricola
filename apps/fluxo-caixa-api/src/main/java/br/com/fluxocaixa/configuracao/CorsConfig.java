@@ -67,7 +67,7 @@ public class CorsConfig {
                 )
         );
 
-        configuracao.setAllowCredentials(false);
+        configuracao.setAllowCredentials(true);
 
         configuracao.setMaxAge(600L);
 

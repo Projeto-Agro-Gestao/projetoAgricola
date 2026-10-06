@@ -1,5 +1,6 @@
 package br.com.fluxocaixa.recuperacaosenha;
 
+import br.com.fluxocaixa.refreshtoken.RefreshTokenService;
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class RecuperacaoSenhaService {
     private final RecuperacaoSenhaRepository recuperacaoSenhaRepository;
     private final EmailRecuperacaoSenhaService emailRecuperacaoSenhaService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     private final int expiracaoMinutos;
     private final String urlRecuperacaoSenha;
@@ -42,6 +44,7 @@ public class RecuperacaoSenhaService {
             RecuperacaoSenhaRepository recuperacaoSenhaRepository,
             EmailRecuperacaoSenhaService emailRecuperacaoSenhaService,
             PasswordEncoder passwordEncoder,
+            RefreshTokenService refreshTokenService,
             @Value("${app.seguranca.recuperacao-senha.expiracao-minutos}")
             int expiracaoMinutos,
             @Value("${app.seguranca.recuperacao-senha.url}")
@@ -51,6 +54,7 @@ public class RecuperacaoSenhaService {
         this.recuperacaoSenhaRepository = recuperacaoSenhaRepository;
         this.emailRecuperacaoSenhaService = emailRecuperacaoSenhaService;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
         this.expiracaoMinutos = expiracaoMinutos;
         this.urlRecuperacaoSenha = urlRecuperacaoSenha;
     }
@@ -157,6 +161,10 @@ public class RecuperacaoSenhaService {
 
         usuario.alterarSenha(
                 novaSenhaHash
+        );
+
+        refreshTokenService.revogarTodosDoUsuario(
+                usuario.getId()
         );
 
         recuperacaoSenha.marcarComoUtilizado(

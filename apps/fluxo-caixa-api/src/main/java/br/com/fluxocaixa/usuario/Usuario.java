@@ -119,6 +119,10 @@ public class Usuario {
     }
 
     public void alterarSenha(String novaSenhaHash) {
+        // ponytail: trocar a senha invalida os access tokens (versaoAutenticacao),
+        // mas NAO os refresh tokens por si so. Qualquer novo caller deste metodo
+        // deve tambem chamar RefreshTokenService.revogarTodosDoUsuario(id) na mesma
+        // transacao (hoje feito em RecuperacaoSenhaService.redefinirSenha).
         this.senhaHash = novaSenhaHash;
         this.versaoAutenticacao++;
     }

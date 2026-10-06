@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -20,7 +21,11 @@ public record PropriedadesSeguranca(
 
         @Valid
         @NotNull
-        Cors cors
+        Cors cors,
+
+        @Valid
+        @NotNull
+        Refresh refresh
 
 ) {
 
@@ -70,6 +75,72 @@ public record PropriedadesSeguranca(
                                     + "é obrigatória"
             )
             String origemWeb
+
+    ) {
+    }
+
+    public record Refresh(
+
+            @Min(
+                    value = 1,
+                    message =
+                            "O refresh token deve durar "
+                                    + "pelo menos 1 dia"
+            )
+            @Max(
+                    value = 90,
+                    message =
+                            "O refresh token não pode durar "
+                                    + "mais que 90 dias"
+            )
+            int expiracaoDias,
+
+            @Min(
+                    value = 1,
+                    message =
+                            "O refresh token com lembrar deve durar "
+                                    + "pelo menos 1 dia"
+            )
+            @Max(
+                    value = 365,
+                    message =
+                            "O refresh token com lembrar não pode durar "
+                                    + "mais que 365 dias"
+            )
+            int expiracaoDiasLembrar,
+
+            @NotBlank(
+                    message =
+                            "O nome do cookie de refresh "
+                                    + "é obrigatório"
+            )
+            String nomeCookie,
+
+            @NotBlank(
+                    message =
+                            "O path do cookie de refresh "
+                                    + "é obrigatório"
+            )
+            @Pattern(
+                    regexp = "/.*",
+                    message =
+                            "O path do cookie de refresh "
+                                    + "deve começar com /"
+            )
+            String path,
+
+            @NotBlank(
+                    message =
+                            "O SameSite do cookie de refresh "
+                                    + "é obrigatório"
+            )
+            @Pattern(
+                    regexp = "Lax|Strict|None",
+                    message =
+                            "O SameSite do cookie de refresh "
+                                    + "deve ser Lax, Strict ou None"
+            )
+            String sameSite
 
     ) {
     }

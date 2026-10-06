@@ -9,6 +9,7 @@ import br.com.fluxocaixa.usuario.PapelUsuario;
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import br.com.fluxocaixa.usuario.UsuarioResponse;
+import br.com.fluxocaixa.refreshtoken.RefreshTokenService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class AutenticacaoService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final TentativasLoginService tentativasLoginService;
+    private final RefreshTokenService refreshTokenService;
     private final String hashUsuarioInexistente;
 
     public AutenticacaoService(
@@ -36,18 +38,20 @@ public class AutenticacaoService {
             UsuarioAcessoRepository usuarioAcessoRepository,
             PasswordEncoder passwordEncoder,
             TokenService tokenService,
-            TentativasLoginService tentativasLoginService) {
+            TentativasLoginService tentativasLoginService,
+            RefreshTokenService refreshTokenService) {
 
         this.usuarioRepository = usuarioRepository;
         this.usuarioAcessoRepository = usuarioAcessoRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
         this.tentativasLoginService = tentativasLoginService;
+        this.refreshTokenService = refreshTokenService;
         this.hashUsuarioInexistente = passwordEncoder.encode(java.util.UUID.randomUUID().toString());
     }
 
     @Transactional
-    public EntrarResponse entrar(
+    public SessaoEmitida entrar(
             EntrarRequest request) {
 
         String email = normalizarEmail(
@@ -79,11 +83,11 @@ public class AutenticacaoService {
             throw new CredenciaisInvalidasException();
         }
 
-        return emitirSessao(usuario);
+        return emitirSessao(usuario, request.lembrar());
     }
 
     @Transactional
-    public EntrarResponse emitirSessao(Usuario usuario) {
+    public SessaoEmitida emitirSessao(Usuario usuario, boolean lembrar) {
 
         if (!usuario.isAtivo()) {
             throw new CredenciaisInvalidasException();
@@ -104,11 +108,20 @@ public class AutenticacaoService {
         String token =
                 tokenService.gerarToken(usuario);
 
-        return new EntrarResponse(
+        EntrarResponse corpo = new EntrarResponse(
                 token,
                 "Bearer",
                 tokenService.getExpiracaoEmSegundos(),
                 UsuarioResponse.de(usuario)
+        );
+
+        RefreshTokenService.TokenEmitido refresh =
+                refreshTokenService.emitir(usuario, lembrar);
+
+        return new SessaoEmitida(
+                corpo,
+                refresh.refreshTokenCru(),
+                refresh.ttlDias()
         );
     }
 
