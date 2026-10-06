@@ -7,41 +7,32 @@ import {
 import {
     useNavigate,
 } from 'react-router'
-import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
-import { voltarPaginaAnterior } from '../navegacao.js'
+import ShellDashboard from '../componentes/ShellDashboard.jsx'
+import './Dashboard.css'
 import './ContasFinanceiras.css'
 import { apiFetch } from '../servicos/api.js'
 import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
+
+// Mesmo helper de ícone material-symbols usado em Dashboard.jsx / ShellDashboard.jsx.
+function Icone({ nome, tamanho }) {
+    return (
+        <span
+            aria-hidden="true"
+            className="material-symbols-outlined"
+            style={tamanho ? { fontSize: `${tamanho}px` } : undefined}
+        >
+            {nome}
+        </span>
+    )
+}
 
 const LARGURA_GRAFICO = 900
 const ALTURA_GRAFICO = 280
 const ESPACO_HORIZONTAL = 54
 const ESPACO_SUPERIOR = 24
 const ESPACO_INFERIOR = 42
-
-function IconeLixeira() {
-    return (
-        <svg
-            aria-hidden="true"
-            fill="none"
-            height="18"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width="18"
-        >
-            <path d="M3 6h18" />
-            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-        </svg>
-    )
-}
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -831,12 +822,125 @@ function ContasFinanceiras() {
             ],
         )
 
-    function voltarAoDashboard() {
-        voltarPaginaAnterior(
-            navigate,
-            '/dashboard',
+    // Régua semanal: agrega os pontos da projeção em 4 buckets de 7 dias a
+    // partir de hoje (recebimentos, pagamentos, líquido). Dado 100% derivado
+    // de /projecao (via pontosGrafico), sem nenhum número fixo.
+    // ponytail: assume semanas corridas a partir de hoje, não semanas-calendário
+    // fixas. O rótulo exato dependeria de /projecao já bucketizado por
+    // semana-calendário no backend (não existe hoje).
+    const semanasRegua =
+        useMemo(
+            () =>
+                Array.from(
+                    { length: 4 },
+                    (_, semana) => {
+                        const indiceInicial =
+                            semana * 7
+                        const janela =
+                            pontosGrafico.slice(
+                                indiceInicial,
+                                indiceInicial + 7,
+                            )
+
+                        const recebimentos =
+                            janela.reduce(
+                                (soma, ponto) =>
+                                    soma
+                                    + Number(
+                                        ponto.totalAReceber
+                                        ?? 0,
+                                    ),
+                                0,
+                            )
+
+                        const pagamentos =
+                            janela.reduce(
+                                (soma, ponto) =>
+                                    soma
+                                    + Number(
+                                        ponto.totalAPagar
+                                        ?? 0,
+                                    ),
+                                0,
+                            )
+
+                        return {
+                            semana,
+                            inicio:
+                                janela[0]?.data,
+                            fim:
+                                janela[
+                                    janela.length - 1
+                                ]?.data,
+                            recebimentos,
+                            pagamentos,
+                            liquido:
+                                recebimentos
+                                - pagamentos,
+                            atual: semana === 0,
+                        }
+                    },
+                ).filter(
+                    (semana) => semana.inicio,
+                ),
+            [pontosGrafico],
         )
-    }
+
+    // Valor em R$ dos vencidos: soma do valorPendente das contas com
+    // vencida === true (lista real já carregada). ponytail: o total exato de
+    // vencidos deveria vir de um campo do backend (resumo.totalVencido); esta
+    // soma no front depende da lista carregada dentro do período filtrado.
+    const totalVencidoDerivado =
+        useMemo(
+            () =>
+                contas
+                    .filter(
+                        (conta) =>
+                            conta.vencida === true,
+                    )
+                    .reduce(
+                        (soma, conta) =>
+                            soma
+                            + Number(
+                                conta.valorPendente
+                                ?? 0,
+                            ),
+                        0,
+                    ),
+            [contas],
+        )
+
+    // Próximo grande vencimento: derivado da lista — conta a pagar ainda
+    // pendente com a data de vencimento mais próxima no futuro.
+    // ponytail: idealmente seria um campo dedicado do /resumo
+    // (ex.: resumo.proximoVencimento); hoje é derivado da lista carregada.
+    const proximoGrandeVencimento =
+        useMemo(
+            () => {
+                const hoje = obterDataAtual()
+
+                return contas
+                    .filter(
+                        (conta) =>
+                            conta.tipo === 'PAGAR'
+                            && conta.situacao
+                                !== 'QUITADA'
+                            && conta.situacao
+                                !== 'CANCELADA'
+                            && conta.dataVencimento
+                            && conta.dataVencimento
+                                >= hoje,
+                    )
+                    .sort(
+                        (primeira, segunda) =>
+                            primeira.dataVencimento.localeCompare(
+                                segunda.dataVencimento,
+                            ),
+                    )[0]
+                    ?? null
+            },
+            [contas],
+        )
 
     function criarConta(tipoConta) {
         navigate(
@@ -1336,81 +1440,140 @@ function ContasFinanceiras() {
         return null
     }
 
-    return (
-        <div className="contas-pagina">
-            <div className="contas-conteudo">
-                <header className="contas-cabecalho">
-                    <div className="contas-cabecalho-navegacao">
-                        <button
-                            className="contas-voltar"
-                            onClick={
-                                voltarAoDashboard
-                            }
-                            type="button"
-                        >
-                            ← Voltar ao dashboard
-                        </button>
+    // Mesma regra de safra usada no ShellDashboard (jul→jun).
+    const hojeSafra = new Date()
+    const anoSafra =
+        hojeSafra.getMonth() >= 6
+            ? hojeSafra.getFullYear()
+            : hojeSafra.getFullYear() - 1
+    const safraAtual = `${anoSafra}/${anoSafra + 1}`
 
-                        <AlternadorModulos />
+    // Contagens das abas derivadas da lista real de contas ativas.
+    const totalAPagar = contasAtivas.filter(
+        (conta) => conta.tipo === 'PAGAR',
+    ).length
+    const totalAReceber = contasAtivas.filter(
+        (conta) => conta.tipo === 'RECEBER',
+    ).length
+    const totalQuitadas = contasAtivas.filter(
+        (conta) => conta.situacao === 'QUITADA',
+    ).length
+
+    const abasContas = [
+        {
+            rotulo: 'Todos',
+            contagem: contasAtivas.length,
+            ativa: tipo === '' && situacao === '',
+            aoSelecionar: () => {
+                setTipo('')
+                setSituacao('')
+            },
+        },
+        {
+            rotulo: 'A Pagar',
+            contagem: totalAPagar,
+            ativa: tipo === 'PAGAR',
+            aoSelecionar: () => {
+                setTipo('PAGAR')
+                setSituacao('')
+            },
+        },
+        {
+            rotulo: 'A Receber',
+            contagem: totalAReceber,
+            ativa: tipo === 'RECEBER',
+            aoSelecionar: () => {
+                setTipo('RECEBER')
+                setSituacao('')
+            },
+        },
+        {
+            rotulo: 'Pagas · Conciliadas',
+            contagem: totalQuitadas,
+            ativa: situacao === 'QUITADA',
+            aoSelecionar: () => {
+                setTipo('')
+                setSituacao('QUITADA')
+            },
+        },
+    ]
+
+    // Período: mapeia os chips para a janela de dias já existente (diasGrafico).
+    // ponytail: um preset "Este Mês (mês-calendário)" exigiria filtro por mês no
+    // /projecao do backend; hoje é sempre uma janela de N dias a partir de hoje.
+    const periodosChips = [
+        { rotulo: 'Próximos 7 dias', dias: 7 },
+        { rotulo: 'Próximos 30 dias', dias: 30 },
+        { rotulo: 'Próximos 90 dias', dias: 90 },
+    ]
+
+    const previsaoNegativa = !previsaoPositiva
+
+    return (
+        <ShellDashboard sessao={sessao} ativo="contas">
+            <div className="ag-fin">
+                <header className="ag-fin-topo">
+                    <span className="ag-fin-eyebrow">
+                        Planejamento Financeiro
+                        <i className="ag-fin-eyebrow-ponto" />
+                        <strong>Fluxo de Caixa Rural</strong>
+                    </span>
+                    <h1>Contas a Pagar e Receber</h1>
+                </header>
+
+                <section className="ag-fin-filtros">
+                    <div
+                        aria-label="Período da projeção"
+                        className="ag-fin-pilulas"
+                        role="group"
+                    >
+                        {periodosChips.map((chip) => (
+                            <button
+                                className={`ag-fin-pilula ${diasGrafico === chip.dias ? 'ag-ativo' : ''}`}
+                                disabled={carregando}
+                                key={chip.dias}
+                                onClick={() =>
+                                    setDiasGrafico(chip.dias)
+                                }
+                                type="button"
+                            >
+                                {chip.rotulo}
+                            </button>
+                        ))}
                     </div>
 
-                    <div className="contas-cabecalho-linha">
-                        <div>
-                            <p className="contas-etiqueta">
-                                Planejamento financeiro
-                            </p>
-
-                            <h1>
-                                Contas a pagar e receber
-                            </h1>
-
+                    <div className="ag-fin-filtros-direita">
+                        <div className="ag-fin-area-dropdown">
+                            <Icone nome="agriculture" tamanho={16} />
                             <span>
-                                Acompanhe vencimentos,
-                                compromissos e valores
-                                previstos da propriedade.
+                                {sessao.usuario.nomeEmpresa}
                             </span>
                         </div>
 
-                        <div className="contas-acoes">
-                            <button
-                                className="contas-botao contas-botao-secundario"
-                                onClick={() => {
-                                    if (mostrandoLixeira) {
-                                        setMostrandoLixeira(false)
-                                        void carregarDados()
-                                    } else {
-                                        void carregarLixeira()
-                                    }
-                                }}
-                                type="button"
-                            >
-                                {mostrandoLixeira
-                                    ? 'Ver contas cadastradas'
-                                    : 'Lixeira'}
-                            </button>
+                        <button
+                            className="ag-fin-botao ag-fin-botao-contorno"
+                            onClick={abrirCategorias}
+                            type="button"
+                        >
+                            <Icone nome="sell" tamanho={18} />
+                            Filtrar por Categoria
+                        </button>
 
-                            <button
-                                className="contas-botao contas-botao-secundario"
-                                onClick={() =>
-                                    criarConta('PAGAR')
-                                }
-                                type="button"
-                            >
-                                Nova conta a pagar — dinheiro que deverá sair
-                            </button>
-
-                            <button
-                                className="contas-botao"
-                                onClick={() =>
-                                    criarConta('RECEBER')
-                                }
-                                type="button"
-                            >
-                                Nova conta a receber — dinheiro que deverá entrar
-                            </button>
-                        </div>
+                        <button
+                            className="ag-fin-botao"
+                            disabled={Boolean(baixandoRelatorio)}
+                            onClick={() =>
+                                baixarRelatorio('pdf')
+                            }
+                            type="button"
+                        >
+                            <Icone nome="file_download" tamanho={18} />
+                            {baixandoRelatorio === 'pdf'
+                                ? 'Gerando...'
+                                : 'Exportar Fluxo'}
+                        </button>
                     </div>
-                </header>
+                </section>
 
                 {erro && (
                     <div className="contas-erro">
@@ -1454,89 +1617,250 @@ function ContasFinanceiras() {
                     </section>
                 )}
 
-                <section className="contas-resumo">
-                    <article className="contas-card contas-card-receber">
-                        <p>
-                            Total a receber — dinheiro que deverá entrar
-                        </p>
+                <section className="ag-fin-kpis">
+                    <article className="ag-fin-kpi">
+                        <div className="ag-fin-kpi-topo">
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Fluxo Ativo</span>
+                                <h3 className="ag-fin-kpi-titulo">Total a Receber (Previsto)</h3>
+                            </div>
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="south_east" tamanho={22} />
+                            </span>
+                        </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo?.totalAReceber,
-                            )}
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.totalAReceber).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
-                        <span>
-                            {
-                                resumo
-                                    ?.quantidadeContasAReceber
-                                ?? 0
-                            } contas no período
-                        </span>
+                        <small>
+                            {resumo?.quantidadeContasAReceber ?? 0} contas a receber no período
+                        </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-verde">
+                                <Icone nome="south_east" tamanho={14} />
+                                Entradas previstas
+                            </span>
+                        </div>
                     </article>
 
-                    <article className="contas-card contas-card-pagar">
-                        <p>
-                            Total a pagar — dinheiro que deverá sair
-                        </p>
+                    <article className="ag-fin-kpi ag-fin-kpi-saida">
+                        <div className="ag-fin-kpi-topo">
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Compromissado</span>
+                                <h3 className="ag-fin-kpi-titulo">Total a Pagar</h3>
+                            </div>
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="north_east" tamanho={22} />
+                            </span>
+                        </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo?.totalAPagar,
-                            )}
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.totalAPagar).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
-                        <span>
-                            {
-                                resumo
-                                    ?.quantidadeContasAPagar
-                                ?? 0
-                            } contas no período
-                        </span>
+                        <small>
+                            {resumo?.quantidadeContasAPagar ?? 0} títulos a pagar no período
+                        </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-ambar">
+                                <Icone nome="north_east" tamanho={14} />
+                                Saídas previstas
+                            </span>
+                        </div>
                     </article>
 
                     <article
-                        className={`contas-card ${
-                            previsaoPositiva
-                                ? 'contas-card-positivo'
-                                : 'contas-card-negativo'
+                        className={`ag-fin-kpi ${
+                            previsaoNegativa ? 'ag-fin-kpi-saida' : ''
                         }`}
                     >
-                        <p>Diferença prevista</p>
+                        <div className="ag-fin-kpi-topo">
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Projeção</span>
+                                <h3 className="ag-fin-kpi-titulo">Saldo Projetado no Período</h3>
+                            </div>
+                            <span className="ag-fin-kpi-icone">R$</span>
+                        </div>
 
-                        <strong>
-                            {formatarDinheiro(
-                                resumo
-                                    ?.diferencaPrevista,
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.diferencaPrevista).replace('R$', '').trim()}
+                            </span>
+                        </strong>
+
+                        <small>
+                            Diferença entre o que deve entrar e o que deve sair
+                        </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            {previsaoNegativa ? (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-ambar">
+                                    <Icone nome="trending_down" tamanho={14} />
+                                    Projeção negativa
+                                </span>
+                            ) : (
+                                <span className="ag-fin-kpi-badge ag-fin-kpi-badge-verde">
+                                    <Icone nome="trending_up" tamanho={14} />
+                                    Projeção positiva
+                                </span>
                             )}
-                        </strong>
-
-                        <span>
-                            {previsaoPositiva
-                                ? 'Previsão positiva'
-                                : 'Previsão de resultado negativo'}
-                        </span>
+                        </div>
                     </article>
 
-                    <article className="contas-card contas-card-alertas">
-                        <p>Precisam de atenção</p>
+                    <article className="ag-fin-kpi ag-fin-kpi-saida">
+                        <div className="ag-fin-kpi-topo">
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Em Alerta</span>
+                                <h3 className="ag-fin-kpi-titulo">Vencidos</h3>
+                            </div>
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="warning" tamanho={22} />
+                            </span>
+                        </div>
 
-                        <strong>
-                            {
-                                resumo
-                                    ?.quantidadeLembretes
-                                ?? 0
-                            }
+                        <strong className="ag-fin-kpi-valor">
+                            <span className="ag-fin-kpi-moeda">R$</span>
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(totalVencidoDerivado).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
-                        <span>
-                            {
-                                resumo
-                                    ?.quantidadeVencidas
-                                ?? 0
-                            } contas vencidas
-                        </span>
+                        <small>
+                            {resumo?.quantidadeVencidas ?? 0} conta(s) vencida(s) — valor em atraso
+                        </small>
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-ambar">
+                                <Icone nome="priority_high" tamanho={14} />
+                                Resolver pendência
+                            </span>
+                        </div>
                     </article>
+
+                    <article className="ag-fin-kpi">
+                        <div className="ag-fin-kpi-topo">
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">A Pagar</span>
+                                <h3 className="ag-fin-kpi-titulo">Próximo Grande Vencimento</h3>
+                            </div>
+                            <span className="ag-fin-kpi-icone">
+                                <Icone nome="event" tamanho={22} />
+                            </span>
+                        </div>
+
+                        {proximoGrandeVencimento ? (
+                            <>
+                                <strong className="ag-fin-kpi-valor">
+                                    <span className="ag-fin-kpi-moeda">R$</span>
+                                    <span className="ag-fin-kpi-numero">
+                                        {formatarDinheiro(proximoGrandeVencimento.valorPendente).replace('R$', '').trim()}
+                                    </span>
+                                </strong>
+
+                                <small>
+                                    {proximoGrandeVencimento.descricao}
+                                    {' · vence '}
+                                    {formatarData(proximoGrandeVencimento.dataVencimento)}
+                                </small>
+                            </>
+                        ) : (
+                            <>
+                                <strong className="ag-fin-kpi-valor">
+                                    <span className="ag-fin-kpi-numero">
+                                        Sem vencimento próximo
+                                    </span>
+                                </strong>
+
+                                <small>
+                                    Nenhuma conta a pagar pendente no horizonte carregado
+                                </small>
+                            </>
+                        )}
+
+                        <div className="ag-fin-kpi-rodape">
+                            <span className="ag-fin-kpi-badge ag-fin-kpi-badge-neutro">
+                                <Icone nome="schedule" tamanho={14} />
+                                Próximo compromisso
+                            </span>
+                        </div>
+                    </article>
+                </section>
+
+                <section className="ag-contas-regua">
+                    <div className="ag-contas-regua-topo">
+                        <div>
+                            <h2>Régua de Vencimentos &amp; Fluxo Semanal</h2>
+                            <p>Recebimentos e pagamentos previstos, agregados por semana corrida.</p>
+                        </div>
+                    </div>
+
+                    {semanasRegua.length === 0 ? (
+                        <p className="ag-fin-vazio">
+                            Sem projeção para o período selecionado.
+                        </p>
+                    ) : (
+                        <div className="ag-contas-regua-cards">
+                            {semanasRegua.map((semana) => (
+                                <article
+                                    className={`ag-contas-semana ${semana.atual ? 'ag-contas-semana-atual' : ''}`}
+                                    key={semana.semana}
+                                >
+                                    <header>
+                                        <span className="ag-contas-semana-rotulo">
+                                            {semana.atual
+                                                ? 'Semana atual'
+                                                : `Semana ${semana.semana + 1}`}
+                                        </span>
+                                        <small>
+                                            {formatarDataCurta(semana.inicio)}
+                                            {' – '}
+                                            {formatarDataCurta(semana.fim)}
+                                        </small>
+                                    </header>
+
+                                    <dl>
+                                        <div>
+                                            <dt>Recebimentos</dt>
+                                            <dd className="ag-contas-semana-receber">
+                                                {formatarDinheiro(semana.recebimentos)}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Pagamentos</dt>
+                                            <dd className="ag-contas-semana-pagar">
+                                                {formatarDinheiro(semana.pagamentos)}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Líquido</dt>
+                                            <dd
+                                                className={
+                                                    semana.liquido < 0
+                                                        ? 'ag-contas-semana-pagar'
+                                                        : 'ag-contas-semana-receber'
+                                                }
+                                            >
+                                                {semana.liquido < 0
+                                                    ? 'Negativo · '
+                                                    : 'Positivo · '}
+                                                {formatarDinheiro(semana.liquido)}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </article>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 <section className="contas-projecao-painel">
@@ -1627,66 +1951,63 @@ function ContasFinanceiras() {
                     )}
                 </section>
 
-                <section className="contas-atalhos-painel">
-                    <div className="contas-lista-topo">
-                        <div>
-                            <p className="contas-etiqueta">
-                                Acesso rápido
-                            </p>
-
-                            <h2>
-                                Contas e categorias
-                            </h2>
-                        </div>
+                <section className="ag-fin-analytics ag-contas-layout">
+                <aside className="ag-fin-acoes ag-contas-aside">
+                    <div className="ag-fin-acoes-topo">
+                        <h2>Contas &amp; Categorias</h2>
                     </div>
 
-                    <div className="contas-atalhos">
+                    <div className="ag-fin-atalhos">
                         <button
+                            className="ag-fin-atalho"
                             onClick={() =>
                                 criarConta('RECEBER')
                             }
                             type="button"
                         >
-                            <span>+</span>
+                            <span className="ag-fin-atalho-icone ag-fin-atalho-receita">
+                                <Icone nome="add" tamanho={20} />
+                            </span>
                             Nova conta a receber
                         </button>
 
                         <button
+                            className="ag-fin-atalho"
                             onClick={() =>
                                 criarConta('PAGAR')
                             }
                             type="button"
                         >
-                            <span>-</span>
+                            <span className="ag-fin-atalho-icone ag-fin-atalho-despesa">
+                                <Icone nome="remove" tamanho={20} />
+                            </span>
                             Nova conta a pagar
                         </button>
 
                         <button
+                            className="ag-fin-atalho"
                             onClick={abrirCategorias}
                             type="button"
                         >
-                            <span>≡</span>
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="sell" tamanho={20} />
+                            </span>
                             Gerenciar categorias
                         </button>
 
                         <button
-                            onClick={abrirCategorias}
-                            type="button"
-                        >
-                            <span>+</span>
-                            Criar categoria
-                        </button>
-
-                        <button
+                            className="ag-fin-atalho"
                             onClick={abrirFornecedores}
                             type="button"
                         >
-                            <span>F</span>
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="groups" tamanho={20} />
+                            </span>
                             Gerenciar fornecedores
                         </button>
 
                         <button
-                            className="contas-atalho-lixeira"
+                            className="ag-fin-atalho"
                             onClick={() => {
                                 if (mostrandoLixeira) {
                                     setMostrandoLixeira(false)
@@ -1697,8 +2018,8 @@ function ContasFinanceiras() {
                             }}
                             type="button"
                         >
-                            <span>
-                                <IconeLixeira />
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="delete" tamanho={20} />
                             </span>
                             {mostrandoLixeira
                                 ? 'Ver contas cadastradas'
@@ -1706,108 +2027,103 @@ function ContasFinanceiras() {
                         </button>
 
                         <button
+                            className="ag-fin-atalho"
                             disabled={Boolean(
                                 baixandoRelatorio,
                             )}
                             onClick={() =>
-                                baixarRelatorio(
-                                    'excel',
-                                )
+                                baixarRelatorio('excel')
                             }
                             type="button"
                         >
-                            <span>▦</span>
-                            {baixandoRelatorio
-                            === 'excel'
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="table_view" tamanho={20} />
+                            </span>
+                            {baixandoRelatorio === 'excel'
                                 ? 'Gerando Excel...'
                                 : 'Excel da projeção'}
                         </button>
 
                         <button
+                            className="ag-fin-atalho"
                             disabled={Boolean(
                                 baixandoRelatorio,
                             )}
                             onClick={() =>
-                                baixarRelatorio(
-                                    'pdf',
-                                )
+                                baixarRelatorio('pdf')
                             }
                             type="button"
                         >
-                            <span>▤</span>
-                            {baixandoRelatorio
-                            === 'pdf'
+                            <span className="ag-fin-atalho-icone">
+                                <Icone nome="picture_as_pdf" tamanho={20} />
+                            </span>
+                            {baixandoRelatorio === 'pdf'
                                 ? 'Gerando PDF...'
                                 : 'PDF da projeção'}
                         </button>
                     </div>
-                </section>
 
-                <section className="contas-categorias-painel">
-                    <div className="contas-lista-topo">
-                        <div>
-                            <p className="contas-etiqueta">
-                                Categorias cadastradas
+                    <div className="ag-contas-categorias">
+                        <h3>Resumo por categoria</h3>
+
+                        {resumoCategoriasContas.length === 0 ? (
+                            <p className="ag-fin-vazio">
+                                As categorias aparecerão aqui quando houver contas ativas.
                             </p>
-
-                            <h2>
-                                Resumo por categoria
-                            </h2>
-                        </div>
+                        ) : (
+                            <ul className="ag-contas-categorias-lista">
+                                {resumoCategoriasContas.map((categoria) => (
+                                    <li
+                                        key={`${categoria.tipo}-${categoria.nome}`}
+                                    >
+                                        <span
+                                            className={`ag-contas-categoria-marca ${
+                                                categoria.tipo === 'RECEBER'
+                                                    ? 'receber'
+                                                    : 'pagar'
+                                            }`}
+                                        >
+                                            {categoria.tipo === 'RECEBER' ? '+' : '-'}
+                                        </span>
+                                        <div className="ag-contas-categoria-texto">
+                                            <strong>{categoria.nome}</strong>
+                                            <small>
+                                                {categoria.quantidade} conta(s)
+                                                {' · '}
+                                                {categoria.tipo === 'RECEBER'
+                                                    ? 'a receber'
+                                                    : 'a pagar'}
+                                            </small>
+                                        </div>
+                                        <strong className="ag-contas-categoria-valor">
+                                            {formatarDinheiro(categoria.valor)}
+                                        </strong>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
 
-                    {resumoCategoriasContas.length === 0 ? (
-                        <div className="contas-vazio">
-                            <strong>
-                                Nenhuma categoria com conta ativa
-                            </strong>
-                            <span>
-                                As categorias aparecerão aqui quando houver
-                                contas cadastradas.
+                    {/*
+                      ponytail: a foto real da propriedade dependeria de um campo
+                      de imagem no cadastro da propriedade (não existe hoje); por
+                      isso o card usa um gradiente como placeholder honesto.
+                    */}
+                    <div className="ag-contas-propriedade">
+                        <div className="ag-contas-propriedade-arte" aria-hidden="true" />
+                        <div className="ag-contas-propriedade-texto">
+                            <span className="ag-contas-propriedade-selo">
+                                <Icone nome="verified" tamanho={14} />
+                                LCDPR Integrado
                             </span>
+                            <strong>{sessao.usuario.nomeEmpresa}</strong>
+                            <small>Safra {safraAtual}</small>
                         </div>
-                    ) : (
-                        <div className="contas-categorias-cards">
-                            {resumoCategoriasContas.map((categoria) => (
-                                <article
-                                    className={`contas-categoria-card ${
-                                        categoria.tipo === 'RECEBER'
-                                            ? 'receber'
-                                            : 'pagar'
-                                    }`}
-                                    key={`${categoria.tipo}-${categoria.nome}`}
-                                >
-                                    <span>
-                                        {categoria.tipo === 'RECEBER'
-                                            ? '+'
-                                            : '-'}
-                                    </span>
-                                    <div>
-                                        <strong>
-                                            {categoria.nome}
-                                        </strong>
-                                        <small>
-                                            {categoria.tipo === 'RECEBER'
-                                                ? 'Conta a receber'
-                                                : 'Conta a pagar'}
-                                        </small>
-                                    </div>
-                                    <p>
-                                        {categoria.quantidade} conta(s)
-                                    </p>
-                                    <strong>
-                                        {formatarDinheiro(
-                                            categoria.valor,
-                                        )}
-                                    </strong>
-                                </article>
-                            ))}
-                        </div>
-                    )}
-                </section>
+                    </div>
+                </aside>
 
                 <section
-                    className="contas-lista-painel"
+                    className="contas-lista-painel ag-contas-coluna"
                     id="lista-contas"
                 >
                     <div className="contas-lista-topo">
@@ -1825,7 +2141,29 @@ function ContasFinanceiras() {
                         </div>
 
                         {!mostrandoLixeira && (
-                        <div className="contas-filtros">
+                        <div
+                            aria-label="Filtrar contas"
+                            className="ag-fin-abas"
+                        >
+                            {abasContas.map((aba) => (
+                                <button
+                                    className={
+                                        aba.ativa
+                                            ? 'ag-fin-aba ag-fin-aba-ativa'
+                                            : 'ag-fin-aba'
+                                    }
+                                    key={aba.rotulo}
+                                    onClick={aba.aoSelecionar}
+                                    type="button"
+                                >
+                                    {aba.rotulo} ({aba.contagem})
+                                </button>
+                            ))}
+                        </div>
+                        )}
+
+                        {!mostrandoLixeira && (
+                        <div className="contas-filtros contas-filtros-granular">
                             <select
                                 aria-label="Filtrar pelo tipo"
                                 onChange={(evento) =>
@@ -2099,6 +2437,7 @@ function ContasFinanceiras() {
                             ))}
                         </div>
                     )}
+                </section>
                 </section>
             </div>
 
@@ -2551,7 +2890,7 @@ function ContasFinanceiras() {
                     </section>
                 </div>
             )}
-        </div>
+        </ShellDashboard>
     )
 }
 
