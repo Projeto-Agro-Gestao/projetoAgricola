@@ -67,7 +67,14 @@ export async function apiFetch(
 
     try {
         const dados = await garantirRefresh(fetchImpl)
-        salvarSessao(dados)
+        // /refresh devolve EntrarResponse: o tipo do token vem no campo `tipo`
+        // (nao `tipoToken`), igual ao mapeamento de Login/Cadastro.
+        salvarSessao({
+            token: dados.token,
+            tipoToken: dados.tipo ?? 'Bearer',
+            usuario: dados.usuario,
+            expiraEmSegundos: dados.expiraEmSegundos,
+        })
     } catch {
         limparSessao()
         window.location.assign('/login')
