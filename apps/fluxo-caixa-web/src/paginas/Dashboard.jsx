@@ -329,10 +329,6 @@ function Dashboard() {
         setAreaSelecionada,
     ] = useState('TODAS')
 
-    const [
-        graficoVisivel,
-        setGraficoVisivel,
-    ] = useState(true)
 
     const [
         carregando,
@@ -909,10 +905,17 @@ function Dashboard() {
             )
             .slice(0, 8)
 
+    const totalReceitas = movimentacoes.filter(
+        (m) => m.tipo === 'RECEITA',
+    ).length
+    const totalDespesas = movimentacoes.filter(
+        (m) => m.tipo === 'DESPESA',
+    ).length
+
     const abasLancamentos = [
-        { valor: 'TODOS', rotulo: 'Todos' },
-        { valor: 'RECEITA', rotulo: 'Receitas' },
-        { valor: 'DESPESA', rotulo: 'Despesas' },
+        { valor: 'TODOS', rotulo: 'Todos', contagem: movimentacoes.length },
+        { valor: 'RECEITA', rotulo: 'Receitas', contagem: totalReceitas },
+        { valor: 'DESPESA', rotulo: 'Despesas', contagem: totalDespesas },
     ]
 
     return (
@@ -1038,17 +1041,20 @@ function Dashboard() {
                 <section className="ag-fin-kpis">
                     <article className="ag-fin-kpi">
                         <div className="ag-fin-kpi-topo">
-                            <span className="ag-fin-kpi-eyebrow">Receita Realizada</span>
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Receita Realizada</span>
+                                <h3 className="ag-fin-kpi-titulo">Total que entrou</h3>
+                            </div>
                             <span className="ag-fin-kpi-icone">
                                 <Icone nome="south_east" tamanho={22} />
                             </span>
                         </div>
 
-                        <h3 className="ag-fin-kpi-titulo">Total que entrou</h3>
-
                         <strong className="ag-fin-kpi-valor">
                             <span className="ag-fin-kpi-moeda">R$</span>
-                            {formatarDinheiro(resumo?.totalEntrou).replace('R$', '').trim()}
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.totalEntrou).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
                         <small>
@@ -1065,17 +1071,20 @@ function Dashboard() {
 
                     <article className="ag-fin-kpi ag-fin-kpi-saida">
                         <div className="ag-fin-kpi-topo">
-                            <span className="ag-fin-kpi-eyebrow">Despesas &amp; Custos</span>
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Despesas &amp; Custos</span>
+                                <h3 className="ag-fin-kpi-titulo">Total que saiu</h3>
+                            </div>
                             <span className="ag-fin-kpi-icone">
                                 <Icone nome="north_east" tamanho={22} />
                             </span>
                         </div>
 
-                        <h3 className="ag-fin-kpi-titulo">Total que saiu</h3>
-
                         <strong className="ag-fin-kpi-valor">
                             <span className="ag-fin-kpi-moeda">R$</span>
-                            {formatarDinheiro(resumo?.totalSaiu).replace('R$', '').trim()}
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.totalSaiu).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
                         <small>
@@ -1098,15 +1107,18 @@ function Dashboard() {
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <span className="ag-fin-kpi-eyebrow">Saldo Líquido</span>
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Saldo Líquido</span>
+                                <h3 className="ag-fin-kpi-titulo">Quanto sobrou</h3>
+                            </div>
                             <span className="ag-fin-kpi-icone">R$</span>
                         </div>
 
-                        <h3 className="ag-fin-kpi-titulo">Quanto sobrou</h3>
-
                         <strong className="ag-fin-kpi-valor">
                             <span className="ag-fin-kpi-moeda">R$</span>
-                            {formatarDinheiro(resumo?.quantoSobrou).replace('R$', '').trim()}
+                            <span className="ag-fin-kpi-numero">
+                                {formatarDinheiro(resumo?.quantoSobrou).replace('R$', '').trim()}
+                            </span>
                         </strong>
 
                         <small>
@@ -1134,11 +1146,12 @@ function Dashboard() {
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <span className="ag-fin-kpi-eyebrow">Rentabilidade</span>
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Rentabilidade</span>
+                                <h3 className="ag-fin-kpi-titulo">Margem de lucro</h3>
+                            </div>
                             <span className="ag-fin-kpi-icone">%</span>
                         </div>
-
-                        <h3 className="ag-fin-kpi-titulo">Margem de lucro</h3>
 
                         <strong className="ag-fin-kpi-valor">
                             {formatarPercentual(resumo?.margemLucro)}
@@ -1174,13 +1187,14 @@ function Dashboard() {
                         }`}
                     >
                         <div className="ag-fin-kpi-topo">
-                            <span className="ag-fin-kpi-eyebrow">Multiplicador</span>
+                            <div className="ag-fin-kpi-cabecalho">
+                                <span className="ag-fin-kpi-eyebrow">Multiplicador</span>
+                                <h3 className="ag-fin-kpi-titulo">Ganho s/ custo</h3>
+                            </div>
                             <span className="ag-fin-kpi-icone">
                                 <Icone nome="stacked_line_chart" tamanho={22} />
                             </span>
                         </div>
-
-                        <h3 className="ag-fin-kpi-titulo">Ganho sobre o custo</h3>
 
                         <strong className="ag-fin-kpi-valor">
                             {formatarPercentual(resumo?.ganhoSobreCusto)}
@@ -1225,54 +1239,34 @@ function Dashboard() {
                             </p>
                         </div>
 
-                        <button
-                            className="ag-fin-grafico-toggle"
-                            aria-expanded={graficoVisivel}
-                            onClick={() =>
-                                setGraficoVisivel(
-                                    (visivelAtual) => !visivelAtual,
-                                )
-                            }
-                            type="button"
-                        >
-                            {graficoVisivel
-                                ? 'Ocultar gráfico'
-                                : 'Mostrar gráfico'}
-                        </button>
                     </div>
 
-                    {graficoVisivel && (
-                        <div className="ag-fin-grafico-legenda">
-                            <span>
-                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-receita" />
-                                Receitas
-                            </span>
+                    <div className="ag-fin-grafico-legenda">
+                        <span>
+                            <i className="ag-fin-grafico-cor ag-fin-grafico-cor-receita" />
+                            Receitas
+                        </span>
 
-                            <span>
-                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-despesa" />
-                                Despesas
-                            </span>
+                        <span>
+                            <i className="ag-fin-grafico-cor ag-fin-grafico-cor-despesa" />
+                            Despesas
+                        </span>
 
-                            <span>
-                                <i className="ag-fin-grafico-cor ag-fin-grafico-cor-saldo" />
-                                Saldo Acumulado
-                            </span>
+                        <span>
+                            <i className="ag-fin-grafico-cor ag-fin-grafico-cor-saldo" />
+                            Saldo Acumulado
+                        </span>
 
-                            {primeiraData && ultimaData && (
-                                <small>
-                                    {formatarData(
-                                        primeiraData,
-                                    )}
-                                    {' até '}
-                                    {formatarData(
-                                        ultimaData,
-                                    )}
-                                </small>
-                            )}
-                        </div>
-                    )}
+                        {primeiraData && ultimaData && (
+                            <small>
+                                {formatarData(primeiraData)}
+                                {' até '}
+                                {formatarData(ultimaData)}
+                            </small>
+                        )}
+                    </div>
 
-                    {graficoVisivel && (
+                    {
                         carregandoGrafico ? (
                             <div className="ag-fin-grafico-vazio">
                                 Atualizando o gráfico...
@@ -1405,7 +1399,7 @@ function Dashboard() {
                                 </div>
                             </>
                         )
-                    )}
+                    }
                 </article>
 
                 <aside className="ag-fin-acoes">
@@ -1537,105 +1531,136 @@ function Dashboard() {
                 <section className="ag-fin-lancamentos">
                     <div className="ag-fin-lancamentos-topo">
                         <div>
-                            <h2>Lançamentos recentes</h2>
+                            <h2>Lançamentos Recentes</h2>
+                            <p>Movimentações financeiras do período registrado</p>
                         </div>
 
-                        <button
-                            className="ag-fin-link"
-                            onClick={abrirMovimentacoes}
-                            type="button"
+                        <div
+                            className="ag-fin-abas"
+                            aria-label="Filtrar lançamentos"
                         >
-                            Ver todas as movimentações
-                            <Icone nome="arrow_forward" tamanho={16} />
-                        </button>
+                            {abasLancamentos.map((aba) => (
+                                <button
+                                    className={
+                                        abaLancamentos === aba.valor
+                                            ? 'ag-fin-aba ag-fin-aba-ativa'
+                                            : 'ag-fin-aba'
+                                    }
+                                    key={aba.valor}
+                                    onClick={() => setAbaLancamentos(aba.valor)}
+                                    type="button"
+                                >
+                                    {aba.rotulo} ({aba.contagem})
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    <div
-                        className="ag-fin-abas"
-                        aria-label="Filtrar lançamentos"
-                    >
-                        {abasLancamentos.map((aba) => (
-                            <button
-                                className={
-                                    abaLancamentos === aba.valor
-                                        ? 'ag-fin-aba-ativa'
-                                        : ''
-                                }
-                                key={aba.valor}
-                                onClick={() =>
-                                    setAbaLancamentos(aba.valor)
-                                }
-                                type="button"
-                            >
-                                {aba.rotulo}
-                            </button>
-                        ))}
-                    </div>
+                    {lancamentosFiltrados.length === 0 ? (
+                        <p className="ag-fin-vazio">
+                            Nenhuma movimentação encontrada.
+                        </p>
+                    ) : (
+                        <>
+                            <div className="ag-fin-tabela-area">
+                                <table className="ag-fin-tabela">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Descrição &amp; Favorecido</th>
+                                            <th>Centro / Categoria</th>
+                                            <th className="ag-fin-coluna-valor">
+                                                Valor Líquido
+                                            </th>
+                                        </tr>
+                                    </thead>
 
-                    {
-                        lancamentosFiltrados.length === 0
-                            ? (
-                                <p className="ag-fin-vazio">
-                                    Nenhuma movimentação encontrada.
-                                </p>
-                            )
-                            : (
-                                <div className="ag-fin-tabela-area">
-                                    <table className="ag-fin-tabela">
-                                        <thead>
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Descrição</th>
-                                                <th>Categoria</th>
-                                                <th className="ag-fin-coluna-valor">
-                                                    Valor
-                                                </th>
-                                            </tr>
-                                        </thead>
+                                    <tbody>
+                                        {lancamentosFiltrados.map((movimentacao) => {
+                                            const despesa =
+                                                movimentacao.tipo === 'DESPESA'
+                                            const favorecido =
+                                                movimentacao.fornecedorNome
+                                                || movimentacao.compradorNome
 
-                                        <tbody>
-                                            {
-                                                lancamentosFiltrados.map(
-                                                    (movimentacao) => {
-                                                        const despesa =
-                                                            movimentacao.tipo
-                                                            === 'DESPESA'
+                                            return (
+                                                <tr key={movimentacao.id}>
+                                                    <td className="ag-fin-td-data">
+                                                        {formatarData(
+                                                            movimentacao.dataMovimentacao,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div className="ag-fin-td-desc">
+                                                            <span
+                                                                className={`ag-fin-td-seta ${
+                                                                    despesa
+                                                                        ? 'ag-fin-seta-despesa'
+                                                                        : 'ag-fin-seta-receita'
+                                                                }`}
+                                                            >
+                                                                <Icone
+                                                                    nome={despesa ? 'north_east' : 'south_east'}
+                                                                    tamanho={18}
+                                                                />
+                                                            </span>
+                                                            <div>
+                                                                <strong>{movimentacao.descricao}</strong>
+                                                                {favorecido && (
+                                                                    <small>{favorecido}</small>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {movimentacao.categoriaNome ? (
+                                                            <span className="ag-fin-td-categoria">
+                                                                {movimentacao.categoriaNome}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="ag-fin-td-sem-categoria">
+                                                                Sem categoria
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td
+                                                        className={`ag-fin-coluna-valor ag-fin-valor ${
+                                                            despesa
+                                                                ? 'ag-fin-valor-despesa'
+                                                                : 'ag-fin-valor-receita'
+                                                        }`}
+                                                    >
+                                                        {despesa ? '- ' : '+ '}
+                                                        {formatarDinheiro(movimentacao.valor)}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                                        return (
-                                                            <tr key={movimentacao.id}>
-                                                                <td>
-                                                                    {formatarData(
-                                                                        movimentacao.dataMovimentacao,
-                                                                    )}
-                                                                </td>
-                                                                <td className="ag-fin-celula-descricao">
-                                                                    {movimentacao.descricao}
-                                                                </td>
-                                                                <td>
-                                                                    {movimentacao.categoriaNome}
-                                                                </td>
-                                                                <td
-                                                                    className={`ag-fin-coluna-valor ag-fin-valor ${
-                                                                        despesa
-                                                                            ? 'ag-fin-valor-despesa'
-                                                                            : 'ag-fin-valor-receita'
-                                                                    }`}
-                                                                >
-                                                                    {despesa ? '- ' : '+ '}
-                                                                    {formatarDinheiro(
-                                                                        movimentacao.valor,
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        )
-                                                    },
-                                                )
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )
-                    }
+                            <div className="ag-fin-lancamentos-rodape">
+                                <span>
+                                    Exibindo {lancamentosFiltrados.length} de{' '}
+                                    {abaLancamentos === 'TODOS'
+                                        ? movimentacoes.length
+                                        : abaLancamentos === 'RECEITA'
+                                            ? totalReceitas
+                                            : totalDespesas}{' '}
+                                    lançamentos
+                                </span>
+                                <button
+                                    className="ag-fin-link"
+                                    onClick={abrirMovimentacoes}
+                                    type="button"
+                                >
+                                    Ver todas as movimentações
+                                    <Icone nome="arrow_forward" tamanho={16} />
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </section>
             </div>
         </ShellDashboard>
