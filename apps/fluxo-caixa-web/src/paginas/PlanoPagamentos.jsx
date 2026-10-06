@@ -8,6 +8,7 @@ import { voltarPaginaAnterior } from '../navegacao.js'
 import './PlanoPagamentos.css'
 import { limparSessao } from '../servicos/sessao.js'
 import { gerarCobrancaComDados, salvarDadosPagamento } from '../servicos/pagamentos.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function obterSessao() {
     try {
@@ -556,7 +557,7 @@ function PlanoPagamentos() {
     if (carregando) {
         return (
             <main className="plano-pagina">
-                <p>Carregando plano...</p>
+                <CarregamentoTela texto="Carregando plano" />
             </main>
         )
     }

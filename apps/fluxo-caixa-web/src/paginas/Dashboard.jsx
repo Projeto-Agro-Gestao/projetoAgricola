@@ -7,6 +7,7 @@ import {
     useNavigate,
 } from 'react-router'
 import ShellDashboard from '../componentes/ShellDashboard.jsx'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './Dashboard.css'
 import { limparSessao } from '../servicos/sessao.js'
@@ -850,9 +851,7 @@ function Dashboard() {
     if (carregando) {
         return (
             <div className="ag-fin-estado publica">
-                <p>
-                    Carregando informações financeiras...
-                </p>
+                <CarregamentoTela texto="Carregando dashboard financeiro" />
             </div>
         )
     }

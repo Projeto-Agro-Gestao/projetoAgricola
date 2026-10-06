@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './AdminPainel.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const STATUS_PAGAMENTO = [
     'EM_DIA',
@@ -884,9 +885,7 @@ function AdminPainel() {
                 </div>
 
                 {carregando ? (
-                    <p className="admin-vazio">
-                        Carregando usuários...
-                    </p>
+                    <CarregamentoTela compacto texto="Carregando usuários" />
                 ) : (
                     <div className="admin-tabela-area">
                         <table className="admin-tabela">

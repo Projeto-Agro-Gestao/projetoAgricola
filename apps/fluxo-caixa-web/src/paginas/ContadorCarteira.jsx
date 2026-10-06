@@ -9,6 +9,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContadorCarteira.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const ABAS = [
     ['GERAL', 'Visao geral'],
@@ -1157,7 +1158,10 @@ function ContadorCarteira() {
                         </div>
 
                         {carregandoCliente && (
-                            <p>Carregando dados do cliente selecionado...</p>
+                            <CarregamentoTela
+                                compacto
+                                texto="Carregando dados do cliente"
+                            />
                         )}
 
                         <div className="contador-carteira-indicadores">

@@ -11,6 +11,7 @@ import { API_BASE_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Categorias.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const AREAS_CATEGORIA = [
     {
@@ -941,9 +942,7 @@ function Categorias() {
                 </div>
 
                 {carregando ? (
-                    <p className="categorias-vazio">
-                        Carregando categorias...
-                    </p>
+                    <CarregamentoTela compacto texto="Carregando categorias" />
                 ) : (
                     <div className="categorias-colunas">
                         <section className="categorias-grupo categorias-grupo-receitas">

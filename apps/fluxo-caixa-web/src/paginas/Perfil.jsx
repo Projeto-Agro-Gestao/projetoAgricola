@@ -8,6 +8,7 @@ import { voltarPaginaAnterior } from '../navegacao.js'
 import './Perfil.css'
 import { limparSessao } from '../servicos/sessao.js'
 import { criarAtualizacaoPerfil } from '../servicos/perfil.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function obterSessao() {
     try {
@@ -248,9 +249,7 @@ function Perfil() {
                 )}
 
                 {carregando ? (
-                    <p className="perfil-carregando">
-                        Carregando dados...
-                    </p>
+                    <CarregamentoTela compacto texto="Carregando perfil" />
                 ) : (
                     <form
                         className="perfil-formulario"

@@ -11,6 +11,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Fornecedores.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function obterSessao() {
     try {
@@ -1787,9 +1788,7 @@ function Fornecedores() {
                         </div>
 
                         {carregando ? (
-                            <p className="fornecedores-vazio">
-                                Carregando...
-                            </p>
+                            <CarregamentoTela compacto texto="Carregando fornecedores" />
                         ) : (
                             <div className="fornecedores-itens">
                                 {(mostrarLixeira

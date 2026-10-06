@@ -11,6 +11,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './NovaMovimentacao.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function completarComZero(numero) {
     return String(numero).padStart(2, '0')
@@ -527,9 +528,7 @@ function EditarMovimentacao() {
             <div className="movimentacao-pagina">
                 <div className="movimentacao-conteudo">
                     <main className="movimentacao-card">
-                        <p>
-                            Carregando movimentação...
-                        </p>
+                        <CarregamentoTela texto="Carregando movimentação" />
                     </main>
                 </div>
             </div>

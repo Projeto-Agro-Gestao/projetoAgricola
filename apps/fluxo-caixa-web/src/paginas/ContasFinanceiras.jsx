@@ -12,6 +12,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContasFinanceiras.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const LARGURA_GRAFICO = 900
 const ALTURA_GRAFICO = 280
@@ -2109,9 +2110,7 @@ function ContasFinanceiras() {
                     </div>
 
                     {carregando ? (
-                        <div className="contas-vazio">
-                            Carregando contas...
-                        </div>
+                        <CarregamentoTela compacto texto="Carregando contas" />
                     ) : contasVisiveis.length === 0 ? (
                         <div className="contas-vazio">
                             <strong>

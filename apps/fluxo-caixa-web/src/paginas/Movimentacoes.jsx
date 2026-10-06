@@ -11,6 +11,7 @@ import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Movimentacoes.css'
 import { limparSessao } from '../servicos/sessao.js'
+import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 function formatarDinheiro(valor) {
     return new Intl.NumberFormat('pt-BR', {
@@ -877,7 +878,7 @@ function Movimentacoes() {
     if (carregando) {
         return (
             <main className="movimentacoes-pagina movimentacoes-estado">
-                <p>Carregando movimentações...</p>
+                <CarregamentoTela texto="Carregando movimentações" />
             </main>
         )
     }
