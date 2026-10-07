@@ -2,6 +2,7 @@ import {
     useState,
 } from 'react'
 import {
+    useLocation,
     useNavigate,
 } from 'react-router'
 import './ShellDashboard.css'
@@ -22,6 +23,7 @@ function Icone({ nome, tamanho }) {
 
 function ShellDashboard({ sessao, ativo, children }) {
     const navigate = useNavigate()
+    const location = useLocation()
     const [confirmandoSaida, setConfirmandoSaida] = useState(false)
 
     const papel = sessao.usuario.papel
@@ -37,12 +39,24 @@ function ShellDashboard({ sessao, ativo, children }) {
     }
 
     const navItens = [
-        { chave: 'visao-geral', icone: 'grid_view', rotulo: 'Visão Geral', rota: '/dashboard' },
+        { chave: 'visao-geral', icone: 'grid_view', rotulo: 'Visão Geral', rota: '/dashboard', exata: true },
+        { chave: 'financeiro', icone: 'monitoring', rotulo: 'Financeiro', rota: '/dashboard/financeiro' },
         { chave: 'lancamentos', icone: 'receipt_long', rotulo: 'Lançamentos', rota: '/dashboard/movimentacoes' },
         { chave: 'contas', icone: 'account_balance_wallet', rotulo: 'Contas', rota: '/dashboard/contas' },
+        { chave: 'fornecedores', icone: 'local_shipping', rotulo: 'Fornecedores', rota: '/dashboard/fornecedores' },
         { chave: 'fiscal', icone: 'account_balance', rotulo: 'LCDPR & Fiscal', rota: '/contador' },
         { chave: 'config', icone: 'tune', rotulo: 'Configurações', rota: '/dashboard/perfil' },
     ]
+
+    // Item ativo pela rota atual; o prop `ativo` ainda funciona como override.
+    const estaAtivo = (item) => {
+        if (ativo) {
+            return ativo === item.chave
+        }
+        return item.exata
+            ? location.pathname === item.rota
+            : location.pathname.startsWith(item.rota)
+    }
 
     return (
         <div className="ag-dash publica">
@@ -72,7 +86,8 @@ function ShellDashboard({ sessao, ativo, children }) {
                         <span className="ag-dash-nav-titulo">Navegação</span>
                         {navItens.map((item) => (
                             <button
-                                className={`ag-dash-nav-item ${ativo === item.chave ? 'ag-ativo' : ''}`}
+                                aria-current={estaAtivo(item) ? 'page' : undefined}
+                                className={`ag-dash-nav-item ${estaAtivo(item) ? 'ag-ativo' : ''}`}
                                 key={item.rotulo}
                                 onClick={() => navigate(item.rota)}
                                 type="button"

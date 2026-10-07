@@ -86,7 +86,7 @@ function EscolhaModulo() {
     ]
 
     return (
-        <ShellDashboard sessao={sessao} ativo="visao-geral">
+        <ShellDashboard sessao={sessao}>
             <section className="ag-dash-modulos">
                 <div className="ag-dash-modulos-topo">
                     <div>

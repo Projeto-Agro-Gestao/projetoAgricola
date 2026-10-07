@@ -420,9 +420,6 @@ function ContasFinanceiras() {
     const [diasGrafico, setDiasGrafico] =
         useState(30)
 
-    const [graficoVisivel, setGraficoVisivel] =
-        useState(true)
-
     const [tipo, setTipo] =
         useState('')
 
@@ -885,6 +882,26 @@ function ContasFinanceiras() {
                 ),
             [pontosGrafico],
         )
+
+    // Escala comum das barras: maior valor (receber ou pagar) entre as
+    // semanas, para as barras serem comparáveis entre os cards.
+    const maximoRegua =
+        useMemo(
+            () =>
+                Math.max(
+                    1,
+                    ...semanasRegua.flatMap(
+                        (semana) => [
+                            semana.recebimentos,
+                            semana.pagamentos,
+                        ],
+                    ),
+                ),
+            [semanasRegua],
+        )
+
+    const larguraBarra = (valor) =>
+        `${Math.round((Number(valor) / maximoRegua) * 100)}%`
 
     // Valor em R$ dos vencidos: soma do valorPendente das contas com
     // vencida === true (lista real já carregada). ponytail: o total exato de
@@ -1498,6 +1515,16 @@ function ContasFinanceiras() {
         },
     ]
 
+    // Chips de situação (mesma estrutura visual das abas). Reusa o estado
+    // `situacao` que já filtra a lista — só troca o <select> por pills.
+    const chipsSituacao = [
+        { rotulo: 'Todas as situações', valor: '' },
+        { rotulo: 'Pendentes', valor: 'PENDENTE' },
+        { rotulo: 'Parcialmente quitadas', valor: 'PARCIAL' },
+        { rotulo: 'Quitadas', valor: 'QUITADA' },
+        { rotulo: 'Canceladas', valor: 'CANCELADA' },
+    ]
+
     // Período: mapeia os chips para a janela de dias já existente (diasGrafico).
     // ponytail: um preset "Este Mês (mês-calendário)" exigiria filtro por mês no
     // /projecao do backend; hoje é sempre uma janela de N dias a partir de hoje.
@@ -1543,13 +1570,6 @@ function ContasFinanceiras() {
                     </div>
 
                     <div className="ag-fin-filtros-direita">
-                        <div className="ag-fin-area-dropdown">
-                            <Icone nome="agriculture" tamanho={16} />
-                            <span>
-                                {sessao.usuario.nomeEmpresa}
-                            </span>
-                        </div>
-
                         <button
                             className="ag-fin-botao ag-fin-botao-contorno"
                             onClick={abrirCategorias}
@@ -1802,6 +1822,18 @@ function ContasFinanceiras() {
                             <h2>Régua de Vencimentos &amp; Fluxo Semanal</h2>
                             <p>Recebimentos e pagamentos previstos, agregados por semana corrida.</p>
                         </div>
+
+                        <ul className="ag-contas-regua-legenda">
+                            <li className="ag-contas-legenda-receber">
+                                Recebíveis
+                            </li>
+                            <li className="ag-contas-legenda-pagar">
+                                Compromissos
+                            </li>
+                            <li className="ag-contas-legenda-liquido">
+                                Saldo Líquido
+                            </li>
+                        </ul>
                     </div>
 
                     {semanasRegua.length === 0 ? (
@@ -1815,11 +1847,14 @@ function ContasFinanceiras() {
                                     className={`ag-contas-semana ${semana.atual ? 'ag-contas-semana-atual' : ''}`}
                                     key={semana.semana}
                                 >
+                                    {semana.atual && (
+                                        <span className="ag-contas-semana-selo">
+                                            Semana atual
+                                        </span>
+                                    )}
                                     <header>
                                         <span className="ag-contas-semana-rotulo">
-                                            {semana.atual
-                                                ? 'Semana atual'
-                                                : `Semana ${semana.semana + 1}`}
+                                            {`Semana ${semana.semana + 1}`}
                                         </span>
                                         <small>
                                             {formatarDataCurta(semana.inicio)}
@@ -1834,12 +1869,30 @@ function ContasFinanceiras() {
                                             <dd className="ag-contas-semana-receber">
                                                 {formatarDinheiro(semana.recebimentos)}
                                             </dd>
+                                            <div
+                                                aria-hidden="true"
+                                                className="ag-contas-barra"
+                                            >
+                                                <span
+                                                    className="ag-contas-barra-receber"
+                                                    style={{ width: larguraBarra(semana.recebimentos) }}
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <dt>Pagamentos</dt>
                                             <dd className="ag-contas-semana-pagar">
                                                 {formatarDinheiro(semana.pagamentos)}
                                             </dd>
+                                            <div
+                                                aria-hidden="true"
+                                                className="ag-contas-barra"
+                                            >
+                                                <span
+                                                    className="ag-contas-barra-pagar"
+                                                    style={{ width: larguraBarra(semana.pagamentos) }}
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <dt>Líquido</dt>
@@ -1866,10 +1919,6 @@ function ContasFinanceiras() {
                 <section className="contas-projecao-painel">
                     <div className="contas-projecao-topo">
                         <div>
-                            <p className="contas-etiqueta">
-                                Perspectiva futura
-                            </p>
-
                             <h2>
                                 Previsão de dinheiro entrando e saindo
                             </h2>
@@ -1903,26 +1952,10 @@ function ContasFinanceiras() {
                                 ))}
                             </div>
 
-                            <button
-                                className="contas-grafico-alternar"
-                                onClick={() =>
-                                    setGraficoVisivel(
-                                        (visivel) =>
-                                            !visivel,
-                                    )
-                                }
-                                type="button"
-                            >
-                                {graficoVisivel
-                                    ? 'Ocultar gráfico'
-                                    : 'Mostrar gráfico'}
-                            </button>
                         </div>
                     </div>
 
-                    {graficoVisivel && (
-                        <>
-                            <div className="contas-grafico-legenda">
+                    <div className="contas-grafico-legenda">
                                 <span className="contas-legenda-receber">
                                     <i />
                                     Conta a receber — dinheiro que deverá entrar
@@ -1944,11 +1977,9 @@ function ContasFinanceiras() {
                                 />
                             )}
 
-                            <p className="contas-grafico-explicacao">
-                                Os valores representam o que ainda está pendente para cada data. Contas quitadas e canceladas não entram nesta previsão.
-                            </p>
-                        </>
-                    )}
+                    <p className="contas-grafico-explicacao">
+                        Os valores representam o que ainda está pendente para cada data. Contas quitadas e canceladas não entram nesta previsão.
+                    </p>
                 </section>
 
                 <section className="ag-fin-analytics ag-contas-layout">
@@ -2164,61 +2195,29 @@ function ContasFinanceiras() {
 
                         {!mostrandoLixeira && (
                         <div className="contas-filtros contas-filtros-granular">
-                            <select
-                                aria-label="Filtrar pelo tipo"
-                                onChange={(evento) =>
-                                    setTipo(
-                                        evento
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                value={tipo}
-                            >
-                                <option value="">
-                                    Pagar — dinheiro que deverá sair e receber — dinheiro que deverá entrar
-                                </option>
-
-                                <option value="PAGAR">
-                                    Contas a pagar — dinheiro que deverá sair
-                                </option>
-
-                                <option value="RECEBER">
-                                    Contas a receber — dinheiro que deverá entrar
-                                </option>
-                            </select>
-
-                            <select
+                            <div
                                 aria-label="Filtrar pela situação"
-                                onChange={(evento) =>
-                                    setSituacao(
-                                        evento
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                value={situacao}
+                                className="ag-fin-abas contas-chips-situacao"
+                                role="group"
                             >
-                                <option value="">
-                                    Todas as situações
-                                </option>
-
-                                <option value="PENDENTE">
-                                    Pendentes
-                                </option>
-
-                                <option value="PARCIAL">
-                                    Parcialmente quitadas
-                                </option>
-
-                                <option value="QUITADA">
-                                    Quitadas
-                                </option>
-
-                                <option value="CANCELADA">
-                                    Canceladas
-                                </option>
-                            </select>
+                                {chipsSituacao.map((chip) => (
+                                    <button
+                                        aria-pressed={situacao === chip.valor}
+                                        className={
+                                            situacao === chip.valor
+                                                ? 'ag-fin-aba ag-fin-aba-ativa'
+                                                : 'ag-fin-aba'
+                                        }
+                                        key={chip.valor || 'todas'}
+                                        onClick={() =>
+                                            setSituacao(chip.valor)
+                                        }
+                                        type="button"
+                                    >
+                                        {chip.rotulo}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         )}
                     </div>

@@ -138,6 +138,23 @@
     font-size: 1.17rem;
 }
 
+/* Abas da lista de contas: chips horizontais limpos, sem o fundo
+   arredondado do container (que, ao quebrar linha nesta coluna
+   estreita, virava um "blob" verde). Override local — não afeta o
+   .ag-fin-abas do dashboard financeiro. */
+.contas-lista-topo .ag-fin-abas,
+.contas-chips-situacao {
+    flex-wrap: wrap;
+    width: auto;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.contas-lista-topo .ag-fin-abas {
+    flex-wrap: nowrap;
+}
+
 .contas-lista-topo p {
     margin: 6px 0 0;
     color: var(--muted-foreground);
@@ -1008,6 +1025,43 @@
     font-size: 0.84rem;
 }
 
+.ag-contas-regua-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ag-contas-regua-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.ag-contas-regua-legenda li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ag-on-surface-variant);
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.ag-contas-regua-legenda li::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    content: "";
+}
+
+.ag-contas-legenda-receber::before { background: var(--ag-primary); }
+.ag-contas-legenda-pagar::before { background: var(--ag-secondary); }
+.ag-contas-legenda-liquido::before { background: var(--ag-tertiary, #0f6b6b); }
+
 .ag-contas-regua-cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1015,6 +1069,7 @@
 }
 
 .ag-contas-semana {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1028,6 +1083,40 @@
     border-color: var(--ag-primary);
     box-shadow: var(--ag-shadow-sm);
 }
+
+.ag-contas-semana-selo {
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    padding: 3px 10px;
+    border-radius: var(--ag-radius-full);
+    background: var(--ag-primary);
+    color: var(--ag-on-primary, #fff);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Barras de proporção receber/pagar */
+.ag-contas-barra {
+    margin-top: 6px;
+    width: 100%;
+    height: 6px;
+    border-radius: var(--ag-radius-full);
+    background: var(--ag-surface-high);
+    overflow: hidden;
+}
+
+.ag-contas-barra span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    min-width: 2px;
+}
+
+.ag-contas-barra-receber { background: var(--ag-primary); }
+.ag-contas-barra-pagar { background: var(--ag-secondary); }
 
 .ag-contas-semana header {
     display: flex;
@@ -1060,10 +1149,15 @@
 }
 
 .ag-contas-semana dl > div {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
+    column-gap: 8px;
+}
+
+/* A barra (3º filho) ocupa a largura toda, abaixo de dt/dd. */
+.ag-contas-semana dl > div > .ag-contas-barra {
+    grid-column: 1 / -1;
 }
 
 .ag-contas-semana dt {

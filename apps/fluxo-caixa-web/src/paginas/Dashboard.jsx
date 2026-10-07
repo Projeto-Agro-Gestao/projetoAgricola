@@ -813,7 +813,7 @@ function Dashboard() {
     ]
 
     return (
-        <ShellDashboard sessao={sessao} ativo="visao-geral">
+        <ShellDashboard sessao={sessao}>
             <div className="ag-fin">
                 <header className="ag-fin-topo">
                     <span className="ag-fin-eyebrow">

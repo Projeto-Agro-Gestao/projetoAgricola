@@ -326,6 +326,9 @@
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.01em;
+    /* Reserva ~2 linhas para o valor começar na mesma altura em
+       todos os cards, mesmo quando o título ocupa 1 ou 2 linhas. */
+    min-height: calc(1.35rem * 1.2 * 2);
 }
 
 .ag-fin-kpi-icone {
@@ -380,10 +383,11 @@
     line-height: 1.4;
 }
 
-/* Rodapé do KPI (badge honesto) */
+/* Rodapé do KPI (badge honesto) — ancorado na base para alinhar
+   os badges entre cards, independentemente da altura do título. */
 .ag-fin-kpi-rodape {
-    margin-top: 16px;
-    padding-top: 8px;
+    margin-top: auto;
+    padding-top: 16px;
 }
 .ag-fin-kpi-badge {
     display: inline-flex;
