@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react'
 import {
@@ -435,6 +436,20 @@ function ContasFinanceiras() {
     const [modalAlertaAberto, setModalAlertaAberto] =
         useState(false)
 
+    // Quitação com janela de desfazer (7s): guarda a conta + o corpo da
+    // liquidação enquanto o POST ainda não foi enviado ao backend.
+    const [quitacaoPendente, setQuitacaoPendente] =
+        useState(null)
+    const timerQuitacaoRef = useRef(null)
+
+    useEffect(() => {
+        return () => {
+            if (timerQuitacaoRef.current) {
+                clearTimeout(timerQuitacaoRef.current)
+            }
+        }
+    }, [])
+
     const [carregando, setCarregando] =
         useState(true)
 
@@ -471,10 +486,9 @@ function ContasFinanceiras() {
         setCarregandoCategoriasLiquidacao,
     ] = useState(false)
 
-    const [
-        salvandoLiquidacao,
-        setSalvandoLiquidacao,
-    ] = useState(false)
+    // A quitação agora é agendada (janela de desfazer de 7s) e o modal fecha
+    // na hora, então não há mais fase de "salvando" dentro do modal.
+    const salvandoLiquidacao = false
 
     const [
         cancelandoConta,
@@ -1148,34 +1162,48 @@ function ContasFinanceiras() {
             return
         }
 
+        const corpo = {
+            valor: Number(valorLiquidacao),
+            dataLiquidacao,
+            observacao:
+                observacaoLiquidacao.trim() || null,
+            lancarNoControleFinanceiro,
+            categoriaId: lancarNoControleFinanceiro
+                ? Number(categoriaLiquidacaoId)
+                : null,
+        }
+
+        // Não envia agora: agenda a quitação e abre a janela de desfazer (7s).
+        const pendente = {
+            conta: contaParaLiquidar,
+            corpo,
+        }
+
+        setContaParaLiquidar(null)
+        setErroModal('')
+        setQuitacaoPendente(pendente)
+
+        timerQuitacaoRef.current = setTimeout(() => {
+            void efetivarQuitacao(pendente)
+        }, 7000)
+    }
+
+    async function efetivarQuitacao(pendente) {
+        timerQuitacaoRef.current = null
+
+        if (!sessao || !pendente) {
+            setQuitacaoPendente(null)
+            return
+        }
+
         try {
-            setSalvandoLiquidacao(true)
-            setErroModal('')
-
-            const empresaId =
-                sessao.usuario.empresaId
-
-            const corpo = {
-                valor:
-                    Number(valorLiquidacao),
-                dataLiquidacao,
-                observacao:
-                    observacaoLiquidacao.trim()
-                    || null,
-                lancarNoControleFinanceiro,
-                categoriaId:
-                    lancarNoControleFinanceiro
-                        ? Number(
-                            categoriaLiquidacaoId,
-                        )
-                        : null,
-            }
+            const empresaId = sessao.usuario.empresaId
 
             const resposta = await apiFetch(
-                `${API_URL}/empresas/${empresaId}/contas-financeiras/${contaParaLiquidar.id}/liquidacoes`,
+                `${API_URL}/empresas/${empresaId}/contas-financeiras/${pendente.conta.id}/liquidacoes`,
                 {
                     method: 'POST',
-                    body: corpo,
+                    body: pendente.corpo,
                 },
             )
 
@@ -1188,17 +1216,24 @@ function ContasFinanceiras() {
                 )
             }
 
-            setContaParaLiquidar(null)
             await carregarDados()
         } catch (erroDaRequisicao) {
-            setErroModal(
+            setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
                     : 'Não foi possível quitar a conta.',
             )
         } finally {
-            setSalvandoLiquidacao(false)
+            setQuitacaoPendente(null)
         }
+    }
+
+    function desfazerQuitacao() {
+        if (timerQuitacaoRef.current) {
+            clearTimeout(timerQuitacaoRef.current)
+            timerQuitacaoRef.current = null
+        }
+        setQuitacaoPendente(null)
     }
 
     function abrirCancelamento(conta) {
@@ -2365,6 +2400,33 @@ function ContasFinanceiras() {
                 </section>
             </div>
 
+            {quitacaoPendente && (
+                <div
+                    aria-live="polite"
+                    className="contas-quitacao-toast"
+                    role="status"
+                >
+                    <span className="contas-quitacao-relogio">
+                        <Icone nome="schedule" tamanho={20} />
+                    </span>
+
+                    <div className="contas-quitacao-texto">
+                        <strong>Quitando conta...</strong>
+                        <small>
+                            {quitacaoPendente.conta.descricao}
+                        </small>
+                    </div>
+
+                    <button
+                        className="contas-quitacao-desfazer"
+                        onClick={desfazerQuitacao}
+                        type="button"
+                    >
+                        Desfazer
+                    </button>
+                </div>
+            )}
+
             <div className="contas-fab-area">
                 {menuAcoesAberto && (
                     <>
@@ -2407,6 +2469,21 @@ function ContasFinanceiras() {
                                     <Icone nome="remove" tamanho={20} />
                                 </span>
                                 Nova conta a pagar
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    abrirCategorias()
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone">
+                                    <Icone nome="sell" tamanho={20} />
+                                </span>
+                                Gerenciar categorias
                             </button>
 
                             <button
@@ -3028,7 +3105,20 @@ function ContasFinanceiras() {
                         </div>
 
                         <div className="contas-alerta-lista">
-                            {lembretes.map((item) => (
+                            {lembretes.map((item) => {
+                                // Urgência 0..1: vencida = cheia; senão
+                                // proporcional ao quanto resta dos 7 dias.
+                                const dias = Number(
+                                    item.diasParaVencimento ?? 7,
+                                )
+                                const urgencia = item.vencida
+                                    ? 1
+                                    : Math.max(
+                                          0,
+                                          Math.min(1, (7 - dias) / 7),
+                                      )
+
+                                return (
                                 <article
                                     className={`contas-alerta-item ${
                                         item.vencida
@@ -3036,6 +3126,7 @@ function ContasFinanceiras() {
                                             : ''
                                     }`}
                                     key={item.id}
+                                    style={{ '--urgencia': urgencia }}
                                 >
                                     <div className="contas-alerta-item-info">
                                         <strong>{item.descricao}</strong>
@@ -3083,8 +3174,14 @@ function ContasFinanceiras() {
                                                 </button>
                                             )}
                                     </div>
+
+                                    <span
+                                        aria-hidden="true"
+                                        className="contas-alerta-item-barra"
+                                    />
                                 </article>
-                            ))}
+                                )
+                            })}
                         </div>
                     </section>
                 </div>

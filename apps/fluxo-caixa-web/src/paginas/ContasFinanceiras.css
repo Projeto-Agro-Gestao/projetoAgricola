@@ -1598,10 +1598,51 @@
     font-weight: 700;
 }
 
+/* ---- Animações dos modais (entrada suave) ----------------------- */
+.contas-modal-fundo {
+    animation: contas-overlay-entra 180ms ease;
+}
+
+.contas-modal {
+    animation: contas-modal-entra 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes contas-overlay-entra {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes contas-modal-entra {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ---- Modal "Atenção aos Vencimentos" ---------------------------- */
 .contas-alerta-modal {
     width: min(880px, 100%);
     text-align: left;
+}
+
+/* KPIs e itens entram escalonados (stagger). */
+.contas-alerta-kpi {
+    animation: contas-alerta-sobe 320ms ease backwards;
+}
+.contas-alerta-kpi:nth-child(1) { animation-delay: 60ms; }
+.contas-alerta-kpi:nth-child(2) { animation-delay: 120ms; }
+.contas-alerta-kpi:nth-child(3) { animation-delay: 180ms; }
+
+.contas-alerta-item {
+    animation: contas-alerta-sobe 320ms ease backwards;
+}
+.contas-alerta-item:nth-child(1) { animation-delay: 220ms; }
+.contas-alerta-item:nth-child(2) { animation-delay: 300ms; }
+.contas-alerta-item:nth-child(3) { animation-delay: 380ms; }
+.contas-alerta-item:nth-child(4) { animation-delay: 460ms; }
+.contas-alerta-item:nth-child(n+5) { animation-delay: 520ms; }
+
+@keyframes contas-alerta-sobe {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .contas-alerta-modal-topo {
@@ -1735,14 +1776,38 @@
 }
 
 .contas-alerta-item {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 14px 16px;
+    padding: 14px 16px 16px;
+    overflow: hidden;
     border: 1px solid var(--border);
     border-left: 4px solid var(--ag-secondary, #b45309);
     border-radius: 10px;
+}
+
+/* Barra de urgência na base do item: largura proporcional a --urgencia
+   (0..1), âmbar quando próxima, vermelha quando vencida. */
+.contas-alerta-item-barra {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: calc(var(--urgencia, 0) * 100%);
+    background: var(--ag-secondary, #b45309);
+    transform-origin: left;
+    animation: contas-alerta-barra 600ms ease backwards 500ms;
+}
+
+.contas-alerta-item-vencida .contas-alerta-item-barra {
+    background: var(--destructive);
+}
+
+@keyframes contas-alerta-barra {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
 }
 
 .contas-alerta-item-vencida {
@@ -1792,5 +1857,118 @@
     }
     .contas-alerta-item-direita {
         align-items: flex-start;
+    }
+}
+
+/* ---- Toast de quitação com janela de desfazer (7s) -------------- */
+.contas-quitacao-toast {
+    position: fixed;
+    left: 24px;
+    bottom: 24px;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: min(380px, calc(100vw - 48px));
+    padding: 14px 16px;
+    overflow: hidden;
+    border-radius: var(--ag-radius-xl, 14px);
+    background: var(--ag-surface-lowest, #fff);
+    border: 1px solid var(--ag-outline-variant, #d4d4d8);
+    box-shadow: 0 18px 46px -14px rgb(9 24 11 / 0.4);
+    animation: contas-quitacao-entra 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes contas-quitacao-entra {
+    from { opacity: 0; transform: translateX(-24px) translateY(8px); }
+    to { opacity: 1; transform: translateX(0) translateY(0); }
+}
+
+/* Barra de progresso consumindo os 7 segundos. */
+.contas-quitacao-toast::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 100%;
+    background: var(--ag-primary, #3b7b00);
+    transform-origin: left;
+    animation: contas-quitacao-progresso 7s linear forwards;
+}
+
+@keyframes contas-quitacao-progresso {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+.contas-quitacao-relogio {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--ag-primary) 12%, white);
+    color: var(--ag-primary, #3b7b00);
+    animation: contas-quitacao-tique 1s steps(8) infinite;
+}
+
+@keyframes contas-quitacao-tique {
+    to { transform: rotate(360deg); }
+}
+
+.contas-quitacao-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.contas-quitacao-texto strong {
+    font-size: 0.86rem;
+}
+
+.contas-quitacao-texto small {
+    color: var(--muted-foreground);
+    font-size: 0.74rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contas-quitacao-desfazer {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border: 1px solid var(--ag-primary, #3b7b00);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ag-primary, #3b7b00);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.contas-quitacao-desfazer:hover {
+    background: color-mix(in oklch, var(--ag-primary) 10%, white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .contas-quitacao-toast,
+    .contas-quitacao-toast::after,
+    .contas-quitacao-relogio {
+        animation: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .contas-modal-fundo,
+    .contas-modal,
+    .contas-alerta-kpi,
+    .contas-alerta-item,
+    .contas-alerta-item-barra {
+        animation: none;
     }
 }
