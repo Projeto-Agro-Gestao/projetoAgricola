@@ -1202,9 +1202,10 @@
     color: var(--ag-secondary);
 }
 
-/* ---- Layout 2 colunas: lista + painel lateral ------------------- */
+/* ---- Layout da lista: coluna única (o painel lateral virou FAB) --- */
 
 .ag-contas-layout {
+    grid-template-columns: 1fr;
     align-items: start;
 }
 
@@ -1364,4 +1365,99 @@
     .ag-contas-regua-cards {
         grid-template-columns: 1fr;
     }
+}
+
+/* ---- FAB flutuante de ações (Contas & Categorias) --------------- */
+.contas-fab-area {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.contas-fab {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 0;
+    border-radius: var(--ag-radius-full, 9999px);
+    background: var(--ag-primary);
+    color: var(--ag-on-primary, #fff);
+    box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45);
+    cursor: pointer;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+/* Tooltip "Ações rápidas" à esquerda do FAB (hover/focus). */
+.contas-fab-tooltip {
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%) translateX(6px);
+    padding: 6px 10px;
+    border-radius: var(--ag-radius-lg, 8px);
+    background: rgb(9 24 11 / 0.88);
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.contas-fab:hover .contas-fab-tooltip,
+.contas-fab:focus-visible .contas-fab-tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+/* Não mostrar o tooltip quando o menu já está aberto. */
+.contas-fab[aria-expanded="true"] .contas-fab-tooltip {
+    opacity: 0;
+}
+
+.contas-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px -8px rgb(9 24 11 / 0.5);
+}
+
+.contas-fab[aria-expanded="true"] {
+    transform: rotate(12deg);
+}
+
+/* Overlay invisível para fechar o menu ao clicar fora. */
+.contas-fab-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    border: 0;
+    background: transparent;
+    cursor: default;
+}
+
+.contas-fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(300px, calc(100vw - 48px));
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-xl, 16px);
+    background: var(--ag-surface-lowest, #fff);
+    box-shadow: 0 20px 50px -12px rgb(9 24 11 / 0.3);
+    animation: contas-fab-entra 160ms ease;
+}
+
+@keyframes contas-fab-entra {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }

@@ -426,6 +426,9 @@ function ContasFinanceiras() {
     const [situacao, setSituacao] =
         useState('')
 
+    const [menuAcoesAberto, setMenuAcoesAberto] =
+        useState(false)
+
     const [carregando, setCarregando] =
         useState(true)
 
@@ -761,42 +764,6 @@ function ContasFinanceiras() {
                         !== 'CANCELADA',
                 ),
             [contas],
-        )
-
-    const resumoCategoriasContas =
-        useMemo(
-            () => {
-                const grupos = new Map()
-
-                contasAtivas.forEach((conta) => {
-                    const nome =
-                        conta.categoriaNome
-                        || 'Sem categoria'
-                    const chave = `${conta.tipo}-${nome}`
-
-                    if (!grupos.has(chave)) {
-                        grupos.set(chave, {
-                            nome,
-                            tipo: conta.tipo,
-                            quantidade: 0,
-                            valor: 0,
-                        })
-                    }
-
-                    const grupo = grupos.get(chave)
-
-                    grupo.quantidade += 1
-                    grupo.valor += Number(
-                        conta.valorPendente ?? 0,
-                    )
-                })
-
-                return Array.from(grupos.values()).sort(
-                    (primeira, segunda) =>
-                        segunda.valor - primeira.valor,
-                )
-            },
-            [contasAtivas],
         )
 
     const contasVisiveis =
@@ -1457,13 +1424,6 @@ function ContasFinanceiras() {
         return null
     }
 
-    // Mesma regra de safra usada no ShellDashboard (jul→jun).
-    const hojeSafra = new Date()
-    const anoSafra =
-        hojeSafra.getMonth() >= 6
-            ? hojeSafra.getFullYear()
-            : hojeSafra.getFullYear() - 1
-    const safraAtual = `${anoSafra}/${anoSafra + 1}`
 
     // Contagens das abas derivadas da lista real de contas ativas.
     const totalAPagar = contasAtivas.filter(
@@ -1516,15 +1476,6 @@ function ContasFinanceiras() {
     ]
 
     // Chips de situação (mesma estrutura visual das abas). Reusa o estado
-    // `situacao` que já filtra a lista — só troca o <select> por pills.
-    const chipsSituacao = [
-        { rotulo: 'Todas as situações', valor: '' },
-        { rotulo: 'Pendentes', valor: 'PENDENTE' },
-        { rotulo: 'Parcialmente quitadas', valor: 'PARCIAL' },
-        { rotulo: 'Quitadas', valor: 'QUITADA' },
-        { rotulo: 'Canceladas', valor: 'CANCELADA' },
-    ]
-
     // Período: mapeia os chips para a janela de dias já existente (diasGrafico).
     // ponytail: um preset "Este Mês (mês-calendário)" exigiria filtro por mês no
     // /projecao do backend; hoje é sempre uma janela de N dias a partir de hoje.
@@ -1983,176 +1934,6 @@ function ContasFinanceiras() {
                 </section>
 
                 <section className="ag-fin-analytics ag-contas-layout">
-                <aside className="ag-fin-acoes ag-contas-aside">
-                    <div className="ag-fin-acoes-topo">
-                        <h2>Contas &amp; Categorias</h2>
-                    </div>
-
-                    <div className="ag-fin-atalhos">
-                        <button
-                            className="ag-fin-atalho"
-                            onClick={() =>
-                                criarConta('RECEBER')
-                            }
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone ag-fin-atalho-receita">
-                                <Icone nome="add" tamanho={20} />
-                            </span>
-                            Nova conta a receber
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            onClick={() =>
-                                criarConta('PAGAR')
-                            }
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone ag-fin-atalho-despesa">
-                                <Icone nome="remove" tamanho={20} />
-                            </span>
-                            Nova conta a pagar
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            onClick={abrirCategorias}
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone">
-                                <Icone nome="sell" tamanho={20} />
-                            </span>
-                            Gerenciar categorias
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            onClick={abrirFornecedores}
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone">
-                                <Icone nome="groups" tamanho={20} />
-                            </span>
-                            Gerenciar fornecedores
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            onClick={() => {
-                                if (mostrandoLixeira) {
-                                    setMostrandoLixeira(false)
-                                    void carregarDados()
-                                } else {
-                                    void carregarLixeira()
-                                }
-                            }}
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone">
-                                <Icone nome="delete" tamanho={20} />
-                            </span>
-                            {mostrandoLixeira
-                                ? 'Ver contas cadastradas'
-                                : 'Lixeira'}
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            disabled={Boolean(
-                                baixandoRelatorio,
-                            )}
-                            onClick={() =>
-                                baixarRelatorio('excel')
-                            }
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone">
-                                <Icone nome="table_view" tamanho={20} />
-                            </span>
-                            {baixandoRelatorio === 'excel'
-                                ? 'Gerando Excel...'
-                                : 'Excel da projeção'}
-                        </button>
-
-                        <button
-                            className="ag-fin-atalho"
-                            disabled={Boolean(
-                                baixandoRelatorio,
-                            )}
-                            onClick={() =>
-                                baixarRelatorio('pdf')
-                            }
-                            type="button"
-                        >
-                            <span className="ag-fin-atalho-icone">
-                                <Icone nome="picture_as_pdf" tamanho={20} />
-                            </span>
-                            {baixandoRelatorio === 'pdf'
-                                ? 'Gerando PDF...'
-                                : 'PDF da projeção'}
-                        </button>
-                    </div>
-
-                    <div className="ag-contas-categorias">
-                        <h3>Resumo por categoria</h3>
-
-                        {resumoCategoriasContas.length === 0 ? (
-                            <p className="ag-fin-vazio">
-                                As categorias aparecerão aqui quando houver contas ativas.
-                            </p>
-                        ) : (
-                            <ul className="ag-contas-categorias-lista">
-                                {resumoCategoriasContas.map((categoria) => (
-                                    <li
-                                        key={`${categoria.tipo}-${categoria.nome}`}
-                                    >
-                                        <span
-                                            className={`ag-contas-categoria-marca ${
-                                                categoria.tipo === 'RECEBER'
-                                                    ? 'receber'
-                                                    : 'pagar'
-                                            }`}
-                                        >
-                                            {categoria.tipo === 'RECEBER' ? '+' : '-'}
-                                        </span>
-                                        <div className="ag-contas-categoria-texto">
-                                            <strong>{categoria.nome}</strong>
-                                            <small>
-                                                {categoria.quantidade} conta(s)
-                                                {' · '}
-                                                {categoria.tipo === 'RECEBER'
-                                                    ? 'a receber'
-                                                    : 'a pagar'}
-                                            </small>
-                                        </div>
-                                        <strong className="ag-contas-categoria-valor">
-                                            {formatarDinheiro(categoria.valor)}
-                                        </strong>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-
-                    {/*
-                      ponytail: a foto real da propriedade dependeria de um campo
-                      de imagem no cadastro da propriedade (não existe hoje); por
-                      isso o card usa um gradiente como placeholder honesto.
-                    */}
-                    <div className="ag-contas-propriedade">
-                        <div className="ag-contas-propriedade-arte" aria-hidden="true" />
-                        <div className="ag-contas-propriedade-texto">
-                            <span className="ag-contas-propriedade-selo">
-                                <Icone nome="verified" tamanho={14} />
-                                LCDPR Integrado
-                            </span>
-                            <strong>{sessao.usuario.nomeEmpresa}</strong>
-                            <small>Safra {safraAtual}</small>
-                        </div>
-                    </div>
-                </aside>
-
                 <section
                     className="contas-lista-painel ag-contas-coluna"
                     id="lista-contas"
@@ -2233,38 +2014,6 @@ function ContasFinanceiras() {
                             </button>
                         </div>
 
-                        {!mostrandoLixeira && (
-                        <div className="contas-filtros contas-filtros-granular">
-                            <div
-                                aria-label="Filtrar pela situação"
-                                className="ag-fin-abas contas-chips-situacao"
-                                role="group"
-                            >
-                                {chipsSituacao.map((chip) => (
-                                    <button
-                                        aria-current={
-                                            situacao === chip.valor
-                                                ? 'true'
-                                                : undefined
-                                        }
-                                        aria-pressed={situacao === chip.valor}
-                                        className={
-                                            situacao === chip.valor
-                                                ? 'ag-fin-aba ag-fin-aba-ativa'
-                                                : 'ag-fin-aba'
-                                        }
-                                        key={chip.valor || 'todas'}
-                                        onClick={() =>
-                                            setSituacao(chip.valor)
-                                        }
-                                        type="button"
-                                    >
-                                        {chip.rotulo}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        )}
                     </div>
 
                     {carregando ? (
@@ -2529,6 +2278,143 @@ function ContasFinanceiras() {
                     )}
                 </section>
                 </section>
+            </div>
+
+            <div className="contas-fab-area">
+                {menuAcoesAberto && (
+                    <>
+                        <button
+                            aria-label="Fechar menu de ações"
+                            className="contas-fab-overlay"
+                            onClick={() => setMenuAcoesAberto(false)}
+                            type="button"
+                        />
+
+                        <div
+                            className="contas-fab-menu"
+                            role="menu"
+                        >
+                            <button
+                                className="ag-fin-atalho"
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    criarConta('RECEBER')
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone ag-fin-atalho-receita">
+                                    <Icone nome="add" tamanho={20} />
+                                </span>
+                                Nova conta a receber
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    criarConta('PAGAR')
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone ag-fin-atalho-despesa">
+                                    <Icone nome="remove" tamanho={20} />
+                                </span>
+                                Nova conta a pagar
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    abrirFornecedores()
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone">
+                                    <Icone nome="groups" tamanho={20} />
+                                </span>
+                                Gerenciar fornecedores
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    if (mostrandoLixeira) {
+                                        setMostrandoLixeira(false)
+                                        void carregarDados()
+                                    } else {
+                                        void carregarLixeira()
+                                    }
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone">
+                                    <Icone nome="delete" tamanho={20} />
+                                </span>
+                                {mostrandoLixeira
+                                    ? 'Ver contas cadastradas'
+                                    : 'Lixeira'}
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                disabled={Boolean(baixandoRelatorio)}
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    baixarRelatorio('excel')
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone">
+                                    <Icone nome="table_view" tamanho={20} />
+                                </span>
+                                {baixandoRelatorio === 'excel'
+                                    ? 'Gerando Excel...'
+                                    : 'Excel da projeção'}
+                            </button>
+
+                            <button
+                                className="ag-fin-atalho"
+                                disabled={Boolean(baixandoRelatorio)}
+                                onClick={() => {
+                                    setMenuAcoesAberto(false)
+                                    baixarRelatorio('pdf')
+                                }}
+                                role="menuitem"
+                                type="button"
+                            >
+                                <span className="ag-fin-atalho-icone">
+                                    <Icone nome="picture_as_pdf" tamanho={20} />
+                                </span>
+                                {baixandoRelatorio === 'pdf'
+                                    ? 'Gerando PDF...'
+                                    : 'PDF da projeção'}
+                            </button>
+                        </div>
+                    </>
+                )}
+
+                <button
+                    aria-expanded={menuAcoesAberto}
+                    aria-haspopup="menu"
+                    aria-label="Ações rápidas"
+                    className="contas-fab"
+                    onClick={() =>
+                        setMenuAcoesAberto((aberto) => !aberto)
+                    }
+                    type="button"
+                >
+                    <span className="contas-fab-tooltip" aria-hidden="true">
+                        Ações rápidas
+                    </span>
+                    <Icone nome="bolt" tamanho={26} />
+                </button>
             </div>
 
             {contaParaLiquidar && (
