@@ -2178,6 +2178,9 @@ function ContasFinanceiras() {
                         >
                             {abasContas.map((aba) => (
                                 <button
+                                    aria-current={
+                                        aba.ativa ? 'page' : undefined
+                                    }
                                     className={
                                         aba.ativa
                                             ? 'ag-fin-aba ag-fin-aba-ativa'
@@ -2193,6 +2196,43 @@ function ContasFinanceiras() {
                         </div>
                         )}
 
+                        <div
+                            aria-label="Visão da lista"
+                            className="contas-lista-acoes"
+                            role="group"
+                        >
+                            <button
+                                aria-label="Atualizar lista"
+                                className="contas-lista-acao"
+                                onClick={carregarDados}
+                                type="button"
+                            >
+                                <Icone nome="refresh" tamanho={18} />
+                            </button>
+
+                            {/* ponytail: ícones de visão (lista/compacto) são
+                               placeholders decorativos — não há função de
+                               alternância de visão definida pelo produto/backend
+                               hoje. Viram um follow-up isolado quando houver. */}
+                            <button
+                                aria-label="Visão em lista (indisponível)"
+                                className="contas-lista-acao"
+                                disabled
+                                type="button"
+                            >
+                                <Icone nome="view_list" tamanho={18} />
+                            </button>
+
+                            <button
+                                aria-label="Visão compacta (indisponível)"
+                                className="contas-lista-acao"
+                                disabled
+                                type="button"
+                            >
+                                <Icone nome="view_agenda" tamanho={18} />
+                            </button>
+                        </div>
+
                         {!mostrandoLixeira && (
                         <div className="contas-filtros contas-filtros-granular">
                             <div
@@ -2202,6 +2242,11 @@ function ContasFinanceiras() {
                             >
                                 {chipsSituacao.map((chip) => (
                                     <button
+                                        aria-current={
+                                            situacao === chip.valor
+                                                ? 'true'
+                                                : undefined
+                                        }
                                         aria-pressed={situacao === chip.valor}
                                         className={
                                             situacao === chip.valor
@@ -2239,201 +2284,247 @@ function ContasFinanceiras() {
                             </p>
                         </div>
                     ) : (
-                        <div className="contas-lista">
-                            {contasVisiveis.map((conta) => (
-                                <article
-                                    className="contas-item"
-                                    key={conta.id}
-                                >
-                                    <div
-                                        className={`contas-item-icone ${
-                                            conta.tipo
-                                            === 'RECEBER'
-                                                ? 'contas-item-receber'
-                                                : 'contas-item-pagar'
-                                        }`}
-                                    >
-                                        {conta.tipo
-                                        === 'RECEBER'
-                                            ? '↓'
-                                            : '↑'}
-                                    </div>
-
-                                    <div className="contas-item-informacoes">
-                                        <div className="contas-item-titulo">
-                                            <strong>
-                                                {
-                                                    conta.descricao
-                                                }
-                                            </strong>
-
-                                            <span
-                                                className={`contas-status ${obterClasseSituacao(
-                                                    conta,
-                                                )}`}
-                                            >
-                                                {
-                                                    conta.vencida
-                                                        ? 'Vencida'
-                                                        : conta.situacaoDescricao
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <p>
-                                            {
-                                                conta.categoriaNome
-                                            }
-
-                                            {conta.favorecido
-                                                ? ` · ${conta.favorecido}`
-                                                : ''}
-                                        </p>
-
-                                        {conta.fornecedorNome && (
-                                            <small>
-                                                Fornecedor:{' '}
-                                                {conta.fornecedorNome}
-                                                {conta.compradorNome
-                                                    ? ` - Comprador: ${conta.compradorNome}`
-                                                    : ''}
-                                            </small>
-                                        )}
-
-                                        <small>
-                                            Vencimento:{' '}
-                                            {formatarData(
-                                                conta.dataVencimento,
-                                            )}
-                                            {' · '}
-                                            {
-                                                obterTextoVencimento(
-                                                    conta,
-                                                )
-                                            }
-                                        </small>
-                                    </div>
-
-                                    <div className="contas-item-valores">
-                                        <strong
-                                            className={
-                                                conta.tipo
-                                                === 'RECEBER'
-                                                    ? 'contas-valor-receber'
-                                                    : 'contas-valor-pagar'
-                                            }
+                        <div className="contas-tabela-wrapper">
+                            {/* ponytail: a coluna "Conta / Liquidação" do mock
+                               (banco + forma de pagamento) foi OMITIDA — esses
+                               dados não existem na conta hoje; renderizá-la
+                               exigiria campos novos no backend (conta bancária +
+                               forma de liquidação). Não criar coluna com dado
+                               falso. */}
+                            <table className="contas-tabela">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Tipo</th>
+                                        <th scope="col">Vencimento</th>
+                                        <th scope="col">
+                                            Descrição &amp; Favorecido/Cliente
+                                        </th>
+                                        <th scope="col">Categoria</th>
+                                        <th
+                                            className="contas-coluna-direita"
+                                            scope="col"
                                         >
-                                            {conta.tipo
-                                            === 'RECEBER'
-                                                ? '+'
-                                                : '-'}{' '}
+                                            Valor
+                                        </th>
+                                        <th
+                                            className="contas-coluna-direita"
+                                            scope="col"
+                                        >
+                                            Ações
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                                            {formatarDinheiro(
-                                                conta.valorPendente,
-                                            )}
-                                        </strong>
+                                <tbody>
+                                    {contasVisiveis.map((conta) => {
+                                        const ehReceber =
+                                            conta.tipo === 'RECEBER'
 
-                                        {Number(
-                                            conta.valorLiquidado
-                                            ?? 0,
-                                        ) > 0 && (
-                                            <small>
-                                                Liquidado:{' '}
-                                                {
-                                                    formatarDinheiro(
-                                                        conta.valorLiquidado,
-                                                    )
-                                                }
-                                            </small>
-                                        )}
-                                    </div>
+                                        return (
+                                            <tr key={conta.id}>
+                                                <td data-coluna="Tipo">
+                                                    <span
+                                                        aria-label={
+                                                            ehReceber
+                                                                ? 'A receber'
+                                                                : 'A pagar'
+                                                        }
+                                                        className={`contas-tipo-icone ${
+                                                            ehReceber
+                                                                ? 'contas-item-receber'
+                                                                : 'contas-item-pagar'
+                                                        }`}
+                                                        role="img"
+                                                    >
+                                                        {ehReceber ? '↓' : '↑'}
+                                                    </span>
+                                                </td>
 
-                                    <div className="contas-item-acoes">
-                                        {mostrandoLixeira ? (
-                                            <>
-                                                <button
-                                                    className="contas-acao-principal"
-                                                    disabled={
-                                                        restaurandoContaId ===
-                                                        conta.id
-                                                    }
-                                                    onClick={() =>
-                                                        restaurarConta(
+                                                <td data-coluna="Vencimento">
+                                                    <strong className="contas-celula-principal">
+                                                        {formatarData(
+                                                            conta.dataVencimento,
+                                                        )}
+                                                    </strong>
+
+                                                    <small className="contas-celula-secundaria">
+                                                        {obterTextoVencimento(
                                                             conta,
-                                                        )
-                                                    }
-                                                    type="button"
+                                                        )}
+                                                    </small>
+                                                </td>
+
+                                                <td data-coluna="Descrição">
+                                                    <div className="contas-celula-descricao">
+                                                        <strong>
+                                                            {conta.descricao}
+                                                        </strong>
+
+                                                        <span
+                                                            className={`contas-status ${obterClasseSituacao(
+                                                                conta,
+                                                            )}`}
+                                                        >
+                                                            {conta.vencida
+                                                                ? 'Vencida'
+                                                                : conta.situacaoDescricao}
+                                                        </span>
+                                                    </div>
+
+                                                    {(conta.favorecido
+                                                        || conta.fornecedorNome
+                                                        || conta.compradorNome) && (
+                                                        <small className="contas-celula-secundaria">
+                                                            {[
+                                                                conta.favorecido,
+                                                                conta.fornecedorNome,
+                                                                conta.compradorNome,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(' · ')}
+                                                        </small>
+                                                    )}
+                                                </td>
+
+                                                <td data-coluna="Categoria">
+                                                    {conta.categoriaNome && (
+                                                        <span className="contas-categoria">
+                                                            <span
+                                                                aria-hidden="true"
+                                                                className={`contas-categoria-ponto ${
+                                                                    ehReceber
+                                                                        ? 'contas-categoria-ponto-receber'
+                                                                        : 'contas-categoria-ponto-pagar'
+                                                                }`}
+                                                            />
+                                                            {conta.categoriaNome}
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                <td
+                                                    className="contas-coluna-direita"
+                                                    data-coluna="Valor"
                                                 >
-                                                    {restaurandoContaId ===
-                                                    conta.id
-                                                        ? 'Restaurando...'
-                                                        : 'Restaurar conta'}
-                                                </button>
+                                                    <strong
+                                                        className={
+                                                            ehReceber
+                                                                ? 'contas-valor-receber'
+                                                                : 'contas-valor-pagar'
+                                                        }
+                                                    >
+                                                        {ehReceber ? '+' : '-'}{' '}
+                                                        {formatarDinheiro(
+                                                            conta.valorPendente,
+                                                        )}
+                                                    </strong>
 
-                                                <button
-                                                    className="contas-acao-perigo"
-                                                    onClick={() =>
-                                                        abrirExclusaoPermanente(
-                                                            conta,
-                                                        )
-                                                    }
-                                                    type="button"
+                                                    {Number(
+                                                        conta.valorLiquidado ?? 0,
+                                                    ) > 0 && (
+                                                        <small className="contas-celula-secundaria">
+                                                            Liquidado:{' '}
+                                                            {formatarDinheiro(
+                                                                conta.valorLiquidado,
+                                                            )}
+                                                        </small>
+                                                    )}
+                                                </td>
+
+                                                <td
+                                                    className="contas-coluna-direita"
+                                                    data-coluna="Ações"
                                                 >
-                                                    Excluir permanentemente
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {conta.situacao !== 'QUITADA'
-                                                    && conta.situacao !== 'CANCELADA' && (
-                                                        <button
-                                                            className="contas-acao-principal"
-                                                            onClick={() =>
-                                                                abrirLiquidacao(
-                                                                    conta,
-                                                                )
-                                                            }
-                                                            type="button"
-                                                        >
-                                                            Quitar
-                                                        </button>
-                                                    )}
+                                                    <div className="contas-item-acoes">
+                                                        {mostrandoLixeira ? (
+                                                            <>
+                                                                <button
+                                                                    className="contas-acao-principal"
+                                                                    disabled={
+                                                                        restaurandoContaId ===
+                                                                        conta.id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        restaurarConta(
+                                                                            conta,
+                                                                        )
+                                                                    }
+                                                                    type="button"
+                                                                >
+                                                                    {restaurandoContaId ===
+                                                                    conta.id
+                                                                        ? 'Restaurando...'
+                                                                        : 'Restaurar conta'}
+                                                                </button>
 
-                                                {conta.situacao !== 'QUITADA'
-                                                    && conta.situacao !== 'CANCELADA'
-                                                    && !conta.movimentacaoFinanceiroId && (
-                                                        <button
-                                                            className="contas-acao-principal"
-                                                            onClick={() =>
-                                                                abrirEnvioFinanceiro(
-                                                                    conta,
-                                                                )
-                                                            }
-                                                            type="button"
-                                                        >
-                                                            Enviar ao financeiro
-                                                        </button>
-                                                    )}
+                                                                <button
+                                                                    className="contas-acao-perigo"
+                                                                    onClick={() =>
+                                                                        abrirExclusaoPermanente(
+                                                                            conta,
+                                                                        )
+                                                                    }
+                                                                    type="button"
+                                                                >
+                                                                    Excluir permanentemente
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {conta.situacao !== 'QUITADA'
+                                                                    && conta.situacao !== 'CANCELADA' && (
+                                                                        <button
+                                                                            className="contas-acao-principal"
+                                                                            onClick={() =>
+                                                                                abrirLiquidacao(
+                                                                                    conta,
+                                                                                )
+                                                                            }
+                                                                            type="button"
+                                                                        >
+                                                                            Quitar
+                                                                        </button>
+                                                                    )}
 
-                                                {conta.situacao !== 'QUITADA'
-                                                    && conta.situacao !== 'CANCELADA' && (
-                                                        <button
-                                                            className="contas-acao-perigo"
-                                                            onClick={() =>
-                                                                abrirCancelamento(
-                                                                    conta,
-                                                                )
-                                                            }
-                                                            type="button"
-                                                        >
-                                                            Enviar para lixeira
-                                                        </button>
-                                                    )}
-                                            </>
-                                        )}
-                                    </div>
-                                </article>
-                            ))}
+                                                                {conta.situacao !== 'QUITADA'
+                                                                    && conta.situacao !== 'CANCELADA'
+                                                                    && !conta.movimentacaoFinanceiroId && (
+                                                                        <button
+                                                                            className="contas-acao-principal"
+                                                                            onClick={() =>
+                                                                                abrirEnvioFinanceiro(
+                                                                                    conta,
+                                                                                )
+                                                                            }
+                                                                            type="button"
+                                                                        >
+                                                                            Enviar ao financeiro
+                                                                        </button>
+                                                                    )}
+
+                                                                {conta.situacao !== 'QUITADA'
+                                                                    && conta.situacao !== 'CANCELADA' && (
+                                                                        <button
+                                                                            className="contas-acao-perigo"
+                                                                            onClick={() =>
+                                                                                abrirCancelamento(
+                                                                                    conta,
+                                                                                )
+                                                                            }
+                                                                            type="button"
+                                                                        >
+                                                                            Enviar para lixeira
+                                                                        </button>
+                                                                    )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </section>

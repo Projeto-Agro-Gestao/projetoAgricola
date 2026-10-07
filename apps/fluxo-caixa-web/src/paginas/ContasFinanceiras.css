@@ -161,6 +161,38 @@
     font-size: 0.77rem;
 }
 
+.contas-lista-acoes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.contas-lista-acao {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition:
+            border-color 160ms ease,
+            color 160ms ease;
+}
+
+.contas-lista-acao:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.contas-lista-acao:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .contas-filtros {
     display: flex;
     gap: 9px;
@@ -191,47 +223,104 @@
             );
 }
 
-.contas-lista {
-    display: grid;
-    gap: 8px;
-}
-
-.contas-item {
-    display: grid;
-    align-items: center;
-    padding: 15px;
+.contas-tabela-wrapper {
+    overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: var(--background);
-    grid-template-columns:
-        42px
-        minmax(0, 1fr)
-        auto
-        auto;
-    gap: 13px;
-    transition:
-            border-color 160ms ease,
-            box-shadow 160ms ease,
-            transform 160ms ease;
 }
 
-.contas-item:hover {
-    border-color:
+.contas-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.contas-tabela thead th {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.contas-tabela tbody td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.contas-tabela tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.contas-tabela tbody tr:hover {
+    background:
             color-mix(
                     in oklch,
-                    var(--primary) 45%,
-                    var(--border)
+                    var(--primary) 4%,
+                    var(--card)
             );
-    box-shadow: 0 7px 18px rgb(22 58 25 / 0.05);
-    transform: translateY(-1px);
 }
 
-.contas-item-icone {
-    display: grid;
-    width: 42px;
-    height: 42px;
+.contas-coluna-direita {
+    text-align: right;
+}
+
+.contas-celula-principal {
+    display: block;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.contas-celula-secundaria {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted-foreground);
+    font-size: 0.68rem;
+}
+
+.contas-celula-descricao {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.contas-celula-descricao > strong {
+    font-size: 0.84rem;
+}
+
+.contas-categoria {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.contas-categoria-ponto {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.contas-categoria-ponto-receber {
+    background: var(--primary);
+}
+
+.contas-categoria-ponto-pagar {
+    background: var(--destructive);
+}
+
+.contas-tipo-icone {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
     place-items: center;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 700;
 }
 
@@ -248,23 +337,6 @@
                     white
             );
     color: var(--destructive);
-}
-
-.contas-item-informacoes {
-    min-width: 0;
-}
-
-.contas-item-titulo {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.contas-item-titulo > strong {
-    overflow: hidden;
-    font-size: 0.87rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .contas-status {
@@ -306,45 +378,12 @@
     color: var(--destructive);
 }
 
-.contas-item-informacoes p {
-    overflow: hidden;
-    margin: 5px 0 0;
-    color: var(--muted-foreground);
-    font-size: 0.74rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.contas-item-informacoes small {
-    display: block;
-    margin-top: 5px;
-    color: var(--muted-foreground);
-    font-size: 0.68rem;
-}
-
-.contas-item-valores {
-    text-align: right;
-}
-
-.contas-item-valores strong {
-    display: block;
-    font-size: 0.84rem;
-    white-space: nowrap;
-}
-
 .contas-valor-receber {
     color: var(--primary);
 }
 
 .contas-valor-pagar {
     color: var(--destructive);
-}
-
-.contas-item-valores small {
-    display: block;
-    margin-top: 5px;
-    color: var(--muted-foreground);
-    font-size: 0.64rem;
 }
 
 .contas-item-acoes {
@@ -892,33 +931,14 @@
         grid-template-columns: 1fr;
     }
 
-    .contas-item {
-        align-items: flex-start;
-        grid-template-columns:
-            39px
-            minmax(0, 1fr);
-    }
-
-    .contas-item-icone {
-        width: 39px;
-        height: 39px;
-    }
-
-    .contas-item-titulo {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .contas-item-valores {
-        padding-top: 4px;
-        text-align: left;
-        grid-column: 2;
+    /* A tabela rola horizontalmente via .contas-tabela-wrapper
+       (overflow-x: auto); mantém a leitura sem quebrar o layout. */
+    .contas-tabela {
+        min-width: 640px;
     }
 
     .contas-item-acoes {
-        justify-content: flex-start;
-        grid-column: 2;
+        justify-content: flex-end;
     }
 
     .contas-erro {
