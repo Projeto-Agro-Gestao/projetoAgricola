@@ -695,7 +695,7 @@ function ContasFinanceiras() {
                     throw new Error(
                         await obterMensagemDeErro(
                             resposta,
-                            'NÃ£o foi possÃ­vel carregar a lixeira de contas.',
+                            'Não foi possível carregar a lixeira de contas.',
                         ),
                     )
                 }
@@ -712,7 +712,7 @@ function ContasFinanceiras() {
                 setErro(
                     erroDaRequisicao instanceof Error
                         ? erroDaRequisicao.message
-                        : 'NÃ£o foi possÃ­vel carregar a lixeira de contas.',
+                        : 'Não foi possível carregar a lixeira de contas.',
                 )
             } finally {
                 setCarregando(false)
@@ -1278,7 +1278,7 @@ function ContasFinanceiras() {
                 throw new Error(
                     await obterMensagemDeErro(
                         resposta,
-                        'NÃ£o foi possÃ­vel restaurar a conta.',
+                        'Não foi possível restaurar a conta.',
                     ),
                 )
             }
@@ -1293,7 +1293,7 @@ function ContasFinanceiras() {
             setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
-                    : 'NÃ£o foi possÃ­vel restaurar a conta.',
+                    : 'Não foi possível restaurar a conta.',
             )
         } finally {
             setRestaurandoContaId(null)
@@ -1337,7 +1337,7 @@ function ContasFinanceiras() {
                 throw new Error(
                     await obterMensagemDeErro(
                         resposta,
-                        'NÃ£o foi possÃ­vel excluir definitivamente a conta.',
+                        'Não foi possível excluir definitivamente a conta.',
                     ),
                 )
             }
@@ -1356,7 +1356,7 @@ function ContasFinanceiras() {
             setErroModal(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
-                    : 'NÃ£o foi possÃ­vel excluir definitivamente a conta.',
+                    : 'Não foi possível excluir definitivamente a conta.',
             )
         } finally {
             setExcluindoContaPermanente(false)
@@ -1434,7 +1434,7 @@ function ContasFinanceiras() {
                 throw new Error(
                     await obterMensagemDeErro(
                         resposta,
-                        'NÃ£o foi possÃ­vel enviar a conta ao financeiro.',
+                        'Não foi possível enviar a conta ao financeiro.',
                     ),
                 )
             }
@@ -1446,7 +1446,7 @@ function ContasFinanceiras() {
             setErroModal(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
-                    : 'NÃ£o foi possÃ­vel enviar a conta ao financeiro.',
+                    : 'Não foi possível enviar a conta ao financeiro.',
             )
         } finally {
             setEnviandoFinanceiro(false)
@@ -2703,7 +2703,7 @@ function ContasFinanceiras() {
                         <div className="contas-modal-topo">
                             <div>
                                 <p className="contas-etiqueta">
-                                    ExclusÃ£o definitiva
+                                    Exclusão definitiva
                                 </p>
 
                                 <h2>
@@ -2716,13 +2716,13 @@ function ContasFinanceiras() {
                                 onClick={fecharExclusaoPermanente}
                                 type="button"
                             >
-                                Ã—
+                                ×
                             </button>
                         </div>
 
                         <p className="contas-modal-texto">
-                            Esta conta serÃ¡ apagada permanentemente.
-                            Depois disso nÃ£o serÃ¡ possÃ­vel recuperar.
+                            Esta conta será apagada permanentemente.
+                            Depois disso não será possível recuperar.
                         </p>
 
                         {erroModal && (
@@ -2780,7 +2780,7 @@ function ContasFinanceiras() {
                                 onClick={fecharEnvioFinanceiro}
                                 type="button"
                             >
-                                Ã—
+                                ×
                             </button>
                         </div>
 
@@ -2789,8 +2789,8 @@ function ContasFinanceiras() {
                             onSubmit={enviarContaAoFinanceiro}
                         >
                             <p className="contas-modal-texto">
-                                O valor pendente serÃ¡ lanÃ§ado no Dashboard
-                                financeiro e esta conta sairÃ¡ da previsÃ£o futura.
+                                O valor pendente será lançado no Dashboard
+                                financeiro e esta conta sairá da previsão futura.
                             </p>
 
                             <label>
@@ -2847,7 +2847,7 @@ function ContasFinanceiras() {
                             </label>
 
                             <label>
-                                ObservaÃ§Ã£o
+                                Observação
                                 <textarea
                                     disabled={enviandoFinanceiro}
                                     maxLength="500"
