@@ -1,0 +1,1008 @@
+<aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between py-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04
+  <div class="flex flex-col gap-space-lg">
+    <div class="px-space-lg flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center text-on-primary font-headline-sm text-headline-sm">
+          <br>
+        </div>
+        <div>
+          <span class="block font-headline-sm text-headline-sm text-on-surface">
+            · Agro Gestão
+          </span>
+          <span class="block font-label-sm text-label-sm text-text-muted">
+            · Safra 2024/2025
+          </span>
+        </div>
+      </div>
+      <button class="p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface" type="button">
+        <span class="material-symbols-outlined text-[20px]">
+          · keyboard_double_arrow_left
+        </span>
+      </button>
+    </div>
+    <div class="px-space-md">
+      <div class="p-space-sm rounded-xl bg-surface-card flex items-center justify-between shadow-[0_1px_3px_0_rgba(24,29,21,0.05)]">
+        <div class="flex items-center gap-space-sm min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[20px]">
+              · agriculture
+            </span>
+          </div>
+          <div class="min-w-0">
+            <span class="block font-label-sm text-label-sm text-text-muted uppercase">
+              · Propriedade Ativa
+            </span>
+            <span class="block font-label-lg text-label-lg text-on-surface truncate">
+              · Fazenda Boa Vista
+            </span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">
+          · unfold_more
+        </span>
+      </div>
+    </div>
+    <div class="px-space-md">
+      <span class="px-space-sm font-label-sm text-label-sm uppercase tracking-wider text-text-muted block mb-space-xs">
+        · Navegação Principal
+      </span>
+      <nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-xl shadow-[0_1px_3px_rgba(0,0,
+        <a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-conta
+          <span class="material-symbols-outlined text-[20px]">
+            · grid_view
+          </span>
+          <span class="">
+            · Visão Geral
+          </span>
+        </a>
+        <a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-conta
+          <span class="material-symbols-outlined text-[20px]">
+            · inventory_2
+          </span>
+          <span class="">
+            · Módulos &amp; Gestão
+          </span>
+        </a>
+        <a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-conta
+          <span class="material-symbols-outlined text-[20px]">
+            · receipt_long
+          </span>
+          <span class="">
+            · Lançamentos
+          </span>
+        </a>
+        <a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-conta
+          <span class="material-symbols-outlined text-[20px]">
+            · account_balance
+          </span>
+          <span class="">
+            · LCDPR &amp; Fiscal
+          </span>
+        </a>
+        <a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-conta
+          <span class="material-symbols-outlined text-[20px]">
+            · tune
+          </span>
+          <span class="">
+            · Configurações
+          </span>
+        </a>
+      </nav>
+    </div>
+  </div>
+  <div class="px-space-md flex flex-col gap-space-sm">
+  </div>
+</aside>
+<div class="pl-72 flex flex-col min-h-screen">
+  <header class="fixed top-0 left-72 right-0 h-16 bg-surface/85 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="h-16 w-full px-space-lg flex items-center justify-between">
+      <div class="flex items-center gap-space-lg">
+        <div class="hidden md:flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surf
+          <span class="material-symbols-outlined text-[18px]">
+            · search
+          </span>
+          <span class="font-body-sm text-body-sm">
+            · Buscar operações, talhões, NFs...
+          </span>
+          <kbd class="ml-space-md px-space-xs py-0.5 rounded bg-surface-card text-text-muted font-label-sm text-label-sm shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            · Ctrl + K
+          </kbd>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-md">
+        <button class="relative p-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" title="
+          <span class="material-symbols-outlined text-[20px]">
+            · notifications
+          </span>
+          <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-danger-red">
+          </span>
+        </button>
+        <button class="p-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" title="Suporte A
+          <span class="material-symbols-outlined text-[20px]">
+            · contact_support
+          </span>
+        </button>
+        <div class="h-6 w-px bg-surface-container-high">
+        </div>
+        <div class="flex items-center gap-space-sm pl-space-xs">
+          <div class="text-right hidden lg:block">
+            <span class="block font-label-lg text-label-lg text-on-surface leading-tight">
+              · João da Silva
+            </span>
+            <span class="block font-label-sm text-label-sm text-text-muted">
+              · Produtor Rural
+            </span>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary text-[18px]">
+              · person
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="flex-1 w-full pt-16 bg-surface px-space-lg">
+    <div class="flex flex-col w-full gap-space-xl pb-space-2xl">
+      <!-- Top Context Header & Actions -->
+      <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+        <div>
+          <div class="flex items-center gap-space-xs text-text-muted font-label-sm uppercase tracking-wider mb-space-xs">
+            <span class="">
+              · Gestão Financeira &amp; Fiscal
+            </span>
+            <span class="inline-block w-1 h-1 rounded-full bg-outline-variant">
+            </span>
+            <span class="text-primary font-semibold">
+              · Fluxo de Caixa Rural
+            </span>
+          </div>
+          <div class="flex items-baseline gap-space-md">
+            <h1 class="font-headline-lg text-headline-lg text-text-display">
+              · Controle Interno Financeiro
+            </h1>
+          </div>
+        </div>
+        <!-- Quick Action Toolbar -->
+        <div class="flex flex-wrap items-center gap-space-sm">
+        </div>
+      </header>
+      <!-- Period Navigation Bar -->
+      <section class="p-space-md rounded-xl bg-gradient-to-r from-surface-card via-surface-subtle to-surface-card shadow-sm flex flex-col md:flex-row items-
+        <div class="flex items-center gap-space-md">
+          <div class="w-12 h-12 rounded-xl bg-tertiary-fixed-dim/40 text-tertiary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[28px]">
+              · account_balance_wallet
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-headline-sm text-headline-sm text-text-display">
+                · Sincronização Bancária &amp; LCDPR
+              </h2>
+              <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+                · 3 transações pendentes
+              </span>
+            </div>
+            <p class="font-body-md text-body-md text-text-muted">
+              · Banco do Brasil (C/C 45.190-2) e Sicredi (C/C 12.880-9) atualizados há 2 horas.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-space-sm shrink-0 w-full md:w-auto justify-end">
+          <button class="px-4 py-2 rounded-lg bg-surface-card text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-
+            · Ver Extrato Unificado
+          </button>
+          <button class="px-4 py-2 rounded-lg bg-tertiary text-on-tertiary hover:opacity-95 font-label-md text-label-md shadow-sm transition-all flex items-cent
+            <span class="material-symbols-outlined text-[18px]">
+              · done_all
+            </span>
+            <span class="">
+              · Revisar Pendências
+            </span>
+          </button>
+        </div>
+      </section>
+      <section class="p-space-sm bg-surface-card rounded-xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm">
+        <div class="flex items-center gap-space-xs overflow-x-auto pb-1 lg:pb-0" id="filter-pills">
+          <button class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-subtle transition-colors wh
+            · Hoje
+          </button>
+          <button class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-subtle transition-colors wh
+            · Esta Semana
+          </button>
+          <button class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary font-semibold shadow-sm whitespace-nowrap" ty
+            · Este Mês (Fevereiro 2026)
+          </button>
+          <button class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-subtle transition-colors wh
+            · Ano Safra 2025/2026
+          </button>
+          <button class="px-3.5 py-1.5 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-subtle transition-colors wh
+            <span class="">
+              · Personalizado
+            </span>
+            <span class="material-symbols-outlined text-[16px]">
+              · calendar_today
+            </span>
+          </button>
+        </div>
+        <div class="flex items-center gap-space-xs pt-2 lg:pt-0">
+          <div class="relative inline-block text-left">
+            <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-subtle text-on-surface-variant font-label-md text-label-md hover:bg-surface-c
+              <span class="material-symbols-outlined text-[16px]">
+                · domain
+              </span>
+              <span class="">
+                · Todas as Fazendas (2)
+              </span>
+              <span class="material-symbols-outlined text-[16px]">
+                · expand_more
+              </span>
+            </button>
+          </div>
+          <button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Exportar Relatório LC
+            <span class="material-symbols-outlined text-[20px]">
+              · file_download
+            </span>
+          </button>
+          <button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Filtrar por Centro de
+            <span class="material-symbols-outlined text-[20px]">
+              · filter_list
+            </span>
+          </button>
+        </div>
+      </section>
+      <!-- 5 Principal Metric Cards -->
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-space-md">
+        <!-- Card 1: Total que entrou -->
+        <div class="relative overflow-hidden bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-text-muted uppercase">
+                · Receita Realizada
+              </span>
+              <span class="font-headline-sm text-headline-sm text-text-display mt-0.5">
+                · Total que entrou
+              </span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-surface-subtle flex items-center justify-center text-primary-container">
+              <span class="material-symbols-outlined text-[24px]">
+                · south_east
+              </span>
+            </div>
+          </div>
+          <div class="my-space-md">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-label-lg text-label-lg text-text-muted font-normal">
+                · R$
+              </span>
+              <span class="font-numeric-metric text-numeric-metric text-text-display">
+                · 348.620,00
+              </span>
+            </div>
+            <span class="block font-body-sm text-body-sm text-text-muted mt-1">
+              · Receita — dinheiro entrando — registrada no período
+            </span>
+          </div>
+          <div class="pt-space-sm flex items-center justify-between">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-subtle text-success-leaf font-label-sm text-label-sm">
+              <span class="material-symbols-outlined text-[14px]">
+                · trending_up
+              </span>
+              <span class="">
+                · +14,2% vs safra ant.
+              </span>
+            </span>
+            <span class="font-label-sm text-label-sm text-text-muted">
+              · 4 contratos
+            </span>
+          </div>
+        </div>
+        <!-- Card 2: Total que saiu -->
+        <div class="relative overflow-hidden bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-text-muted uppercase">
+                · Despesas &amp; Custos
+              </span>
+              <span class="font-headline-sm text-headline-sm text-text-display mt-0.5">
+                · Total que saiu
+              </span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-secondary-fixed/40 flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-[24px]">
+                · north_east
+              </span>
+            </div>
+          </div>
+          <div class="my-space-md">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-label-lg text-label-lg text-text-muted font-normal">
+                · R$
+              </span>
+              <span class="font-numeric-metric text-numeric-metric text-text-display">
+                · 194.215,80
+              </span>
+            </div>
+            <span class="block font-body-sm text-body-sm text-text-muted mt-1">
+              · Despesa — dinheiro saindo — registrada no período
+            </span>
+          </div>
+          <div class="pt-space-sm flex items-center justify-between">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+              <span class="">
+                · Insumos &amp; Óleo Diesel
+              </span>
+            </span>
+            <span class="font-label-sm text-label-sm text-text-muted">
+              · 22 NFs pagas
+            </span>
+          </div>
+        </div>
+        <!-- Card 3: Quanto sobrou -->
+        <div class="relative overflow-hidden bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-text-muted uppercase">
+                · Saldo Líquido
+              </span>
+              <span class="font-headline-sm text-headline-sm text-text-display mt-0.5">
+                · Quanto sobrou
+              </span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm">
+              <span class="">
+                · R$
+              </span>
+            </div>
+          </div>
+          <div class="my-space-md">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-label-lg text-label-lg text-text-muted font-normal">
+                · R$
+              </span>
+              <span class="font-numeric-metric text-numeric-metric text-primary">
+                · 154.404,20
+              </span>
+            </div>
+            <span class="block font-body-sm text-body-sm text-text-muted mt-1">
+              · Entradas menos as saídas consolidadas no caixa
+            </span>
+          </div>
+          <div class="pt-space-sm flex items-center justify-between">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-subtle text-primary font-label-sm text-label-sm font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary">
+              </span>
+              <span class="">
+                · Superávit Operacional
+              </span>
+            </span>
+          </div>
+        </div>
+        <!-- Card 4: Margem de lucro -->
+        <div class="relative overflow-hidden bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-text-muted uppercase">
+                · Rentabilidade
+              </span>
+              <span class="font-headline-sm text-headline-sm text-text-display mt-0.5">
+                · Margem de lucro
+              </span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-surface-subtle text-tertiary flex items-center justify-center font-headline-sm text-headline-sm">
+              <span class="">
+                · %
+              </span>
+            </div>
+          </div>
+          <div class="my-space-md">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-numeric-metric text-numeric-metric text-text-display">
+                · 44,3
+              </span>
+              <span class="font-headline-md text-headline-md text-text-muted">
+                · %
+              </span>
+            </div>
+            <span class="block font-body-sm text-body-sm text-text-muted mt-1">
+              · Retorno percentual líquido sobre a receita da safra
+            </span>
+          </div>
+          <!-- Small visual progress bar -->
+          <div class="pt-space-sm">
+            <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+              <div class="bg-primary-container h-2 rounded-full" style="width: 44.3%">
+              </div>
+            </div>
+            <span class="block text-right font-label-sm text-label-sm text-text-muted mt-1">
+              · Meta: 38% safra
+            </span>
+          </div>
+        </div>
+        <!-- Card 5: Ganho sobre o custo -->
+        <div class="relative overflow-hidden bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-text-muted uppercase">
+                · Multiplicador
+              </span>
+              <span class="font-headline-sm text-headline-sm text-text-display mt-0.5">
+                · Ganho s/ custo
+              </span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-surface-subtle text-agro-soil flex items-center justify-center">
+              <span class="material-symbols-outlined text-[22px]">
+                · stacked_line_chart
+              </span>
+            </div>
+          </div>
+          <div class="my-space-md">
+            <div class="flex items-baseline gap-1">
+              <span class="font-numeric-metric text-numeric-metric text-text-display">
+                · 1,79
+              </span>
+              <span class="font-headline-md text-headline-md text-text-muted">
+                · x
+              </span>
+            </div>
+            <span class="block font-body-sm text-body-sm text-text-muted mt-1">
+              · Relação entre a receita gerada e o custo total de insumos
+            </span>
+          </div>
+          <div class="pt-space-sm flex items-center justify-between">
+            <span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm font-semibold">
+              <span class="material-symbols-outlined text-[16px]">
+                · check_circle
+              </span>
+              <span class="">
+                · ROI Operacional OK
+              </span>
+            </span>
+            <span class="font-label-sm text-label-sm text-text-muted">
+              · +0.3x vs prev.
+            </span>
+          </div>
+        </div>
+      </section>
+      <!-- OFX Sincronização / Bancária Banner -->
+      <!-- Visual Analytics Row (Cash Flow Graph + Category Donut & Soil Context) -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+        <!-- Cashflow Chart (8 cols) -->
+        <div class="lg:col-span-8 bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+          <div class="flex flex-col gap-space-md mb-space-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+              <div>
+                <h2 class="font-headline-md text-headline-md text-text-display">
+                  · Evolução do Fluxo de Caixa
+                </h2>
+                <span class="font-body-sm text-body-sm text-text-muted">
+                  · Entradas vs. Saídas operacionais por semana no mês de Fevereiro
+                </span>
+              </div>
+              <div class="flex items-center gap-space-md">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm bg-primary-container">
+                  </span>
+                  <span class="font-label-sm text-label-sm text-text-muted">
+                    · Receitas
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-sm bg-secondary">
+                  </span>
+                  <span class="font-label-sm text-label-sm text-text-muted">
+                    · Despesas
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-0.5 bg-tertiary">
+                  </span>
+                  <span class="font-label-sm text-label-sm text-text-muted">
+                    · Saldo Acumulado
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs border-t border-border-hairline">
+              <div class="inline-flex items-center gap-1 bg-surface-subtle p-1 rounded-xl">
+                <button type="button" class="px-3 py-1 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-card transition-c
+                  · 7 dias
+                </button>
+                <button type="button" class="px-3 py-1 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary font-semibold shadow-xs">
+                  · 30 dias
+                </button>
+                <button type="button" class="px-3 py-1 rounded-lg font-label-md text-label-md text-text-muted hover:text-on-surface hover:bg-surface-card transition-c
+                  · 90 dias
+                </button>
+              </div>
+              <div class="flex items-center gap-space-xs">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-subtle text-on-surface-variant font-label-md text-label-md hover:bg-surface-co
+                  <span class="material-symbols-outlined text-[16px] text-text-muted">
+                    · calendar_month
+                  </span>
+                  <span class="text-text-muted font-normal text-body-sm">
+                    · De:
+                  </span>
+                  <span class="font-semibold text-text-display">
+                    · 01/02/2026
+                  </span>
+                  <span class="text-text-muted font-normal text-body-sm">
+                    · até
+                  </span>
+                  <span class="font-semibold text-text-display">
+                    · 28/02/2026
+                  </span>
+                  <span class="material-symbols-outlined text-[16px] text-text-muted ml-0.5">
+                    · expand_more
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Native SVG Cashflow Chart -->
+          <div class="relative w-full h-64 select-none">
+            · [svg]
+          </div>
+          <!-- Sub-metric Footer for Chart -->
+          <div class="mt-space-md pt-space-md grid grid-cols-3 gap-space-sm text-center bg-surface-subtle/60 rounded-xl p-space-sm">
+            <div>
+              <span class="block font-label-sm text-label-sm text-text-muted uppercase">
+                · Maior Recebimento
+              </span>
+              <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                · R$ 138.000,00
+              </span>
+              <span class="block font-body-sm text-body-sm text-text-muted">
+                · Cargill • Soja Grão
+              </span>
+            </div>
+            <div>
+              <span class="block font-label-sm text-label-sm text-text-muted uppercase">
+                · Custo Médio / Dia
+              </span>
+              <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                · R$ 6.936,20
+              </span>
+              <span class="block font-body-sm text-body-sm text-text-muted">
+                · 28 dias safra
+              </span>
+            </div>
+            <div>
+              <span class="block font-label-sm text-label-sm text-text-muted uppercase">
+                · Previsão Fechamento
+              </span>
+              <span class="block font-label-lg text-label-lg text-primary font-semibold">
+                · R$ 178.500,00
+              </span>
+              <span class="block font-body-sm text-body-sm text-text-muted">
+                · Saldo favorável
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- Category Expense Distribution (4 cols) -->
+        <div class="lg:col-span-4 bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between mb-space-md">
+              <h2 class="font-headline-md text-headline-md text-text-display font-bold">
+                · Acesso rápido
+              </h2>
+            </div>
+            <div class="flex flex-col gap-2.5">
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · add
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Cadastrar receita&nbsp; dinheiro entrando
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary font-bold shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · remove
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Cadastrar despesa&nbsp; dinheiro saindo
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · table_rows
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Ver todas as movimentações
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-container/60 border border-primary/30 hover:bg-surface-container
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · delete
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Lixeira
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · bolt
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Gerenciar categorias
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold text-label-md shrink-0">
+                  · F
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Gerenciar fornecedores
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold text-label-sm shrink-0">
+                  · R$
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Plano e pagamentos
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · table_chart
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Gerar relatório em Excel
+                </span>
+              </button>
+              <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-border-hairline hover:bg-surface-subtle trans
+                <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    · picture_as_pdf
+                  </span>
+                </div>
+                <span class="font-label-lg text-label-lg text-text-display font-semibold">
+                  · Gerar relatório em PDF
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Recent Ledger Entries / Lançamentos Recentes -->
+      <section class="bg-surface-card rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-text-display">
+              · Lançamentos Recentes
+            </h2>
+            <span class="font-body-sm text-body-sm text-text-muted">
+              · Movimentações financeiras com vínculo fiscal e conta bancária
+            </span>
+          </div>
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-1 bg-surface-subtle p-1 rounded-xl">
+            <button class="px-3 py-1.5 rounded-lg bg-surface-card font-label-md text-label-md text-on-surface font-semibold shadow-xs" type="button">
+              · Todos (26)
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-text-muted hover:text-on-surface font-label-md text-label-md" type="button">
+              · Receitas (4)
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-text-muted hover:text-on-surface font-label-md text-label-md" type="button">
+              · Despesas (22)
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-alert-amber hover:text-on-surface font-label-md text-label-md font-semibold" type="button">
+              · A Conciliar (3)
+            </button>
+          </div>
+        </div>
+        <!-- Data Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-surface-subtle text-text-muted font-label-sm text-label-sm uppercase tracking-wider rounded-lg">
+                <th class="py-3 px-4 rounded-l-lg">
+                  · Data
+                </th>
+                <th class="py-3 px-4">
+                  · Descrição &amp; Favorecido
+                </th>
+                <th class="py-3 px-4">
+                  · Centro / Categoria
+                </th>
+                <th class="py-3 px-4">
+                  · Conta Bancária
+                </th>
+                <th class="py-3 px-4 text-center">
+                  · Status
+                </th>
+                <th class="py-3 px-4 text-right rounded-r-lg">
+                  · Valor Líquido
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border-hairline font-body-md text-body-md">
+              <!-- Row 1: Receita -->
+              <tr class="hover:bg-surface-subtle/50 transition-colors">
+                <td class="py-3.5 px-4 font-label-md text-label-md text-text-muted whitespace-nowrap">
+                  · 24 Fev 2026
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-lg bg-surface-subtle text-primary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[18px]">
+                        · south_east
+                      </span>
+                    </div>
+                    <div>
+                      <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                        · Venda de Soja em Grão — Lote 04
+                      </span>
+                      <span class="block font-body-sm text-body-sm text-text-muted">
+                        · Cargill Agrícola S.A. • NF 18.490
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                    · Comercialização Grãos
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted font-label-md text-label-md">
+                  <span class="block text-on-surface">
+                    · Banco do Brasil
+                  </span>
+                  <span class="block text-body-sm">
+                    · C/C 45.190-2
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subtle text-success-leaf font-label-sm text-label-sm font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success-leaf">
+                    </span>
+                    · Conciliado
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap">
+                    · + R$ 138.000,00
+                  </span>
+                </td>
+              </tr>
+              <!-- Row 2: Despesa Combustível -->
+              <tr class="hover:bg-surface-subtle/50 transition-colors">
+                <td class="py-3.5 px-4 font-label-md text-label-md text-text-muted whitespace-nowrap">
+                  · 22 Fev 2026
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-lg bg-secondary-fixed/30 text-secondary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[18px]">
+                        · north_east
+                      </span>
+                    </div>
+                    <div>
+                      <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                        · Abastecimento Comboio — 4.200L Diesel
+                      </span>
+                      <span class="block font-body-sm text-body-sm text-text-muted">
+                        · Posto Rota do Sol Ltda • NF 90.122
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                    · Combustível &amp; Frota
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted font-label-md text-label-md">
+                  <span class="block text-on-surface">
+                    · Sicredi Agro
+                  </span>
+                  <span class="block text-body-sm">
+                    · C/C 12.880-9
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subtle text-success-leaf font-label-sm text-label-sm font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success-leaf">
+                    </span>
+                    · Conciliado
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-headline-sm text-headline-sm text-secondary font-bold whitespace-nowrap">
+                    · - R$ 25.620,00
+                  </span>
+                </td>
+              </tr>
+              <!-- Row 3: Despesa Insumos -->
+              <tr class="hover:bg-surface-subtle/50 transition-colors">
+                <td class="py-3.5 px-4 font-label-md text-label-md text-text-muted whitespace-nowrap">
+                  · 20 Fev 2026
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-lg bg-secondary-fixed/30 text-secondary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[18px]">
+                        · north_east
+                      </span>
+                    </div>
+                    <div>
+                      <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                        · Fungicida Sistêmico Soja (2ª Aplicação)
+                      </span>
+                      <span class="block font-body-sm text-body-sm text-text-muted">
+                        · Agropecuária Cerrado Verde • Bol. 2289
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                    · Defensivos Agrícolas
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted font-label-md text-label-md">
+                  <span class="block text-on-surface">
+                    · Banco do Brasil
+                  </span>
+                  <span class="block text-body-sm">
+                    · C/C 45.190-2
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-crop/15 text-alert-amber font-label-sm text-label-sm font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-alert-amber">
+                    </span>
+                    · Pendente OFX
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-headline-sm text-headline-sm text-secondary font-bold whitespace-nowrap">
+                    · - R$ 41.250,00
+                  </span>
+                </td>
+              </tr>
+              <!-- Row 4: Receita Adiantamento -->
+              <tr class="hover:bg-surface-subtle/50 transition-colors">
+                <td class="py-3.5 px-4 font-label-md text-label-md text-text-muted whitespace-nowrap">
+                  · 17 Fev 2026
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-lg bg-surface-subtle text-primary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[18px]">
+                        · south_east
+                      </span>
+                    </div>
+                    <div>
+                      <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                        · Adiantamento de Safra — Milho Safrinha
+                      </span>
+                      <span class="block font-body-sm text-body-sm text-text-muted">
+                        · Cooperativa Regional Agro • CPR 891
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                    · Contratos Futuros
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted font-label-md text-label-md">
+                  <span class="block text-on-surface">
+                    · Sicredi Agro
+                  </span>
+                  <span class="block text-body-sm">
+                    · C/C 12.880-9
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subtle text-success-leaf font-label-sm text-label-sm font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success-leaf">
+                    </span>
+                    · Conciliado
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap">
+                    · + R$ 95.000,00
+                  </span>
+                </td>
+              </tr>
+              <!-- Row 5: Manutenção Tratores -->
+              <tr class="hover:bg-surface-subtle/50 transition-colors">
+                <td class="py-3.5 px-4 font-label-md text-label-md text-text-muted whitespace-nowrap">
+                  · 15 Fev 2026
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-lg bg-secondary-fixed/30 text-secondary flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[18px]">
+                        · north_east
+                      </span>
+                    </div>
+                    <div>
+                      <span class="block font-label-lg text-label-lg text-text-display font-semibold">
+                        · Revisão Colheitadeira John Deere S770
+                      </span>
+                      <span class="block font-body-sm text-body-sm text-text-muted">
+                        · Mecânica Agrícola São Pedro • NF 4.512
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                    · Manutenção &amp; Peças
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted font-label-md text-label-md">
+                  <span class="block text-on-surface">
+                    · Banco do Brasil
+                  </span>
+                  <span class="block text-body-sm">
+                    · C/C 45.190-2
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-subtle text-success-leaf font-label-sm text-label-sm font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success-leaf">
+                    </span>
+                    · Conciliado
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="font-headline-sm text-headline-sm text-secondary font-bold whitespace-nowrap">
+                    · - R$ 14.800,00
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Ledger Table Pagination & Quick Summary -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-space-sm border-t border-border-hairline">
+          <span class="font-body-sm text-body-sm text-text-muted">
+            · Exibindo 5 de 26 lançamentos em Fevereiro de 2026
+          </span>
+          <div class="flex items-center gap-space-xs">
+            <button class="px-3 py-1.5 rounded-lg bg-surface-subtle text-text-muted hover:text-on-surface font-label-md text-label-md transition-colors" disabled=
+              · Anterior
+            </button>
+            <button class="w-8 h-8 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold" type="button">
+              · 1
+            </button>
+            <button class="w-8 h-8 rounded-lg hover:bg-surface-subtle text-text-muted hover:text-on-surface font-label-md text-label-md transition-colors" type="b
+              · 2
+            </button>
+            <button class="w-8 h-8 rounded-lg hover:bg-surface-subtle text-text-muted hover:text-on-surface font-label-md text-label-md transition-colors" type="b
+              · 3
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-surface-subtle text-text-muted hover:text-on-surface font-label-md text-label-md transition-colors" type="but
+              · Próxima
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- Agronomic Enterprise Insights Footer Card -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+      </section>
+    </div>
+  </main>
+</div>

@@ -424,13 +424,19 @@
 .fornecedores-acoes-form,
 .fornecedores-acoes-item {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: 8px;
 }
 
+.fornecedores-campo-obrigatorio { color: #778172; font-size: .68rem; }
+
 .fornecedores-acoes-inline {
     justify-content: flex-end;
 }
+
+.fornecedores-formulario-fornecedor .fornecedores-acoes-form { width: 100%; }
+.fornecedores-formulario-fornecedor .fornecedores-acoes-form button[type='submit'] { margin-left: auto; }
 
 .fornecedores-itens,
 .fornecedores-compras-lista,
@@ -716,4 +722,1495 @@
     .fornecedores-barra-linha strong {
         text-align: left;
     }
+}
+
+/* Layout aligned with the Stitch supplier and quotation workspace. */
+.fornecedores-pagina {
+    min-height: 0;
+    padding: 22px 28px 34px;
+    background: #f7f9f0;
+    color: #20271f;
+}
+
+.fornecedores-conteudo {
+    width: min(1600px, 100%);
+    margin: 0 auto;
+}
+
+.fornecedores-cabecalho {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+    padding: 0;
+    border: 0;
+}
+
+.fornecedores-cabecalho > div:first-child {
+    min-width: 0;
+}
+
+.fornecedores-cabecalho > div:first-child > p {
+    margin: 0 0 7px;
+    color: #527d20;
+    font-size: 0.66rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fornecedores-cabecalho > div:first-child > p span {
+    display: inline;
+    margin: 0 5px;
+    color: #97a18e;
+}
+
+.fornecedores-cabecalho h1 {
+    margin: 0;
+    color: #152018;
+    font-size: clamp(1.75rem, 3vw, 2.2rem);
+    font-weight: 760;
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+}
+
+.fornecedores-cabecalho span:not(.material-symbols-outlined) {
+    max-width: 690px;
+    margin-top: 7px;
+    color: #5c665a;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.fornecedores-cabecalho-acoes {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 10px;
+}
+
+.fornecedores-cabecalho .fornecedores-cabecalho-acoes button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    gap: 7px;
+    padding: 0 16px;
+    border: 1px solid #e8eddf;
+    border-radius: 9px;
+    background: #f0f4e9;
+    color: #39760b;
+    font: inherit;
+    font-size: 0.77rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 160ms ease, filter 160ms ease;
+}
+
+.fornecedores-cabecalho-acoes .material-symbols-outlined {
+    display: inline-grid;
+    flex: 0 0 auto;
+    height: 17px;
+    place-items: center;
+    line-height: 1;
+}
+
+.fornecedores-cabecalho .fornecedores-cabecalho-acoes button:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.97);
+}
+
+.fornecedores-cabecalho .fornecedores-cabecalho-acoes .fornecedores-acao-principal {
+    border-color: #347800;
+    background: #347800;
+    color: white;
+}
+
+.fornecedores-acao-principal .material-symbols-outlined {
+    color: #fff;
+}
+
+.fornecedores-cabecalho-acoes .material-symbols-outlined {
+    font-size: 17px;
+}
+
+.fornecedores-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.fornecedores-kpis article {
+    display: flex;
+    min-width: 0;
+    min-height: 126px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border: 1px solid #edf0e8;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(42 58 32 / 0.025);
+}
+
+.fornecedores-kpi-rotulo {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #677064;
+    font-size: 0.63rem;
+    font-weight: 650;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.fornecedores-kpi-rotulo .material-symbols-outlined {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 8px;
+    background: #f0f4e9;
+    color: #4d7b1e;
+    font-size: 17px;
+}
+
+.fornecedores-kpis article > strong {
+    max-width: 100%;
+    overflow: hidden;
+    color: #19251b;
+    font-size: clamp(1.45rem, 2vw, 1.8rem);
+    font-weight: 760;
+    letter-spacing: -0.045em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.fornecedores-kpis article > strong.fornecedores-kpi-verde {
+    color: #3e790e;
+}
+
+.fornecedores-kpis article > strong.fornecedores-kpi-fornecedor {
+    font-size: 1.02rem;
+    letter-spacing: -0.02em;
+}
+
+.fornecedores-kpis article > small {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #758071;
+    font-size: 0.64rem;
+}
+
+.fornecedores-kpis article > small i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #478d1d;
+}
+
+.fornecedores-kpis article > small.fornecedores-kpi-alerta {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #fff0dc;
+    color: #a75b1a;
+}
+
+.fornecedores-atalhos-painel:not(.fornecedores-atalhos-rodape) {
+    display: none;
+}
+
+.fornecedores-painel-precos,
+.fornecedores-card,
+.fornecedores-atalhos-rodape {
+    border: 1px solid #edf0e8;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(42 58 32 / 0.025);
+}
+
+.fornecedores-painel-precos {
+    margin: 0 0 20px;
+    padding: 20px;
+}
+
+.fornecedores-comparativo-destaque .fornecedores-card-topo {
+    margin-bottom: 15px;
+}
+
+.fornecedores-comparativo-destaque .fornecedores-card-topo h2 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: #20271f;
+    font-size: 1.18rem;
+    letter-spacing: -0.02em;
+}
+
+.fornecedores-comparativo-destaque .fornecedores-card-topo h2 .material-symbols-outlined {
+    color: #4a8117;
+    font-size: 20px;
+}
+
+.fornecedores-comparativo-destaque .fornecedores-card-topo p {
+    margin: 5px 0 0;
+    color: #687065;
+    font-size: 0.68rem;
+}
+
+.fornecedores-comparativo-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(190px, 0.68fr);
+    align-items: stretch;
+    gap: 8px;
+}
+
+.fornecedores-oferta-melhor,
+.fornecedores-ofertas-secundarias article,
+.fornecedores-curva-precos {
+    min-width: 0;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f3f6ed;
+}
+
+.fornecedores-oferta-melhor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    padding-top: 36px;
+}
+
+.fornecedores-selo-melhor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 0 12px 0 10px;
+    background: #397d06;
+    color: #fff;
+    font-size: 0.57rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.fornecedores-selo-melhor .material-symbols-outlined {
+    font-size: 13px;
+}
+
+.fornecedores-oferta-identidade {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.fornecedores-oferta-identidade > span {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    background: #347800;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 750;
+}
+
+.fornecedores-oferta-identidade div {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+.fornecedores-oferta-identidade strong,
+.fornecedores-ofertas-secundarias > article > strong {
+    overflow: hidden;
+    color: #263329;
+    font-size: 0.88rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fornecedores-oferta-identidade small,
+.fornecedores-preco-rotulo,
+.fornecedores-ofertas-secundarias article > span {
+    color: #778172;
+    font-size: 0.62rem;
+}
+
+.fornecedores-preco-rotulo {
+    margin-top: 3px;
+    text-transform: uppercase;
+}
+
+.fornecedores-oferta-melhor .fornecedores-preco-destaque {
+    color: #42820e;
+    font-size: 1.45rem;
+    font-weight: 780;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+.fornecedores-preco-destaque small,
+.fornecedores-oferta-secundaria-valor small {
+    color: #687566;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.fornecedores-destaque-rodape {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: #687566;
+    font-size: 0.61rem;
+}
+
+.fornecedores-oferta-melhor > button,
+.fornecedores-comparativo-vazio > button {
+    min-height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: #397d06;
+    color: white;
+    font: inherit;
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.fornecedores-ofertas-secundarias {
+    display: grid;
+    gap: 10px;
+}
+
+.fornecedores-ofertas-secundarias article {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    background: #fff;
+    border: 1px solid #edf0e8;
+}
+
+.fornecedores-oferta-secundaria-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.fornecedores-oferta-secundaria-topo > span {
+    color: #687566;
+    font-size: 0.61rem;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.fornecedores-oferta-secundaria-topo > small {
+    color: #bd5b24;
+    font-size: 0.7rem;
+    font-weight: 650;
+}
+
+.fornecedores-oferta-secundaria-valor {
+    color: #202820;
+    font-size: 1.1rem;
+    font-weight: 760;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.fornecedores-curva-precos {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 13px;
+    background: #f3f6ed;
+    text-align: left;
+}
+
+.fornecedores-curva-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.fornecedores-curva-cabecalho > small {
+    color: #778172;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.fornecedores-curva-precos > strong {
+    color: #27342a;
+    font-size: 0.98rem;
+}
+
+.fornecedores-curva-cabecalho > .material-symbols-outlined { color: #4b791c; font-size: 17px; }
+
+.fornecedores-curva-precos > p {
+    margin: 0 0 4px;
+    color: #758071;
+    font-size: 0.68rem;
+}
+
+.fornecedores-curva-linha > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+    font-size: 0.67rem;
+}
+
+.fornecedores-curva-linha { width: 100%; }
+
+.fornecedores-curva-linha > div span {
+    overflow: hidden;
+    color: #4f5e4e;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fornecedores-curva-linha > div strong {
+    flex: 0 0 auto;
+    color: #4b791c;
+    font-size: 0.65rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.fornecedores-curva-linha > i {
+    display: block;
+    height: 7px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: #e1e8d7;
+}
+
+.fornecedores-curva-linha > i > b {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #458311;
+}
+
+.fornecedores-curva-linha:nth-of-type(2) { margin-top: auto; }
+.fornecedores-curva-linha:nth-of-type(3) > i > b { background: #de8c27; }
+.fornecedores-curva-linha:nth-of-type(4) > i > b { background: #c63628; }
+
+.fornecedores-curva-nota {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    margin-top: auto;
+    padding: 12px 10px;
+    border-radius: 8px;
+    background: #fff;
+    color: #687566;
+    font-size: 0.66rem;
+    text-align: left;
+}
+
+.fornecedores-curva-nota .material-symbols-outlined {
+    color: #c17817;
+    font-size: 15px;
+}
+
+.fornecedores-curva-nota > span:last-child strong { color: #364233; }
+
+.fornecedores-comparativo-vazio {
+    display: flex;
+    min-height: 126px;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #f3f6ed;
+}
+
+.fornecedores-comparativo-vazio > .material-symbols-outlined {
+    color: #688e38;
+    font-size: 28px;
+}
+
+.fornecedores-comparativo-vazio > div {
+    flex: 1;
+}
+
+.fornecedores-comparativo-vazio strong { font-size: 0.85rem; }
+.fornecedores-comparativo-vazio p { margin: 4px 0 0; color: #6d7868; font-size: 0.68rem; }
+
+.fornecedores-grade {
+    grid-template-columns: minmax(0, 1.15fr) minmax(390px, 0.85fr);
+    align-items: start;
+    gap: 16px;
+}
+
+.fornecedores-card {
+    min-width: 0;
+    padding: 18px;
+}
+
+.fornecedores-card-topo {
+    margin-bottom: 13px;
+}
+
+.fornecedores-card-topo small {
+    color: #778172;
+    font-size: 0.61rem;
+    letter-spacing: 0.08em;
+}
+
+.fornecedores-card-topo h2 {
+    color: #263229;
+    font-size: 1.08rem;
+}
+
+#fornecedor-formulario { display: none; }
+
+.fornecedores-modal-fornecedor-aberta::after {
+    position: fixed;
+    z-index: 109;
+    background: rgb(21 31 19 / 0.48);
+    content: '';
+    inset: 0;
+    backdrop-filter: blur(3px);
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario {
+    position: fixed;
+    z-index: 110;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: min(780px, calc(100vw - 32px));
+    max-height: min(88vh, 900px);
+    overflow: auto;
+    padding: 24px;
+    border: 1px solid #e5eadf;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 24px 80px rgb(20 35 19 / 0.22);
+    transform: translate(-50%, -50%);
+}
+
+#registrar-cotacao { display: none; }
+
+.fornecedores-modal-cotacao-aberta::after {
+    position: fixed;
+    z-index: 109;
+    background: rgb(21 31 19 / 0.48);
+    content: '';
+    inset: 0;
+    backdrop-filter: blur(3px);
+}
+
+.fornecedores-modal-cotacao-aberta #registrar-cotacao {
+    position: fixed;
+    z-index: 110;
+    top: 50%;
+    left: 50%;
+    display: block;
+    width: min(760px, calc(100vw - 32px));
+    max-height: min(88vh, 900px);
+    overflow: auto;
+    padding: 24px;
+    border: 1px solid #e5eadf;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 24px 80px rgb(20 35 19 / 0.22);
+    transform: translate(-50%, -50%);
+}
+
+.fornecedores-fechar-formulario {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid #e5eadf;
+    border-radius: 9px;
+    background: #fff;
+    color: #576454;
+    cursor: pointer;
+}
+
+.fornecedores-grade #fornecedores-cadastrados { grid-column: 1 / -1; grid-row: 1; }
+.fornecedores-grade #registrar-cotacao { grid-column: 2; grid-row: 1; }
+.fornecedores-grade #comparar-precos { grid-column: 1 / -1; grid-row: 2; }
+.fornecedores-grade #compras-fornecedor { grid-column: 1 / -1; grid-row: 3; }
+.fornecedores-grade #categorias-produtos { grid-column: 1; grid-row: 4; }
+.fornecedores-grade .fornecedores-categorias-resumo { grid-column: 2; grid-row: 4; }
+.fornecedores-grade #produtos-cadastrados { grid-column: 1 / -1; grid-row: 5; }
+
+#fornecedores-cadastrados .fornecedores-card-topo {
+    align-items: flex-start;
+}
+
+.fornecedores-lista-descricao {
+    margin: 5px 0 0;
+    color: #768071;
+    font-size: 0.68rem;
+}
+
+#fornecedores-cadastrados .fornecedores-card-topo > .fornecedores-lista-acoes {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 7px;
+}
+
+.fornecedores-card .fornecedores-lista-acoes button,
+.fornecedores-card .fornecedores-acoes-item button {
+    min-height: 32px;
+    padding: 0 9px;
+    border-color: #e4e9df;
+    border-radius: 7px;
+    background: #fff;
+    color: #53624f;
+    font-size: 0.65rem;
+}
+
+.fornecedores-card .fornecedores-lista-acoes .fornecedores-botao-novo {
+    border-color: #397d06;
+    background: #397d06;
+    color: white;
+}
+
+#fornecedores-cadastrados .fornecedores-lista-filtros {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid #edf0e8;
+}
+
+.fornecedores-busca {
+    display: flex;
+    min-height: 38px;
+    flex: 1;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    border: 1px solid #edf0e8;
+    border-radius: 8px;
+    background: #f4f6ef;
+    color: #71806c;
+}
+
+.fornecedores-busca > span { font-size: 1.1rem; }
+.fornecedores-card .fornecedores-busca input { min-height: 34px; padding: 0; border: 0; background: transparent; font-size: 0.68rem; }
+.fornecedores-contagem { flex: 0 0 auto; color: #778172; font-size: 0.63rem; }
+
+.fornecedores-itens { gap: 0; }
+
+.fornecedores-item {
+    display: grid;
+    grid-template-columns: minmax(150px, 1.2fr) minmax(120px, 0.9fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 2px;
+    border: 0;
+    border-bottom: 1px solid #edf0e8;
+    border-radius: 0;
+    background: transparent;
+}
+
+.fornecedores-item:last-child { border-bottom: 0; }
+.fornecedores-item-identidade { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.fornecedores-item-identidade > div { display: grid; min-width: 0; gap: 2px; }
+.fornecedores-avatar { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border-radius: 8px; background: #f0f4e9; color: #4a791d; font-size: 0.66rem; font-weight: 750; }
+.fornecedores-item-identidade strong { overflow: hidden; color: #303b31; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.fornecedores-item-identidade span:not(.fornecedores-avatar),
+.fornecedores-item-dados span { color: #788175; font-size: 0.58rem; }
+.fornecedores-item-dados { display: grid; gap: 2px; }
+.fornecedores-acoes-item { justify-content: flex-end; gap: 8px; }
+.fornecedores-card .fornecedores-acoes-item button { min-height: 38px; padding: 0 6px; font-size: 0.68rem; }
+
+.fornecedores-cotacao form,
+#registrar-cotacao form { gap: 7px; }
+#registrar-cotacao .fornecedores-grade-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; }
+#registrar-cotacao label { display: grid; gap: 4px; font-size: 0.65rem; }
+#registrar-cotacao input,
+#registrar-cotacao select { min-height: 36px; padding: 0 9px; border-color: #e5eadf; border-radius: 7px; background: #f4f6ef; font-size: 0.68rem; }
+#registrar-cotacao textarea { min-height: 54px; padding: 8px; border-color: #e5eadf; border-radius: 7px; background: #f4f6ef; font-size: 0.68rem; }
+#registrar-cotacao form > button[type='submit'] { min-height: 38px; border: 0; background: #397d06; color: #fff; font-size: 0.68rem; }
+#registrar-cotacao form > small { color: #788175; font-size: 0.59rem; }
+
+.fornecedores-atalhos-rodape {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+    padding: 10px;
+}
+
+.fornecedores-atalhos-rodape a,
+.fornecedores-atalhos-rodape button {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #4f5c4c;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.fornecedores-atalhos-rodape a:hover,
+.fornecedores-atalhos-rodape button:hover { background: #f4f6ef; }
+.fornecedores-atalhos-rodape > a > span,
+.fornecedores-atalhos-rodape > button > span { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border-radius: 8px; background: #eff4e7; color: #528123; font-size: 18px; }
+.fornecedores-atalhos-rodape > a div,
+.fornecedores-atalhos-rodape > button div { display: grid; min-width: 0; gap: 2px; }
+.fornecedores-atalhos-rodape strong { overflow: hidden; color: #374336; font-size: 0.65rem; text-overflow: ellipsis; white-space: nowrap; }
+.fornecedores-atalhos-rodape small { overflow: hidden; color: #798276; font-size: 0.56rem; text-overflow: ellipsis; white-space: nowrap; }
+
+.fornecedores-card input:focus,
+.fornecedores-card textarea:focus,
+.fornecedores-card select:focus,
+.fornecedores-busca:focus-within { border-color: #84a960; outline: 3px solid rgb(92 136 42 / 0.12); }
+
+/* Supplier registry aligned to the Stitch reference table. */
+#fornecedores-cadastrados .fornecedores-card-topo > div:first-child { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) auto; align-items: center; justify-content: space-between; column-gap: 12px; }
+#fornecedores-cadastrados .fornecedores-lista-descricao { grid-column: 1 / -1; }
+#fornecedores-cadastrados .fornecedores-contagem { padding: 5px 9px; border-radius: 999px; background: #f1f5eb; color: #5d7845; font-size: 0.72rem; font-weight: 700; }
+#fornecedores-cadastrados .fornecedores-lista-filtros { border: 0; padding: 0; margin: 4px 0 12px; }
+#fornecedores-cadastrados .fornecedores-lista-filtros { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.fornecedores-filtro-categoria-wrap { position: relative; }
+.fornecedores-filtro-categoria { display: flex; width: 42px; min-width: 42px; height: 38px; align-items: center; justify-content: center; box-sizing: border-box; padding: 0; border: 1px solid #edf0e8; border-radius: 8px; background: #f4f6ef; color: #52654b; cursor: pointer; }
+.fornecedores-filtro-categoria.ativo { border-color: #397d06; background: #eff5e8; color: #397d06; }
+.fornecedores-filtro-categoria .material-symbols-outlined { display: block; margin: 0; padding: 0; font-size: 20px; line-height: 1; }
+.fornecedores-opcoes-categoria { position: absolute; z-index: 5; top: calc(100% + 6px); right: 0; display: grid; width: max-content; min-width: 190px; max-height: 260px; overflow-y: auto; padding: 5px; border: 1px solid #e5eadf; border-radius: 9px; background: #fff; box-shadow: 0 8px 24px rgb(20 35 19 / 0.14); }
+.fornecedores-opcoes-categoria button { padding: 9px 10px; border: 0; border-radius: 6px; background: transparent; color: #3f493c; font: inherit; font-size: 0.76rem; text-align: left; cursor: pointer; }
+.fornecedores-opcoes-categoria button:hover,
+.fornecedores-opcoes-categoria button.selecionada { background: #eff5e8; color: #397d06; }
+.fornecedores-busca { min-width: 0; }
+.fornecedores-card .fornecedores-busca input { width: 100%; min-width: 0; }
+.fornecedores-paginacao { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 18px; padding: 0 4px; color: #687566; font-size: .68rem; }
+.fornecedores-paginacao nav { display: flex; align-items: center; gap: 5px; }
+.fornecedores-paginacao button { display: inline-flex; min-width: 32px; height: 32px; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #e7ecdf; border-radius: 8px; background: #fff; color: #52604f; font: inherit; cursor: pointer; }
+.fornecedores-paginacao button.atual { border-color: #397d06; background: #397d06; color: #fff; font-weight: 750; }
+.fornecedores-paginacao button:disabled { opacity: .45; cursor: not-allowed; }
+.fornecedores-itens { overflow-x: auto; }
+.fornecedores-tabela-cabecalho,
+.fornecedores-item { display: grid; grid-template-columns: minmax(190px, 1.45fr) minmax(110px, 1fr) minmax(100px, .85fr) minmax(72px, .55fr) minmax(96px, .7fr); align-items: center; gap: 12px; }
+.fornecedores-tabela-cabecalho { min-width: 650px; padding: 10px 12px; border-radius: 8px 8px 0 0; background: #f1f4eb; color: #667060; font-size: 0.68rem; font-weight: 750; letter-spacing: .035em; text-transform: uppercase; }
+.fornecedores-item { min-width: 650px; padding: 14px 12px; border-bottom: 1px solid #edf0e8; }
+.fornecedores-item-identidade { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; column-gap: 14px; row-gap: 10px; padding-left: 8px; }
+.fornecedores-item-identidade > div { display: grid; min-width: 0; align-content: center; gap: 2px; }
+.fornecedores-item-identidade > div > strong,
+.fornecedores-item-identidade > div > span { display: block; }
+.fornecedores-avatar { width: 40px; height: 40px; font-size: .72rem; }
+.fornecedores-item-identidade strong { font-size: .84rem; }
+.fornecedores-item-identidade span:not(.fornecedores-avatar) { font-size: .72rem; }
+.fornecedores-categorias-linha { display: flex; flex-wrap: wrap; gap: 4px; }
+.fornecedores-categoria-tag,
+.fornecedores-sem-categoria { max-width: 100%; padding: 4px 7px; border-radius: 999px; background: hsl(var(--categoria-hue, 88) 65% 91%); color: hsl(var(--categoria-hue, 88) 48% 28%); font-size: .72rem; line-height: 1.2; }
+.fornecedores-sem-categoria { color: #788175; }
+.fornecedores-localizacao-linha { color: #65705f; font-size: .78rem; }
+.fornecedores-cotacoes-linha { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.fornecedores-cotacoes-linha strong { color: #4f7e20; font-size: .84rem; }
+.fornecedores-cotacoes-linha span { color: #788175; font-size: .68rem; }
+.fornecedores-acoes-item { display: flex; flex-wrap: nowrap; }
+.fornecedores-card .fornecedores-acoes-item button { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; overflow: hidden; border-radius: 9px; color: #65705f; font-size: 0; }
+.fornecedores-card .fornecedores-acoes-item button::before { font-family: "Material Symbols Outlined"; font-size: 20px; line-height: 1; }
+.fornecedores-card .fornecedores-acoes-item button:nth-child(1)::before { content: "edit"; }
+.fornecedores-card .fornecedores-acoes-item button:nth-child(2)::before { content: "delete"; }
+.fornecedores-card .fornecedores-acoes-lixeira button:nth-child(1)::before { content: "restore_from_trash"; }
+.fornecedores-card .fornecedores-acoes-lixeira button.perigo:nth-child(2)::before { content: "delete_forever"; }
+
+@media (max-width: 1180px) {
+    .fornecedores-grade { grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr); }
+}
+
+@media (max-width: 860px) {
+    .fornecedores-pagina { padding: 18px 14px 26px; }
+    .fornecedores-cabecalho { align-items: flex-start; flex-direction: column; }
+    .fornecedores-cabecalho-acoes { width: 100%; }
+    .fornecedores-cabecalho .fornecedores-cabecalho-acoes button { flex: 1; padding: 0 8px; }
+    .fornecedores-quebra-desktop { display: none; }
+    .fornecedores-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .fornecedores-kpis article { min-height: 116px; padding: 12px; }
+    .fornecedores-grade { grid-template-columns: 1fr; }
+    .fornecedores-grade #fornecedores-cadastrados,
+    .fornecedores-grade #registrar-cotacao,
+    .fornecedores-grade #comparar-precos,
+    .fornecedores-grade #compras-fornecedor,
+    .fornecedores-grade #categorias-produtos,
+    .fornecedores-grade .fornecedores-categorias-resumo,
+    .fornecedores-grade #produtos-cadastrados,
+    .fornecedores-comparativo-layout { grid-template-columns: 1fr; }
+    .fornecedores-curva-precos { grid-column: 1; }
+    .fornecedores-ofertas-secundarias { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #fornecedores-cadastrados .fornecedores-card-topo > div:first-child { grid-template-columns: 1fr; }
+    #fornecedores-cadastrados .fornecedores-lista-descricao { grid-column: 1; }
+    .fornecedores-tabela-cabecalho { display: none; }
+    .fornecedores-item { min-width: 590px; grid-template-columns: minmax(160px, 1.4fr) minmax(95px, 1fr) minmax(90px, .8fr) 65px auto; }
+    .fornecedores-item-dados { display: none; }
+    .fornecedores-atalhos-rodape { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+    .fornecedores-kpis article > strong { font-size: 1.25rem; }
+    .fornecedores-kpi-rotulo { font-size: 0.55rem; }
+    .fornecedores-ofertas-secundarias { grid-template-columns: 1fr; }
+    .fornecedores-lista-acoes { width: 100%; justify-content: flex-start; }
+    .fornecedores-lista-acoes button { flex: 1; }
+    .fornecedores-acoes-item { grid-column: 1 / -1; grid-row: 3; justify-content: flex-start; }
+    .fornecedores-item-dados { grid-row: 2; }
+    #registrar-cotacao .fornecedores-grade-form { grid-template-columns: 1fr; }
+    .fornecedores-atalhos-rodape { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+    .fornecedores-paginacao { align-items: flex-start; flex-direction: column; }
+    .fornecedores-paginacao nav { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+}
+
+/* Modal forms follow the typography and spacing used in ContasFinanceiras. */
+.fornecedores-modal-fornecedor-aberta::after,
+.fornecedores-modal-cotacao-aberta::after {
+    z-index: 120;
+    background: rgb(9 24 11 / 0.72);
+    backdrop-filter: blur(2px);
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao {
+    z-index: 121;
+    max-height: calc(100vh - 40px);
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.4);
+    background: var(--card);
+    box-shadow: 0 25px 70px rgb(9 24 11 / 0.26);
+}
+
+.fornecedores-modal-cotacao-aberta #registrar-cotacao {
+    width: min(760px, calc(100vw - 40px));
+}
+
+.fornecedores-oferta-melhor { gap: 10px; padding: 36px 14px 14px; }
+.fornecedores-selo-melhor { top: 0; right: 0; }
+.fornecedores-oferta-identidade > span { width: 34px; height: 34px; font-size: .68rem; }
+.fornecedores-oferta-identidade strong { font-size: 1.02rem; }
+.fornecedores-oferta-identidade small { font-size: .76rem; }
+.fornecedores-oferta-acoes { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(100px, .65fr); gap: 8px; margin-top: 4px; }
+.fornecedores-oferta-acoes button { display: flex; min-height: 36px; align-items: center; justify-content: center; gap: 6px; padding: 0 9px; border: 0; border-radius: 8px; font: inherit; font-size: .66rem; font-weight: 700; cursor: pointer; }
+.fornecedores-oferta-acoes .fornecedores-oferta-aprovar { background: #397d06; color: #fff; }
+.fornecedores-oferta-acoes .fornecedores-oferta-aprovar:disabled { background: #e6ebdf; color: #788175; cursor: not-allowed; }
+.fornecedores-oferta-acoes .fornecedores-oferta-aprovar .material-symbols-outlined { font-size: 17px; }
+.fornecedores-oferta-acoes .fornecedores-oferta-historico { border: 1px solid #e7ecdf; background: #fff; color: #344032; }
+.fornecedores-oferta-identidade small { overflow-wrap: anywhere; }
+.fornecedores-oferta-produto { display: grid; gap: 3px; }
+.fornecedores-oferta-produto > span,
+.fornecedores-oferta-precos > div > small,
+.fornecedores-oferta-condicoes > div > small { color: #778172; font-size: .68rem; font-weight: 500; text-transform: none; }
+.fornecedores-oferta-produto > strong { color: #263329; font-size: .76rem; }
+.fornecedores-oferta-produto > small { color: #778172; font-size: .6rem; }
+.fornecedores-oferta-precos { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: #fff; }
+.fornecedores-oferta-precos > div { display: grid; gap: 4px; }
+.fornecedores-oferta-preco-unitario > strong { color: #43800f; font-size: 1.45rem; font-weight: 780; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.fornecedores-oferta-preco-unitario > strong span { color: #687566; font-size: .68rem; font-weight: 500; letter-spacing: 0; }
+.fornecedores-oferta-total { justify-items: end; text-align: right; }
+.fornecedores-oferta-total > .fornecedores-oferta-diferenca { max-width: 150px; padding: 5px 8px; border-radius: 999px; background: #eef3e8; color: #528123; font-size: .6rem; font-weight: 700; line-height: 1.2; text-transform: none; }
+.fornecedores-oferta-total > span { color: #697365; font-size: .66rem; white-space: nowrap; }
+.fornecedores-oferta-total > span strong { color: #3d473b; font-size: .76rem; }
+.fornecedores-oferta-total > small:not(.fornecedores-oferta-diferenca) { color: #778172; font-size: .62rem; text-transform: none; }
+.fornecedores-oferta-condicoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.fornecedores-oferta-condicoes > div { display: grid; min-width: 0; align-content: start; gap: 4px; padding: 7px 6px; border-radius: 8px; background: #fff; }
+.fornecedores-oferta-condicoes > div > strong { overflow-wrap: anywhere; color: #394638; font-size: .72rem; }
+.fornecedores-oferta-condicoes > div { align-content: center; text-align: center; }
+.fornecedores-oferta-veredito { padding: 7px 9px; border-radius: 8px; background: #fff; color: #394638; font-size: .68rem; line-height: 1.3; }
+.fornecedores-oferta-veredito .fornecedores-veredito-titulo { color: #394638; }
+.fornecedores-oferta-veredito strong { color: #397d06; }
+.fornecedores-oferta-economia { display: flex; align-items: center; gap: 7px; padding: 10px; border-radius: 8px; background: #e9f3df; color: #397d06; font-size: .59rem; font-weight: 700; }
+.fornecedores-oferta-economia .material-symbols-outlined { font-size: 17px; }
+.fornecedores-oferta-secundaria-fornecedor { display: grid; gap: 3px; }
+.fornecedores-ofertas-secundarias article { gap: 5px; padding: 10px; }
+.fornecedores-oferta-secundaria-topo { align-items: center; }
+.fornecedores-oferta-secundaria-topo > span { color: #667060; font-size: .64rem; font-weight: 700; text-transform: none; }
+.fornecedores-oferta-secundaria-topo > small { color: #bd5b24; font-size: .66rem; font-weight: 700; white-space: nowrap; }
+.fornecedores-ofertas-secundarias article:nth-child(2) .fornecedores-oferta-secundaria-topo > small { color: #bd4036; }
+.fornecedores-oferta-secundaria-resumo { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.fornecedores-oferta-secundaria-fornecedor > strong { overflow-wrap: anywhere; color: #263329; font-size: .95rem; line-height: 1.2; }
+.fornecedores-oferta-secundaria-fornecedor > small { color: #778172; font-size: .66rem; }
+.fornecedores-oferta-secundaria-valor { color: #19251b; font-size: 1.25rem; font-weight: 760; text-align: right; white-space: nowrap; }
+.fornecedores-oferta-secundaria-valor small { display: block; color: #778172; font-size: .62rem; font-weight: 500; }
+.fornecedores-oferta-secundaria-condicoes { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; color: #52604f; font-size: .62rem; }
+.fornecedores-ofertas-secundarias { width: min(100%, 320px); justify-self: center; }
+.fornecedores-ofertas-secundarias article { min-height: 172px; grid-template-rows: auto auto 1fr auto; }
+.fornecedores-ofertas-secundarias article > button { min-height: 30px; align-self: end; border: 0; border-radius: 7px; background: #eff4e7; color: #466b22; font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }
+
+.fornecedores-historico-descricao { max-width: 640px; margin: 5px 0 0; color: #687566; font-size: .72rem; line-height: 1.45; }
+.fornecedores-historico-categorias { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 14px; padding: 8px; border-radius: 10px; background: #f3f6ed; }
+.fornecedores-historico-categorias button { display: inline-flex; min-height: 32px; align-items: center; gap: 6px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: #52604f; font: inherit; font-size: .66rem; cursor: pointer; }
+.fornecedores-historico-categorias button.selecionada { background: #fff; color: #397d06; box-shadow: 0 1px 4px rgb(30 50 20 / .08); font-weight: 700; }
+.fornecedores-historico-categorias button > span { color: #627653; font-size: 15px; }
+.fornecedores-historico-categorias button > b { padding: 2px 6px; border-radius: 999px; background: #e7ecdf; color: #52604f; font-size: .58rem; }
+.fornecedores-historico-tabela { overflow-x: auto; border: 1px solid #edf0e8; border-radius: 11px; }
+.fornecedores-historico-cabecalho,
+.fornecedores-historico-linha { display: grid; grid-template-columns: minmax(170px, 1.35fr) minmax(140px, 1.1fr) minmax(115px, .9fr) minmax(120px, .9fr) minmax(105px, .8fr) 58px; align-items: center; gap: 10px; min-width: 850px; }
+.fornecedores-historico-cabecalho { padding: 11px 14px; background: #f1f4eb; color: #667060; font-size: .62rem; font-weight: 750; letter-spacing: .025em; text-transform: uppercase; }
+.fornecedores-historico-registro { min-width: 850px; border-top: 1px solid #edf0e8; }
+.fornecedores-historico-linha { min-height: 78px; padding: 10px 14px; background: #fff; }
+.fornecedores-historico-produto,
+.fornecedores-historico-fornecedor,
+.fornecedores-historico-status,
+.fornecedores-historico-valor { display: grid; min-width: 0; align-content: center; gap: 4px; }
+.fornecedores-historico-produto > strong { color: #29352a; font-size: .76rem; line-height: 1.2; }
+.fornecedores-historico-produto > small,
+.fornecedores-historico-fornecedor > small,
+.fornecedores-historico-status > small { color: #778172; font-size: .59rem; line-height: 1.25; }
+.fornecedores-historico-selo { display: inline-flex; width: fit-content; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 999px; background: #397d06; color: #fff; font-size: .54rem; font-weight: 750; text-transform: uppercase; }
+.fornecedores-historico-selo .material-symbols-outlined { font-size: 12px; }
+.fornecedores-historico-fornecedor > strong { color: #384437; font-size: .69rem; line-height: 1.2; }
+.fornecedores-status-tag { display: inline-flex; width: fit-content; max-width: 100%; padding: 5px 8px; border-radius: 999px; background: #e9eddf; color: #61714f; font-size: .59rem; line-height: 1.1; }
+.fornecedores-status-tag.melhor { background: #e7f0dc; color: #397d06; }
+.fornecedores-status-tag.analise { background: #fff0df; color: #ae5d25; }
+.fornecedores-status-tag.enviada { background: #e7eef0; color: #386b73; }
+.fornecedores-historico-valor { justify-items: end; text-align: right; }
+.fornecedores-historico-valor > strong { color: #263329; font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fornecedores-historico-valor > strong small { color: #778172; font-size: .62rem; font-weight: 500; }
+.fornecedores-historico-valor > span { color: #778172; font-size: .59rem; }
+.fornecedores-historico-diferenca > span { display: inline-flex; max-width: 110px; padding: 5px 8px; border-radius: 999px; background: #f1f3ec; color: #67705e; font-size: .59rem; font-weight: 650; text-align: center; }
+.fornecedores-historico-diferenca > span.abaixo { background: #e8f1df; color: #48801d; }
+.fornecedores-historico-diferenca > span.acima { background: #f8e9e6; color: #bd4036; }
+.fornecedores-historico-acoes { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.fornecedores-historico-acoes button { display: grid; width: 27px; height: 29px; place-items: center; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #687566; cursor: pointer; }
+.fornecedores-historico-acoes button:hover { background: #f1f4eb; color: #397d06; }
+.fornecedores-historico-acoes button:disabled { opacity: .4; cursor: not-allowed; }
+.fornecedores-historico-acoes .material-symbols-outlined { font-size: 17px; }
+.fornecedores-historico-detalhes { display: flex; flex-wrap: wrap; gap: 7px 16px; padding: 10px 14px; border-top: 1px solid #edf0e8; background: #fbfcf8; color: #687566; font-size: .62rem; }
+.fornecedores-historico-paginacao { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 15px; color: #687566; font-size: .65rem; }
+.fornecedores-historico-paginacao nav { display: flex; align-items: center; gap: 5px; }
+.fornecedores-historico-paginacao button { display: inline-flex; min-width: 30px; height: 30px; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #e7ecdf; border-radius: 8px; background: #fff; color: #52604f; font: inherit; cursor: pointer; }
+.fornecedores-historico-paginacao button.atual { border-color: #397d06; background: #397d06; color: #fff; font-weight: 750; }
+.fornecedores-historico-paginacao button:disabled { opacity: .45; cursor: not-allowed; }
+
+@media (max-width: 480px) {
+    .fornecedores-oferta-precos { grid-template-columns: 1fr; }
+    .fornecedores-oferta-precos > div:nth-child(2) { text-align: left; }
+    .fornecedores-oferta-condicoes { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+    .fornecedores-ofertas-secundarias { grid-template-columns: 1fr; }
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario .fornecedores-card-topo,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao .fornecedores-card-topo {
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario .fornecedores-card-topo h2,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao .fornecedores-card-topo h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.fornecedores-fechar-formulario {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--background);
+    color: var(--muted-foreground);
+    font: inherit;
+    cursor: pointer;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario .fornecedores-fechar-formulario,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao .fornecedores-fechar-formulario {
+    position: relative;
+    box-sizing: border-box;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+}
+
+.fornecedores-fechar-formulario > span {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario form,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao form {
+    gap: 14px;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario form label,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao form label {
+    display: grid;
+    gap: 8px;
+    color: var(--foreground);
+    font-size: 0.76rem;
+    font-weight: 750;
+}
+
+.fornecedores-modal-cotacao-aberta #registrar-cotacao .fornecedores-grade-form {
+    gap: 12px;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario input,
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario select,
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario textarea,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao input,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao select,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao textarea {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--input);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.76rem;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario textarea,
+.fornecedores-modal-cotacao-aberta #registrar-cotacao textarea {
+    min-height: 86px;
+    padding: 10px 12px;
+}
+
+.fornecedores-modal-fornecedor-aberta #fornecedor-formulario form > button[type='submit'],
+.fornecedores-modal-cotacao-aberta #registrar-cotacao form > button[type='submit'] {
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: var(--radius);
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.fornecedores-modal-cotacao-aberta #registrar-cotacao form > small {
+    color: var(--muted-foreground);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 860px) {
+    .fornecedores-modal-fornecedor-aberta #fornecedor-formulario,
+    .fornecedores-modal-cotacao-aberta #registrar-cotacao {
+        width: calc(100vw - 28px);
+        max-height: calc(100vh - 28px);
+        padding: 20px;
+    }
+}
+
+@media (max-width: 650px) {
+    .fornecedores-historico-paginacao { align-items: flex-start; flex-direction: column; }
+    .fornecedores-historico-paginacao nav { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+}
+
+.fornecedores-confirmacao-fundo {
+    z-index: 50;
+    background: rgb(24 32 22 / 48%);
+    backdrop-filter: blur(3px);
+}
+
+.fornecedores-confirmacao-modal {
+    width: min(440px, 100%);
+    padding: 26px;
+    border: 1px solid #e7ebdf;
+    border-radius: 18px;
+    color: #20271f;
+    box-shadow: 0 24px 70px rgb(20 31 17 / 22%);
+    animation: fornecedores-confirmacao-entrar 160ms ease-out;
+}
+
+.fornecedores-confirmacao-icone {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 16px;
+    place-items: center;
+    border-radius: 12px;
+    background: #fff1ed;
+    color: #c7462d;
+}
+
+.fornecedores-confirmacao-icone .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.fornecedores-confirmacao-modal h2 {
+    font-size: 1.22rem;
+    line-height: 1.3;
+}
+
+.fornecedores-confirmacao-modal p {
+    margin: 8px 0 24px;
+    color: #687065;
+    font-size: 0.9rem;
+}
+
+.fornecedores-confirmacao-modal .fornecedores-modal-acoes {
+    gap: 9px;
+}
+
+.fornecedores-confirmacao-modal .fornecedores-modal-acoes button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #dfe5d8;
+    border-radius: 9px;
+    background: #fff;
+    color: #3c4838;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.fornecedores-confirmacao-modal .fornecedores-modal-acoes .fornecedores-confirmacao-confirmar {
+    border-color: #c7462d;
+    background: #c7462d;
+    color: #fff;
+}
+
+.fornecedores-confirmacao-modal .fornecedores-modal-acoes button:hover:not(:disabled) {
+    filter: brightness(0.96);
+}
+
+.fornecedores-confirmacao-modal .fornecedores-modal-acoes button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+@keyframes fornecedores-confirmacao-entrar {
+    from { opacity: 0; transform: translateY(5px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fornecedores-compras-contagem {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f0f4e9;
+    color: #4f7132;
+    font-size: 0.72rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.fornecedores-compras-topo-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fornecedores-compras-fornecedor {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    padding: 0 34px 0 11px;
+    border: 1px solid #edf0e7;
+    border-radius: 13px;
+    background: #f1f4eb;
+    color: #52614b;
+    font-size: 0.9rem;
+}
+
+.fornecedores-compras-fornecedor > .material-symbols-outlined {
+    color: #627557;
+    font-size: 21px;
+}
+
+.fornecedores-compras-fornecedor > span:nth-child(2) {
+    white-space: nowrap;
+}
+
+.fornecedores-compras-fornecedor select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    appearance: none;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #20271f;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.fornecedores-compras-fornecedor .fornecedores-compras-seta {
+    position: absolute;
+    right: 11px;
+    pointer-events: none;
+    color: #67755d;
+    font-size: 21px;
+}
+
+.fornecedores-compras-filtros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.fornecedores-compras-busca { grid-column: 1 / -1; }
+
+.fornecedores-compras-busca,
+.fornecedores-compras-status-filtro {
+    display: flex;
+    min-width: 0;
+    min-height: 40px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    border: 1px solid #e7ebdf;
+    border-radius: 9px;
+    background: #f4f6ef;
+    color: #71806a;
+}
+
+.fornecedores-compras-busca .material-symbols-outlined,
+.fornecedores-compras-status-filtro .material-symbols-outlined {
+    flex: 0 0 auto;
+    font-size: 18px;
+}
+
+.fornecedores-compras-busca input,
+.fornecedores-compras-status-filtro select {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #283124;
+    font: inherit;
+    font-size: 0.76rem;
+}
+
+.fornecedores-compras-busca input::placeholder { color: #899386; }
+.fornecedores-compras-categorias {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 14px;
+    padding: 10px;
+    border-radius: 13px;
+    background: #f1f4eb;
+}
+
+.fornecedores-compras-categorias strong {
+    color: #687065;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.fornecedores-compras-categorias button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #525d4c;
+    font: inherit;
+    font-size: 0.69rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.fornecedores-compras-categorias button.ativa {
+    border-color: #e8ecdf;
+    background: #fff;
+    color: #397d06;
+    box-shadow: 0 2px 6px rgb(26 48 17 / 7%);
+}
+
+.fornecedores-compras-categorias button > .material-symbols-outlined { color: #738164; font-size: 17px; }
+.fornecedores-compras-categorias button.ativa > .material-symbols-outlined { color: #397d06; }
+.fornecedores-compras-categorias button small { padding: 2px 6px; border-radius: 999px; background: #e8eddf; color: #5b6d4a; font-size: 0.63rem; font-weight: 700; }
+
+.fornecedores-compras-tabela-rolagem {
+    overflow-x: auto;
+    border: 1px solid #edf0e8;
+    border-radius: 11px;
+}
+
+.fornecedores-compras-tabela {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: collapse;
+    table-layout: auto;
+    text-align: left;
+}
+
+.fornecedores-compras-tabela th {
+    padding: 12px 11px;
+    background: #f1f4eb;
+    color: #55624e;
+    font-size: 0.65rem;
+    font-weight: 750;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.fornecedores-compras-tabela td {
+    padding: 13px 11px;
+    border-top: 1px solid #edf0e8;
+    color: #263023;
+    font-size: 0.74rem;
+    vertical-align: middle;
+}
+
+.fornecedores-compras-tabela td > strong,
+.fornecedores-compras-tabela td > small {
+    display: block;
+}
+
+.fornecedores-compras-tabela td > strong {
+    max-width: 210px;
+    overflow-wrap: anywhere;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.fornecedores-compras-tabela td > small {
+    margin-top: 3px;
+    color: #727b6d;
+    font-size: 0.68rem;
+    line-height: 1.35;
+}
+
+.fornecedores-compras-tabela .fornecedores-compras-valor { text-align: right; white-space: nowrap; }
+
+.fornecedores-compra-status {
+    display: inline-flex;
+    max-width: 135px;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #eef1e8;
+    color: #65705e;
+    font-size: 0.67rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.fornecedores-compra-status.concluido { background: #e3f6d8; color: #397d06; }
+.fornecedores-compra-status.pendente { background: #fff2c7; color: #8a6500; }
+.fornecedores-compra-status.saida { background: #ffe5df; color: #b33d29; }
+.fornecedores-compra-status.atrasado { background: #ffeadc; color: #b75021; }
+
+.fornecedores-compras-tabela .fornecedores-compra-detalhe {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #63883e;
+    cursor: pointer;
+}
+
+.fornecedores-compras-tabela .fornecedores-compra-detalhe:hover { background: #f0f4e9; }
+.fornecedores-compras-tabela .fornecedores-compra-detalhe .material-symbols-outlined { font-size: 19px; }
+
+.fornecedores-compras-tabela .fornecedores-compras-detalhes td {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    background: #fafbf8;
+    color: #626c5b;
+    font-size: 0.7rem;
+}
+
+.fornecedores-compras-paginacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 2px 0;
+    color: #687065;
+    font-size: 0.72rem;
+}
+
+.fornecedores-compras-paginacao nav {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.fornecedores-compras-paginacao nav button {
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid #e3e8dc;
+    border-radius: 8px;
+    background: #fff;
+    color: #405139;
+    font: inherit;
+    cursor: pointer;
+}
+
+.fornecedores-compras-paginacao nav button:disabled {
+    color: #a5aca0;
+    cursor: default;
+}
+
+.fornecedores-compras-paginacao nav > span { white-space: nowrap; }
+
+@media (max-width: 650px) {
+    .fornecedores-compras-filtros { grid-template-columns: minmax(0, 1fr); }
+    .fornecedores-compras-busca { grid-column: auto; }
+    .fornecedores-compras-fornecedor { gap: 6px; padding-left: 10px; font-size: 0.78rem; }
+    .fornecedores-compras-fornecedor select { max-width: 48vw; }
+    .fornecedores-compras-contagem { align-self: flex-start; }
+    .fornecedores-compras-paginacao { align-items: flex-start; flex-direction: column; }
 }

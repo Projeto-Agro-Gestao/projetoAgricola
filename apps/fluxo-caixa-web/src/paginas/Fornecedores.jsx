@@ -1,14 +1,15 @@
 import {
+    Fragment,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react'
 import {
     useNavigate,
 } from 'react-router'
-import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
+import ShellDashboard from '../componentes/ShellDashboard.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
-import { voltarPaginaAnterior } from '../navegacao.js'
 import './Fornecedores.css'
 import { apiFetch } from '../servicos/api.js'
 import { obterSessao } from '../servicos/sessao.js'
@@ -58,6 +59,15 @@ function formatarNumero(valor) {
     }).format(Number(valor))
 }
 
+function obterTonalidadeCategoria(nome) {
+    const hash = Array.from(nome).reduce(
+        (hash, caractere) => (hash * 31 + caractere.charCodeAt(0)) >>> 0,
+        0,
+    )
+
+    return [105, 50, 28][hash % 3]
+}
+
 function hojeIso() {
     return new Date().toISOString().slice(0, 10)
 }
@@ -98,6 +108,22 @@ function criarFornecedorFormVazio() {
     }
 }
 
+function criarCotacaoFormVazia() {
+    return {
+        fornecedorId: '',
+        produtoId: '',
+        compradorNome: '',
+        dataCotacao: hojeIso(),
+        quantidade: '',
+        unidadeMedida: 'saca',
+        pesoTotalKg: '',
+        valorTotal: '',
+        frete: '',
+        desconto: '',
+        observacao: '',
+    }
+}
+
 function obterValorComparavel(cotacao) {
     return Number(
         cotacao?.valorPorKg
@@ -121,6 +147,7 @@ function obterUnidadeComparavel(cotacao) {
 
 function Fornecedores() {
     const navigate = useNavigate()
+    const filtroCategoriaRef = useRef(null)
     const [sessao] = useState(obterSessao)
 
     const [fornecedores, setFornecedores] = useState([])
@@ -136,8 +163,26 @@ function Fornecedores() {
     const [compras, setCompras] = useState([])
     const [fornecedorSelecionado, setFornecedorSelecionado] =
         useState(null)
+    const [filtroFornecedorCompras, setFiltroFornecedorCompras] = useState('todos')
 
     const [mostrarLixeira, setMostrarLixeira] = useState(false)
+    const [mostrarFormularioFornecedor, setMostrarFormularioFornecedor] =
+        useState(false)
+    const [mostrarFormularioCotacao, setMostrarFormularioCotacao] =
+        useState(false)
+    const [buscaFornecedor, setBuscaFornecedor] = useState('')
+    const [filtroCategoriaFornecedor, setFiltroCategoriaFornecedor] = useState('')
+    const [mostrarOpcoesCategoria, setMostrarOpcoesCategoria] = useState(false)
+    const [paginaFornecedores, setPaginaFornecedores] = useState(1)
+    const [categoriaHistorico, setCategoriaHistorico] = useState('')
+    const [paginaHistorico, setPaginaHistorico] = useState(1)
+    const [cotacaoExpandida, setCotacaoExpandida] = useState(null)
+    const [buscaCompra, setBuscaCompra] = useState('')
+    const [filtroSituacaoCompra, setFiltroSituacaoCompra] = useState('')
+    const [categoriaCompra, setCategoriaCompra] = useState('')
+    const [compraExpandida, setCompraExpandida] = useState(null)
+    const [paginaCompras, setPaginaCompras] = useState(1)
+    const [carregandoCompras, setCarregandoCompras] = useState(false)
     const [carregando, setCarregando] = useState(true)
     const [salvando, setSalvando] = useState(false)
     const [consultandoCnpj, setConsultandoCnpj] = useState(false)
@@ -159,19 +204,7 @@ function Fornecedores() {
         pesoPadraoKg: '',
     })
 
-    const [cotacaoForm, setCotacaoForm] = useState({
-        fornecedorId: '',
-        produtoId: '',
-        compradorNome: '',
-        dataCotacao: hojeIso(),
-        quantidade: '',
-        unidadeMedida: 'saca',
-        pesoTotalKg: '',
-        valorTotal: '',
-        frete: '',
-        desconto: '',
-        observacao: '',
-    })
+    const [cotacaoForm, setCotacaoForm] = useState(criarCotacaoFormVazia)
 
     const [migracaoForm, setMigracaoForm] = useState({
         categoriaId: '',
@@ -183,6 +216,45 @@ function Fornecedores() {
     })
 
     const empresaId = sessao?.usuario?.empresaId
+
+    const resumoFornecedor = useMemo(() => {
+        const resumo = new Map()
+        cotacoes.forEach((cotacao) => {
+            const id = cotacao.fornecedorId
+            if (id == null) return
+            const atual = resumo.get(String(id)) || { categorias: new Set(), cotacoes: 0 }
+            atual.cotacoes += 1
+            if (cotacao.categoriaProdutoNome) atual.categorias.add(cotacao.categoriaProdutoNome)
+            resumo.set(String(id), atual)
+        })
+        return resumo
+    }, [cotacoes])
+
+    const categoriasFornecedores = useMemo(
+        () => Array.from(new Set([...resumoFornecedor.values()].flatMap((item) => [...item.categorias]))).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+        [resumoFornecedor],
+    )
+
+    const fornecedoresVisiveis = useMemo(() => {
+        const termo = buscaFornecedor.trim().toLocaleLowerCase('pt-BR')
+        const lista = mostrarLixeira ? lixeira : fornecedores
+        return lista.filter((fornecedor) => {
+            const correspondeBusca = !termo || [fornecedor.nome, fornecedor.razaoSocial, fornecedor.documento, fornecedor.municipio, fornecedor.email]
+                .some((valor) => String(valor ?? '').toLocaleLowerCase('pt-BR').includes(termo))
+            const resumo = resumoFornecedor.get(String(fornecedor.id))
+            const correspondeCategoria = !filtroCategoriaFornecedor || resumo?.categorias.has(filtroCategoriaFornecedor)
+            return correspondeBusca && correspondeCategoria
+        })
+    }, [buscaFornecedor, filtroCategoriaFornecedor, fornecedores, lixeira, mostrarLixeira, resumoFornecedor])
+
+    const totalPaginasFornecedores = Math.max(1, Math.ceil(fornecedoresVisiveis.length / 5))
+    const paginaFornecedoresAtual = Math.min(paginaFornecedores, totalPaginasFornecedores)
+    const inicioFornecedoresPagina = (paginaFornecedoresAtual - 1) * 5
+    const fornecedoresPagina = fornecedoresVisiveis.slice(inicioFornecedoresPagina, inicioFornecedoresPagina + 5)
+
+    useEffect(() => {
+        setPaginaFornecedores(1)
+    }, [buscaFornecedor, filtroCategoriaFornecedor, mostrarLixeira])
 
     const produtosPorCategoria = useMemo(
         () => {
@@ -364,6 +436,64 @@ function Fornecedores() {
         [cotacoesPorProduto],
     )
 
+    const categoriasHistorico = useMemo(() => {
+        const contagens = new Map()
+        cotacoes.forEach((cotacao) => {
+            const categoria = cotacao.categoriaProdutoNome || 'Outros'
+            contagens.set(categoria, (contagens.get(categoria) ?? 0) + 1)
+        })
+        return Array.from(contagens, ([nome, total]) => ({ nome, total }))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+    }, [cotacoes])
+
+    const linhasComparacao = useMemo(
+        () => cotacoesPorProduto.flatMap((grupo) => {
+            const media = grupo.itens.reduce((soma, cotacao) => soma + obterValorComparavel(cotacao), 0) / grupo.itens.length
+            return grupo.itens.map((cotacao, indice) => ({
+                cotacao,
+                grupo,
+                indice,
+                media,
+                fornecedor: fornecedores.find((item) => String(item.id) === String(cotacao.fornecedorId)),
+            }))
+        }),
+        [cotacoesPorProduto, fornecedores],
+    )
+
+    const linhasComparacaoFiltradas = categoriaHistorico
+        ? linhasComparacao.filter(({ cotacao }) => (cotacao.categoriaProdutoNome || 'Outros') === categoriaHistorico)
+        : linhasComparacao
+    const totalPaginasHistorico = Math.max(1, Math.ceil(linhasComparacaoFiltradas.length / 5))
+    const paginaHistoricoAtual = Math.min(paginaHistorico, totalPaginasHistorico)
+    const linhasHistoricoPagina = linhasComparacaoFiltradas.slice((paginaHistoricoAtual - 1) * 5, paginaHistoricoAtual * 5)
+
+    useEffect(() => {
+        setPaginaHistorico(1)
+    }, [categoriaHistorico])
+
+    const cotacoesAbertas = useMemo(
+        () => cotacoes.filter((cotacao) => cotacao.status === 'COTACAO'),
+        [cotacoes],
+    )
+
+    const melhorCotacao = useMemo(
+        () => graficoCotacoesDetalhado[0]?.itens[0],
+        [graficoCotacoesDetalhado],
+    )
+
+    useEffect(() => {
+        if (!mostrarOpcoesCategoria) return undefined
+
+        function fecharAoClicarFora(evento) {
+            if (!filtroCategoriaRef.current?.contains(evento.target)) {
+                setMostrarOpcoesCategoria(false)
+            }
+        }
+
+        document.addEventListener('pointerdown', fecharAoClicarFora)
+        return () => document.removeEventListener('pointerdown', fecharAoClicarFora)
+    }, [mostrarOpcoesCategoria])
+
     useEffect(() => {
         if (!sessao || !empresaId) {
             navigate('/login', {
@@ -416,6 +546,7 @@ function Fornecedores() {
                 'Não foi possível carregar produtos.',
                 'Não foi possível carregar cotações.',
                 'Não foi possível carregar comparativos.',
+                'Não foi possível carregar inteligência de compras.',
                 'Não foi possível carregar categorias financeiras.',
             ]
 
@@ -450,11 +581,13 @@ function Fornecedores() {
             setCotacoes(cotacoesDados)
             setComparativos(comparativosDados)
             setInteligenciaCompras(inteligenciaDados)
+            setFiltroFornecedorCompras('todos')
             setCategoriasFinanceiras(
                 categoriasFinanceirasDados.filter(
                     (categoria) => categoria.ativo,
                 ),
             )
+            carregarTodasCompras(fornecedoresDados)
         } catch (erroDaRequisicao) {
             setErro(
                 erroDaRequisicao instanceof Error
@@ -468,7 +601,14 @@ function Fornecedores() {
 
     async function carregarCompras(fornecedor) {
         setFornecedorSelecionado(fornecedor)
+        setFiltroFornecedorCompras(String(fornecedor.id))
         setCompras([])
+        setBuscaCompra('')
+        setFiltroSituacaoCompra('')
+        setCategoriaCompra('')
+        setCompraExpandida(null)
+        setPaginaCompras(1)
+        setCarregandoCompras(true)
         setErro('')
 
         try {
@@ -485,14 +625,77 @@ function Fornecedores() {
                 )
             }
 
-            setCompras(await resposta.json())
+            setCompras((await resposta.json()).map((compra) => ({
+                ...compra,
+                fornecedorId: fornecedor.id,
+                fornecedorNome: fornecedor.nome,
+                municipio: fornecedor.municipio,
+                uf: fornecedor.uf,
+            })))
         } catch (erroDaRequisicao) {
             setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
                     : 'Não foi possível carregar as compras.',
             )
+        } finally {
+            setCarregandoCompras(false)
         }
+    }
+
+    async function carregarTodasCompras(listaFornecedores = fornecedores) {
+        setFornecedorSelecionado(null)
+        setFiltroFornecedorCompras('todos')
+        setCompras([])
+        setBuscaCompra('')
+        setFiltroSituacaoCompra('')
+        setCategoriaCompra('')
+        setCompraExpandida(null)
+        setPaginaCompras(1)
+        setCarregandoCompras(true)
+        setErro('')
+
+        try {
+            const respostas = await Promise.all(listaFornecedores.map((fornecedor) =>
+                requisitar(`/fornecedores/${fornecedor.id}/compras`),
+            ))
+            const comprasPorFornecedor = await Promise.all(respostas.map(async (resposta, indice) => {
+                if (!resposta.ok) {
+                    throw new Error(await obterMensagemDeErro(resposta, 'Não foi possível carregar as compras.'))
+                }
+                const fornecedor = listaFornecedores[indice]
+                const itens = await resposta.json()
+                return itens.map((compra) => ({
+                    ...compra,
+                    fornecedorId: fornecedor.id,
+                    fornecedorNome: fornecedor.nome,
+                    municipio: fornecedor.municipio,
+                    uf: fornecedor.uf,
+                }))
+            }))
+            setCompras(comprasPorFornecedor.flat().sort((a, b) => {
+                if (!a.data) return 1
+                if (!b.data) return -1
+                return b.data.localeCompare(a.data)
+            }))
+            if (listaFornecedores.length === 0) {
+                setCompras([])
+            }
+        } catch (erroDaRequisicao) {
+            setErro(erroDaRequisicao instanceof Error ? erroDaRequisicao.message : 'Não foi possível carregar as compras.')
+        } finally {
+            setCarregandoCompras(false)
+        }
+    }
+
+    function selecionarFornecedorCompras(id) {
+        if (id === 'todos') {
+            carregarTodasCompras()
+            return
+        }
+
+        const fornecedor = fornecedores.find((item) => String(item.id) === id)
+        if (fornecedor) carregarCompras(fornecedor)
     }
 
     async function salvarFornecedor(evento) {
@@ -636,6 +839,7 @@ function Fornecedores() {
         )
 
         setFornecedorForm(criarFornecedorFormVazio())
+        setMostrarFormularioFornecedor(false)
     }
 
     async function consultarCnpjFornecedor() {
@@ -760,7 +964,7 @@ function Fornecedores() {
     async function salvarCotacao(evento) {
         evento.preventDefault()
 
-        await executarSalvamento(
+        const salvo = await executarSalvamento(
             '/fornecedores/cotacoes',
             'POST',
             {
@@ -790,15 +994,10 @@ function Fornecedores() {
             'Cotação cadastrada. Ela ainda não altera gráficos financeiros.',
         )
 
-        setCotacaoForm({
-            ...cotacaoForm,
-            quantidade: '',
-            pesoTotalKg: '',
-            valorTotal: '',
-            frete: '',
-            desconto: '',
-            observacao: '',
-        })
+        if (salvo) {
+            setCotacaoForm(criarCotacaoFormVazia())
+            setMostrarFormularioCotacao(false)
+        }
     }
 
     async function executarSalvamento(
@@ -835,12 +1034,14 @@ function Fornecedores() {
 
             setSucesso(mensagem)
             await carregarTudo()
+            return true
         } catch (erroDaRequisicao) {
             setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
                     : 'Não foi possível salvar.',
             )
+            return false
         } finally {
             setSalvando(false)
         }
@@ -1032,36 +1233,81 @@ function Fornecedores() {
         })
     }
 
+    const categoriasCompras = useMemo(
+        () => [...new Set(compras.map((compra) => compra.categoriaNome).filter(Boolean))],
+        [compras],
+    )
+    const situacoesCompras = useMemo(
+        () => [...new Set(compras.map((compra) => compra.situacao).filter(Boolean))],
+        [compras],
+    )
+    const comprasFiltradas = useMemo(() => {
+        const termo = buscaCompra.trim().toLocaleLowerCase('pt-BR')
+        return compras.filter((compra) => {
+            const correspondeBusca = !termo || [
+                compra.descricao,
+                compra.produtoNome,
+                compra.produtoClassificacao,
+                compra.categoriaNome,
+                compra.compradorNome,
+                compra.origem,
+                compra.situacao,
+            ].some((valor) => String(valor ?? '').toLocaleLowerCase('pt-BR').includes(termo))
+            return correspondeBusca
+                && (!filtroSituacaoCompra || compra.situacao === filtroSituacaoCompra)
+                && (!categoriaCompra || compra.categoriaNome === categoriaCompra)
+        })
+    }, [buscaCompra, categoriaCompra, compras, filtroSituacaoCompra])
+    const totalPaginasCompras = Math.max(1, Math.ceil(comprasFiltradas.length / 5))
+    const paginaComprasAtual = Math.min(paginaCompras, totalPaginasCompras)
+    const comprasPagina = comprasFiltradas.slice((paginaComprasAtual - 1) * 5, paginaComprasAtual * 5)
+
+    useEffect(() => {
+        setPaginaCompras(1)
+    }, [buscaCompra, categoriaCompra, filtroSituacaoCompra])
+
     if (!sessao) {
         return null
     }
 
     return (
-        <div className="fornecedores-pagina">
+        <ShellDashboard sessao={sessao} ativo="fornecedores">
+        <div className={`fornecedores-pagina${mostrarFormularioFornecedor ? ' fornecedores-modal-fornecedor-aberta' : ''}${mostrarFormularioCotacao ? ' fornecedores-modal-cotacao-aberta' : ''}`}>
             <div className="fornecedores-conteudo">
                 <header className="fornecedores-cabecalho">
-                    <button
-                        onClick={() =>
-                            voltarPaginaAnterior(
-                                navigate,
-                                '/dashboard',
-                            )
-                        }
-                        type="button"
-                    >
-                        Voltar ao painel
-                    </button>
-
                     <div>
-                        <p>AgroGestao</p>
-                        <h1>Controle de fornecedores</h1>
+                        <p>Suprimentos &amp; cotações <span>·</span> Gestão de compras estratégicas</p>
+                        <h1>Controle de Fornecedores &amp; Cotações</h1>
                         <span>
-                            Cadastre fornecedores, produtos, cotacoes
-                            e compare onde a compra fica mais em conta.
+                            Cadastre fornecedores, insumos e cotações de preços em tempo real para comparar onde a compra
+                            <br className="fornecedores-quebra-desktop" /> gera maior rentabilidade e menor custo por hectare na safra ativa.
                         </span>
                     </div>
 
-                    <AlternadorModulos />
+                    <div className="fornecedores-cabecalho-acoes">
+                        <button
+                            className="fornecedores-acao-secundaria"
+                            onClick={() => {
+                                setCotacaoForm(criarCotacaoFormVazia())
+                                setMostrarFormularioCotacao(true)
+                            }}
+                            type="button"
+                        >
+                            <span className="material-symbols-outlined" aria-hidden="true">shopping_cart_checkout</span>
+                            Nova cotação
+                        </button>
+                        <button
+                            className="fornecedores-acao-principal"
+                            onClick={() => {
+                                setFornecedorForm(criarFornecedorFormVazio())
+                                setMostrarFormularioFornecedor(true)
+                            }}
+                            type="button"
+                        >
+                            <span className="material-symbols-outlined" aria-hidden="true">group_add</span>
+                            Novo fornecedor
+                        </button>
+                    </div>
                 </header>
 
                 {erro && (
@@ -1076,170 +1322,167 @@ function Fornecedores() {
                     </p>
                 )}
 
-                <section className="fornecedores-atalhos-painel">
-                    <div className="fornecedores-card-topo">
-                        <div>
-                            <small>Acesso rápido</small>
-                            <h2>Fornecedores, produtos e preços</h2>
-                        </div>
-                    </div>
-
-                    <div className="fornecedores-atalhos">
-                        <a href="#fornecedor-formulario">
-                            <span>+</span>
-                            Novo fornecedor
-                        </a>
-                        <a href="#fornecedores-cadastrados">
-                            <span>F</span>
-                            Ver fornecedores
-                        </a>
-                        <a href="#categorias-produtos">
-                            <span>≡</span>
-                            Categorias e produtos
-                        </a>
-                        <a href="#registrar-cotacao">
-                            <span>R$</span>
-                            Registrar preço
-                        </a>
-                        <a href="#comparar-precos">
-                            <span>%</span>
-                            Comparar preços
-                        </a>
-                        <a href="#compras-fornecedor">
-                            <span>▦</span>
-                            Compras
-                        </a>
-                        <button
-                            onClick={() => setMostrarLixeira(true)}
-                            type="button"
-                        >
-                            <span>♲</span>
-                            Lixeira
-                        </button>
-                        <button
-                            onClick={() => baixarRelatorio('excel')}
-                            type="button"
-                        >
-                            <span>▦</span>
-                            Excel
-                        </button>
-                        <button
-                            onClick={() => baixarRelatorio('pdf')}
-                            type="button"
-                        >
-                            <span>▤</span>
-                            PDF
-                        </button>
-                    </div>
+                <section className="fornecedores-kpis" aria-label="Resumo de compras">
+                    <article>
+                        <div className="fornecedores-kpi-rotulo">Fornecedores ativos <span className="material-symbols-outlined">storefront</span></div>
+                        <strong>{fornecedores.filter((item) => item.ativo !== false).length}</strong>
+                        <small><i /> Cadastro da safra atual</small>
+                    </article>
+                    <article>
+                        <div className="fornecedores-kpi-rotulo">Cotações em aberto <span className="material-symbols-outlined">request_quote</span></div>
+                        <strong>{cotacoesAbertas.length}</strong>
+                        <small className="fornecedores-kpi-alerta">{cotacoesAbertas.length ? 'Em análise' : 'Nenhuma cotação pendente'}</small>
+                    </article>
+                    <article>
+                        <div className="fornecedores-kpi-rotulo">Economia identificada <span className="material-symbols-outlined">trending_down</span></div>
+                        <strong className="fornecedores-kpi-verde">{formatarDinheiro(analiseCotacoes.economiaPotencial)}</strong>
+                        <small>Entre ofertas do mesmo insumo</small>
+                    </article>
+                    <article>
+                        <div className="fornecedores-kpi-rotulo">Melhor oferta atual <span className="material-symbols-outlined">military_tech</span></div>
+                        <strong className="fornecedores-kpi-fornecedor">{melhorCotacao?.fornecedorNome || 'Aguardando cotações'}</strong>
+                        <small>{melhorCotacao ? `${melhorCotacao.produtoNome} · ${formatarDinheiro(melhorCotacao.valorComparavel)}/${melhorCotacao.unidadeComparavel}` : 'Registre ofertas comparáveis'}</small>
+                    </article>
                 </section>
 
-                <section className="fornecedores-painel-precos">
+                <section className="fornecedores-painel-precos fornecedores-comparativo-destaque">
                     <div className="fornecedores-card-topo">
                         <div>
-                            <small>Leitura de compra</small>
-                            <h2>Comparativo para decidir melhor</h2>
+                            <small>Compra inteligente</small>
+                            <h2><span className="material-symbols-outlined">compare_arrows</span> Comparativo Inteligente de Cotações</h2>
+                            <p>Compare preço, frete e condições para identificar a compra mais vantajosa para sua propriedade.</p>
                         </div>
-                    </div>
-
-                    <div className="fornecedores-indicadores">
-                        <article>
-                            <span>C</span>
-                            <small>Cotações registradas</small>
-                            <strong>
-                                {analiseCotacoes.totalCotacoes}
-                            </strong>
-                        </article>
-                        <article>
-                            <span>P</span>
-                            <small>Produtos comparáveis</small>
-                            <strong>
-                                {analiseCotacoes.produtosComparados}
-                            </strong>
-                        </article>
-                        <article>
-                            <span>R$</span>
-                            <small>Diferença por unidade base</small>
-                            <strong>
-                                {formatarDinheiro(
-                                    analiseCotacoes.economiaPotencial,
-                                )}
-                            </strong>
-                        </article>
-                        <article>
-                            <span>F</span>
-                            <small>Fornecedor mais vantajoso</small>
-                            <strong>
-                                {analiseCotacoes.fornecedorDestaque}
-                            </strong>
-                        </article>
                     </div>
 
                     {graficoCotacoesDetalhado.length === 0 ? (
-                        <p className="fornecedores-vazio">
-                            Cadastre duas ou mais cotações do mesmo produto
-                            para formar o gráfico de comparação.
-                        </p>
+                        <div className="fornecedores-comparativo-vazio">
+                            <span className="material-symbols-outlined">query_stats</span>
+                            <div><strong>Seu comparativo aparece aqui</strong><p>Registre cotações de um mesmo insumo para visualizar a melhor oferta, as condições e a diferença de preço.</p></div>
+                            <button onClick={() => {
+                                setCotacaoForm(criarCotacaoFormVazia())
+                                setMostrarFormularioCotacao(true)
+                            }} type="button">Lançar cotação</button>
+                        </div>
                     ) : (
-                        <div className="fornecedores-grafico-precos">
-                            {graficoCotacoesDetalhado.map((grupo) => (
-                                <article key={grupo.produtoNome}>
-                                    <header>
-                                        <div>
-                                            <strong>
-                                                {grupo.produtoNome}
-                                            </strong>
-                                            <span>
-                                                Produto igual comparado com
-                                                produto igual.
-                                            </span>
-                                        </div>
-                                        <small>
-                                            Melhor:{' '}
-                                            {grupo.melhor?.fornecedorNome}
-                                        </small>
-                                    </header>
-
-                                    <div className="fornecedores-grafico-ranking">
-                                        {grupo.itens.map((cotacao) => (
-                                            <div
-                                                className={
-                                                    cotacao.id
-                                                        === grupo.melhor?.id
-                                                        ? 'melhor'
-                                                        : ''
-                                                }
-                                                key={cotacao.id}
-                                            >
-                                                <span>
-                                                    {cotacao.fornecedorNome}
-                                                </span>
-                                                <div className="fornecedores-grafico-barra">
-                                                    <i
-                                                        style={{
-                                                            width:
-                                                                `${cotacao.largura}%`,
-                                                        }}
-                                                    />
+                        <div className="fornecedores-comparativo-layout">
+                            {(() => {
+                                const grupo = graficoCotacoesDetalhado[0]
+                                const melhor = grupo.itens[0]
+                                const segundo = grupo.itens[1]
+                                const terceiro = grupo.itens[2]
+                                const fornecedorMelhor = fornecedores.find(
+                                    (fornecedor) => String(fornecedor.id) === String(melhor?.fornecedorId),
+                                )
+                                const economiaUnitario = segundo
+                                    ? Math.max(0, Number(segundo.valorComparavel) - Number(melhor.valorComparavel))
+                                    : 0
+                                const quantidadeComparavel = melhor?.valorPorKg
+                                    ? Number(melhor.pesoTotalKg || 0)
+                                    : melhor?.valorPorUnidade
+                                        ? Number(melhor.quantidade || 0)
+                                        : 1
+                                const economiaTotal = economiaUnitario * quantidadeComparavel
+                                const maiorValorCurva = Number(grupo.itens.at(-1)?.valorComparavel || 0)
+                                const unidadeCurva = melhor?.valorPorKg
+                                    ? Number(melhor.pesoTotalKg || 0)
+                                    : melhor?.valorPorUnidade
+                                        ? Number(melhor.quantidade || 0)
+                                        : 1
+                                const dispersaoTotal = Math.max(0, maiorValorCurva - Number(melhor?.valorComparavel || 0)) * unidadeCurva
+                                return (
+                                    <>
+                                        <article className="fornecedores-oferta-melhor">
+                                            <div className="fornecedores-selo-melhor"><span className="material-symbols-outlined">verified</span> Mais vantajoso · menor preço</div>
+                                            <div className="fornecedores-oferta-identidade"><span>{melhor?.fornecedorNome?.slice(0, 2)?.toLocaleUpperCase('pt-BR') || 'OK'}</span><div><strong>{melhor?.fornecedorNome}</strong><small>{[fornecedorMelhor?.municipio, fornecedorMelhor?.uf, fornecedorMelhor?.documento ? `${fornecedorMelhor.tipoPessoa === 'FISICA' ? 'CPF' : 'CNPJ'}: ${fornecedorMelhor.documento}` : null].filter(Boolean).join(' · ') || grupo.produtoNome}</small></div></div>
+                                            <div className="fornecedores-oferta-precos">
+                                                <div className="fornecedores-oferta-preco-unitario"><small>Valor unitário ofertado</small><strong>{formatarDinheiro(melhor?.valorComparavel)}<span> / {melhor?.unidadeComparavel}{melhor?.unidadeMedida && melhor.unidadeComparavel !== 'kg' && melhor?.quantidade && melhor?.pesoTotalKg ? ` (${formatarNumero(Number(melhor.pesoTotalKg) / Number(melhor.quantidade))}kg)` : ''}</span></strong></div>
+                                                <div className="fornecedores-oferta-total">
+                                                    {economiaUnitario > 0 && <small className="fornecedores-oferta-diferenca">-{formatarDinheiro(economiaUnitario)}/{melhor?.unidadeComparavel} vs 2º lugar</small>}
+                                                    <span>Total: <strong>{formatarDinheiro(melhor?.valorLiquido ?? melhor?.valorTotal)}</strong></span>
+                                                    <small>({formatarNumero(melhor?.quantidade)} {melhor?.unidadeMedida})</small>
                                                 </div>
-                                                <strong>
-                                                    {formatarDinheiro(
-                                                        cotacao.valorComparavel,
-                                                    )}
-                                                    /
-                                                    {cotacao.unidadeComparavel}
-                                                </strong>
                                             </div>
-                                        ))}
-                                    </div>
-                                </article>
-                            ))}
+                                            <div className="fornecedores-oferta-condicoes">
+                                                <div><small>Frete</small><strong>{fornecedorMelhor?.condicaoFrete || (melhor?.frete > 0 ? 'Valor cotado' : 'Não informado')}</strong></div>
+                                                <div><small>Prazo</small><strong>{fornecedorMelhor?.prazoMedioEntregaDias ? `${fornecedorMelhor.prazoMedioEntregaDias} dias` : 'Não informado'}</strong></div>
+                                                <div><small>Condição</small><strong>{fornecedorMelhor?.prazoPagamento || fornecedorMelhor?.formasPagamento || 'Não informado'}</strong></div>
+                                            </div>
+                                            {economiaTotal > 0 && <div className="fornecedores-oferta-veredito"><strong className="fornecedores-veredito-titulo">Veredito do Sistema:</strong> Economia total de <strong>{formatarDinheiro(economiaTotal)}</strong></div>}
+                                            <div className="fornecedores-oferta-acoes">
+                                                <button
+                                                    className="fornecedores-oferta-aprovar"
+                                                    disabled={melhor?.status !== 'COTACAO'}
+                                                    onClick={() => abrirMigracao(melhor, 'contas')}
+                                                    type="button"
+                                                >
+                                                    <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                                                    {melhor?.status === 'COTACAO' ? 'Aprovar cotação' : 'Cotação já encaminhada'}
+                                                </button>
+                                                <button
+                                                    className="fornecedores-oferta-historico"
+                                                    onClick={() => document.getElementById('comparar-precos')?.scrollIntoView({ behavior: 'smooth' })}
+                                                    type="button"
+                                                >
+                                                    Histórico
+                                                </button>
+                                            </div>
+                                        </article>
+                                        <div className="fornecedores-ofertas-secundarias">
+                                            {[segundo, terceiro].filter(Boolean).map((cotacao, indice) => {
+                                                const fornecedor = fornecedores.find(
+                                                    (item) => String(item.id) === String(cotacao.fornecedorId),
+                                                )
+
+                                                return (
+                                                    <article key={cotacao.id}>
+                                                        <div className="fornecedores-oferta-secundaria-topo"><span>{indice === 0 ? '2ª Menor Oferta' : '3ª Oferta Registrada'}</span><small>+{(((cotacao.valorComparavel / (melhor.valorComparavel || 1)) - 1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% mais caro</small></div>
+                                                        <div className="fornecedores-oferta-secundaria-resumo">
+                                                            <div className="fornecedores-oferta-secundaria-fornecedor"><strong>{cotacao.fornecedorNome}</strong><small>{[fornecedor?.municipio, fornecedor?.uf].filter(Boolean).join(' - ') || 'Local não informado'}</small></div>
+                                                            <div className="fornecedores-oferta-secundaria-valor">{formatarDinheiro(cotacao.valorComparavel)}<small> / {cotacao.unidadeComparavel}</small></div>
+                                                        </div>
+                                                        <div className="fornecedores-oferta-secundaria-condicoes">
+                                                            <span>Frete {fornecedor?.condicaoFrete || (cotacao.frete > 0 ? `${formatarDinheiro(Number(cotacao.frete) / Number(cotacao.quantidade || 1))}/${cotacao.unidadeMedida}` : 'não informado')}</span>
+                                                            <span>Prazo: {fornecedor?.prazoMedioEntregaDias ? `${fornecedor.prazoMedioEntregaDias} dias` : 'não informado'}</span>
+                                                            <span>{fornecedor?.prazoPagamento || fornecedor?.formasPagamento || 'Condição não informada'}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                setCotacaoExpandida(cotacao.id)
+                                                                document.getElementById(`cotacao-detalhe-${cotacao.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                                            }}
+                                                            type="button"
+                                                        >
+                                                            Detalhes da Proposta
+                                                        </button>
+                                                    </article>
+                                                )
+                                            })}
+                                        </div>
+                                        <aside className="fornecedores-curva-precos">
+                                            <div className="fornecedores-curva-cabecalho"><small>Curva de disparidade</small><span className="material-symbols-outlined" aria-hidden="true">analytics</span></div>
+                                            <strong>Diferença de Valor</strong>
+                                            <p>Variação entre as ofertas do mesmo insumo.</p>
+                                            {grupo.itens.map((cotacao) => {
+                                                const fornecedorCurva = fornecedores.find((item) => String(item.id) === String(cotacao.fornecedorId))
+                                                return (
+                                                    <div className="fornecedores-curva-linha" key={cotacao.id}>
+                                                        <div><span>{cotacao.fornecedorNome}{fornecedorCurva?.condicaoFrete ? ` (${fornecedorCurva.condicaoFrete})` : ''}</span><strong>{formatarDinheiro(cotacao.valorComparavel)}</strong></div>
+                                                        <i><b style={{ width: `${cotacao.largura}%` }} /></i>
+                                                    </div>
+                                                )
+                                            })}
+                                            <div className="fornecedores-curva-nota"><span className="material-symbols-outlined" aria-hidden="true">lightbulb</span><span>A variação representa <strong>{formatarDinheiro(dispersaoTotal)}</strong> de dispersão para a quantidade cotada.</span></div>
+                                        </aside>
+                                    </>
+                                )
+                            })()}
                         </div>
                     )}
                 </section>
 
-                <main className="fornecedores-grade">
+                <div className="fornecedores-grade">
                     <section
-                        className="fornecedores-card"
+                        className="fornecedores-card fornecedores-formulario-fornecedor"
                         id="fornecedor-formulario"
                     >
                         <div className="fornecedores-card-topo">
@@ -1251,6 +1494,14 @@ function Fornecedores() {
                                         : 'Novo fornecedor'}
                                 </h2>
                             </div>
+                            <button
+                                aria-label="Fechar formulário de fornecedor"
+                                className="fornecedores-fechar-formulario"
+                                onClick={() => setMostrarFormularioFornecedor(false)}
+                                type="button"
+                            >
+                                <span aria-hidden="true">×</span>
+                            </button>
                         </div>
 
                         <form onSubmit={salvarFornecedor}>
@@ -1686,6 +1937,7 @@ function Fornecedores() {
                             />
 
                             <div className="fornecedores-acoes-form">
+                                <small className="fornecedores-campo-obrigatorio">* Campo obrigatório</small>
                                 {fornecedorForm.id && (
                                     <button
                                         onClick={() =>
@@ -1706,8 +1958,6 @@ function Fornecedores() {
                                     Salvar fornecedor
                                 </button>
                             </div>
-
-                            <small>* Campo obrigatório</small>
                         </form>
                     </section>
 
@@ -1717,78 +1967,109 @@ function Fornecedores() {
                     >
                         <div className="fornecedores-card-topo">
                             <div>
-                                <small>Lista</small>
                                 <h2>
                                     {mostrarLixeira
                                         ? 'Lixeira'
-                                        : 'Fornecedores ativos'}
+                                        : 'Fornecedores cadastrados'}
                                 </h2>
+                                {!mostrarLixeira && <span className="fornecedores-contagem">{fornecedoresPagina.length} registros exibidos</span>}
+                                <p className="fornecedores-lista-descricao">
+                                    Empresas agrícolas e parceiros de compra cadastrados.
+                                </p>
                             </div>
 
-                            <button
-                                onClick={() =>
-                                    setMostrarLixeira(
-                                        (valor) => !valor,
-                                    )
-                                }
-                                type="button"
-                            >
-                                {mostrarLixeira
-                                    ? 'Ver ativos'
-                                    : 'Ver lixeira'}
-                            </button>
+                        </div>
+
+                        <div className="fornecedores-lista-filtros">
+                            <label className="fornecedores-busca" htmlFor="buscarFornecedor">
+                                <span className="material-symbols-outlined" aria-hidden="true">search</span>
+                                <input
+                                    id="buscarFornecedor"
+                                    onChange={(evento) => setBuscaFornecedor(evento.target.value)}
+                                    placeholder="Buscar por razão social, CNPJ ou insumo..."
+                                    type="search"
+                                    value={buscaFornecedor}
+                                />
+                            </label>
+                            <div className="fornecedores-filtro-categoria-wrap" ref={filtroCategoriaRef}>
+                                <button
+                                    aria-label="Filtrar fornecedores por categoria"
+                                    aria-expanded={mostrarOpcoesCategoria}
+                                    aria-controls="opcoes-categoria-fornecedor"
+                                    className={`fornecedores-filtro-categoria${filtroCategoriaFornecedor ? ' ativo' : ''}`}
+                                    onClick={() => setMostrarOpcoesCategoria((aberto) => !aberto)}
+                                    type="button"
+                                >
+                                    <span className="material-symbols-outlined" aria-hidden="true">filter_list</span>
+                                </button>
+                                {mostrarOpcoesCategoria && (
+                                    <div className="fornecedores-opcoes-categoria" id="opcoes-categoria-fornecedor" role="group" aria-label="Categorias de fornecedores">
+                                        {['', ...categoriasFornecedores].map((categoria) => (
+                                            <button
+                                                aria-pressed={filtroCategoriaFornecedor === categoria}
+                                                className={filtroCategoriaFornecedor === categoria ? 'selecionada' : ''}
+                                                key={categoria || 'todas'}
+                                                onClick={() => {
+                                                    setFiltroCategoriaFornecedor(categoria)
+                                                    setMostrarOpcoesCategoria(false)
+                                                }}
+                                                type="button"
+                                            >
+                                                {categoria || 'Todas Categorias'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {carregando ? (
                             <CarregamentoTela compacto texto="Carregando fornecedores" />
                         ) : (
                             <div className="fornecedores-itens">
-                                {(mostrarLixeira
-                                    ? lixeira
-                                    : fornecedores
-                                ).length === 0 ? (
+                                <div className="fornecedores-tabela-cabecalho" aria-hidden="true"><span>Fornecedor / identificação</span><span>Categoria</span><span>Localização</span><span>Cotações</span><span>Ações</span></div>
+                                {fornecedoresVisiveis.length === 0 ? (
                                     <p className="fornecedores-vazio">
-                                        Nenhum fornecedor encontrado.
+                                        {buscaFornecedor || filtroCategoriaFornecedor
+                                            ? 'Nenhum fornecedor corresponde à busca.'
+                                            : 'Nenhum fornecedor encontrado.'}
                                     </p>
                                 ) : (
-                                    (mostrarLixeira
-                                        ? lixeira
-                                        : fornecedores
-                                    ).map((fornecedor) => (
+                                    fornecedoresPagina.map((fornecedor) => (
                                         <article
                                             className="fornecedores-item"
                                             key={fornecedor.id}
                                         >
-                                            <div>
-                                                <strong>
-                                                    #{fornecedor.codigoCadastro}{' '}
-                                                    {fornecedor.nome}
-                                                </strong>
-                                                <span>
-                                                    {fornecedor.documento
-                                                        || 'Sem CPF/CNPJ'}{' '}
-                                                    ·{' '}
-                                                    {fornecedor.telefone
-                                                        || 'Sem telefone'}
+                                            <div className="fornecedores-item-identidade">
+                                                <span className="fornecedores-avatar" aria-hidden="true">
+                                                    {fornecedor.nome
+                                                        ?.trim()
+                                                        ?.split(/\s+/)
+                                                        ?.slice(0, 2)
+                                                        ?.map((parte) => parte.charAt(0))
+                                                        ?.join('')
+                                                        ?.toLocaleUpperCase('pt-BR') || 'F'}
                                                 </span>
+                                                <div>
+                                                    <strong>
+                                                        {fornecedor.nome}
+                                                    </strong>
+                                                    <span>
+                                                        {fornecedor.documento || 'Documento não informado'}
+                                                    </span>
+                                                </div>
                                             </div>
+                                            <div className="fornecedores-categorias-linha">
+                                                {[...(resumoFornecedor.get(String(fornecedor.id))?.categorias || [])].length ? [...(resumoFornecedor.get(String(fornecedor.id))?.categorias || [])].map((categoria) => <span className="fornecedores-categoria-tag" key={categoria} style={{ '--categoria-hue': obterTonalidadeCategoria(categoria) }}>{categoria}</span>) : <span className="fornecedores-sem-categoria">Sem categoria</span>}
+                                            </div>
+                                            <div className="fornecedores-localizacao-linha">{fornecedor.municipio ? `${fornecedor.municipio}${fornecedor.uf ? ` - ${fornecedor.uf}` : ''}` : 'Local não informado'}</div>
+                                            <div className="fornecedores-cotacoes-linha"><strong>{resumoFornecedor.get(String(fornecedor.id))?.cotacoes || 0}</strong><span>{(resumoFornecedor.get(String(fornecedor.id))?.cotacoes || 0) === 1 ? 'cotação' : 'cotações'}</span></div>
 
-                                            <div className="fornecedores-acoes-item">
+                                            <div className={`fornecedores-acoes-item${mostrarLixeira ? ' fornecedores-acoes-lixeira' : ''}`}>
                                                 {!mostrarLixeira && (
                                                     <>
                                                         <button
-                                                            onClick={() =>
-                                                                carregarCompras(
-                                                                    fornecedor,
-                                                                )
-                                                            }
-                                                            type="button"
-                                                        >
-                                                            Ver compras
-                                                        </button>
-
-                                                        <button
-                                                            onClick={() =>
+                                                            onClick={() => {
                                                                 setFornecedorForm({
                                                                     id: fornecedor.id,
                                                                     codigoCadastro:
@@ -1880,7 +2161,8 @@ function Fornecedores() {
                                                                         fornecedor.ativo
                                                                         ?? true,
                                                                 })
-                                                            }
+                                                                setMostrarFormularioFornecedor(true)
+                                                            }}
                                                             type="button"
                                                         >
                                                             Editar
@@ -1957,6 +2239,38 @@ function Fornecedores() {
                                         </article>
                                     ))
                                 )}
+                            </div>
+                        )}
+                        {!carregando && fornecedoresVisiveis.length > 0 && (
+                            <div className="fornecedores-paginacao">
+                                <span>Mostrando {inicioFornecedoresPagina + 1} a {inicioFornecedoresPagina + fornecedoresPagina.length} de {fornecedoresVisiveis.length} {mostrarLixeira ? 'fornecedores arquivados' : 'fornecedores cadastrados'}</span>
+                                <nav aria-label="Paginação de fornecedores">
+                                    <button
+                                        disabled={paginaFornecedoresAtual === 1}
+                                        onClick={() => setPaginaFornecedores((pagina) => Math.max(1, pagina - 1))}
+                                        type="button"
+                                    >
+                                        ‹ Anterior
+                                    </button>
+                                    {Array.from({ length: totalPaginasFornecedores }, (_, indice) => indice + 1).map((pagina) => (
+                                        <button
+                                            aria-current={pagina === paginaFornecedoresAtual ? 'page' : undefined}
+                                            className={pagina === paginaFornecedoresAtual ? 'atual' : ''}
+                                            key={pagina}
+                                            onClick={() => setPaginaFornecedores(pagina)}
+                                            type="button"
+                                        >
+                                            {pagina}
+                                        </button>
+                                    ))}
+                                    <button
+                                        disabled={paginaFornecedoresAtual === totalPaginasFornecedores}
+                                        onClick={() => setPaginaFornecedores((pagina) => Math.min(totalPaginasFornecedores, pagina + 1))}
+                                        type="button"
+                                    >
+                                        Próxima ›
+                                    </button>
+                                </nav>
                             </div>
                         )}
                     </section>
@@ -2132,7 +2446,7 @@ function Fornecedores() {
                         )}
                     </section>
 
-                    <section className="fornecedores-card fornecedores-lista">
+                    <section className="fornecedores-card fornecedores-lista" id="produtos-cadastrados">
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Produtos cadastrados</small>
@@ -2189,6 +2503,14 @@ function Fornecedores() {
                                 <small>Cotação</small>
                                 <h2>Registrar preco de fornecedor</h2>
                             </div>
+                            <button
+                                aria-label="Fechar formulário de cotação"
+                                className="fornecedores-fechar-formulario"
+                                onClick={() => setMostrarFormularioCotacao(false)}
+                                type="button"
+                            >
+                                <span aria-hidden="true">×</span>
+                            </button>
                         </div>
 
                         <form onSubmit={salvarCotacao}>
@@ -2423,26 +2745,8 @@ function Fornecedores() {
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Comparação</small>
-                                <h2>Produto igual com produto igual</h2>
-                            </div>
-
-                            <div className="fornecedores-acoes-item">
-                                <button
-                                    onClick={() =>
-                                        baixarRelatorio('pdf')
-                                    }
-                                    type="button"
-                                >
-                                    Baixar PDF
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        baixarRelatorio('excel')
-                                    }
-                                    type="button"
-                                >
-                                    Baixar Excel
-                                </button>
+                                <h2>Histórico de Comparação de Produtos</h2>
+                                <p className="fornecedores-historico-descricao">Acompanhe cotações anteriores, confrontando o produto pesquisado com as empresas concorrentes, variação histórica de preço e status de decisão.</p>
                             </div>
                         </div>
 
@@ -2452,121 +2756,70 @@ function Fornecedores() {
                                 fornecedores.
                             </p>
                         ) : (
-                            <div className="fornecedores-comparativo-lista">
-                                {cotacoesPorProduto.map((grupo) => (
-                                    <article
-                                        className="fornecedores-produto"
-                                        key={grupo.produtoNome}
-                                    >
-                                        <div className="fornecedores-produto-topo">
-                                            <div>
-                                                <strong>
-                                                    {grupo.produtoNome}
-                                                </strong>
-                                                <span>
-                                                    Melhor opção:{' '}
-                                                    {grupo.melhor?.fornecedorNome}
-                                                </span>
-                                            </div>
+                            <>
+                                <div className="fornecedores-historico-categorias">
+                                    <button className={!categoriaHistorico ? 'selecionada' : ''} onClick={() => setCategoriaHistorico('')} type="button">
+                                        <span className="material-symbols-outlined" aria-hidden="true">grid_view</span> Todos os Insumos <b>{cotacoes.length}</b>
+                                    </button>
+                                    {categoriasHistorico.map((categoria) => (
+                                        <button className={categoriaHistorico === categoria.nome ? 'selecionada' : ''} key={categoria.nome} onClick={() => setCategoriaHistorico(categoria.nome)} type="button">
+                                            <span className="material-symbols-outlined" aria-hidden="true">{categoria.nome.toLocaleLowerCase('pt-BR').includes('sement') ? 'grass' : categoria.nome.toLocaleLowerCase('pt-BR').includes('fert') ? 'science' : categoria.nome.toLocaleLowerCase('pt-BR').includes('defens') ? 'pest_control' : categoria.nome.toLocaleLowerCase('pt-BR').includes('combust') ? 'local_gas_station' : 'category'}</span> {categoria.nome} <b>{categoria.total}</b>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="fornecedores-historico-tabela">
+                                    <div className="fornecedores-historico-cabecalho" aria-hidden="true">
+                                        <span>Produto / especificação</span><span>Empresa / fornecedor</span><span>Status / condição</span><span>Valor cotado / unidade</span><span>Economia / diferença</span><span>Ações</span>
+                                    </div>
+                                    {linhasHistoricoPagina.map(({ cotacao, grupo, indice, media, fornecedor }) => {
+                                        const valor = obterValorComparavel(cotacao)
+                                        const menorValor = obterValorComparavel(grupo.melhor)
+                                        const variacao = grupo.itens.length > 1
+                                            ? indice === 0
+                                                ? `${((valor / (media || 1) - 1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% vs média`
+                                                : `+${((valor / (menorValor || 1) - 1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% vs melhor`
+                                            : 'Ref. safra'
+                                        const status = cotacao.status === 'COTACAO'
+                                            ? indice === 0 && grupo.itens.length > 1 ? 'Melhor oferta' : 'Em análise'
+                                            : cotacao.status === 'ENVIADA_AO_FINANCEIRO' ? 'No financeiro' : 'Enviada a pagar'
+                                        const expandida = String(cotacaoExpandida) === String(cotacao.id)
 
-                                            <strong>
-                                                {grupo.melhor?.valorPorKg
-                                                    ? `${formatarDinheiro(
-                                                        grupo.melhor.valorPorKg,
-                                                    )}/kg`
-                                                    : `${formatarDinheiro(
-                                                        grupo.melhor?.valorPorUnidade
-                                                        ?? grupo.melhor?.valorPorLote,
-                                                    )}/unid.`}
-                                            </strong>
-                                        </div>
-
-                                        <div className="fornecedores-cotacoes-lista">
-                                            {grupo.itens.map((cotacao) => (
-                                                <article
-                                                    className="fornecedores-cotacao-item"
-                                                    key={cotacao.id}
-                                                >
-                                                    <div>
-                                                        <strong>
-                                                            {cotacao.fornecedorNome}
-                                                        </strong>
-                                                        <span>
-                                                            {formatarData(
-                                                                cotacao.dataCotacao,
-                                                            )}
-                                                            {' - '}
-                                                            {cotacao.status}
-                                                        </span>
-                                                        <small>
-                                                            {formatarNumero(
-                                                                cotacao.quantidade,
-                                                            )}
-                                                            {' '}
-                                                            {cotacao.unidadeMedida}
-                                                            {' | '}
-                                                            {formatarNumero(
-                                                                cotacao.pesoTotalKg,
-                                                            )}
-                                                            {' kg'}
-                                                        </small>
+                                        return (
+                                            <div className="fornecedores-historico-registro" key={cotacao.id}>
+                                                <article className="fornecedores-historico-linha" id={`cotacao-detalhe-${cotacao.id}`}>
+                                                    <div className="fornecedores-historico-produto">
+                                                        <strong>{cotacao.produtoNome}</strong>
+                                                        {indice === 0 && grupo.itens.length > 1 && <span className="fornecedores-historico-selo"><span className="material-symbols-outlined" aria-hidden="true">verified</span> Menor preço</span>}
+                                                        <small>Lote: {formatarNumero(cotacao.quantidade)} {cotacao.unidadeMedida}{cotacao.pesoTotalKg ? ` (${formatarNumero(cotacao.pesoTotalKg)} kg)` : ''} · {cotacao.categoriaProdutoNome || 'Outros'}</small>
                                                     </div>
-
-                                                    <div>
-                                                        <strong>
-                                                            {formatarDinheiro(
-                                                                cotacao.valorLiquido,
-                                                            )}
-                                                        </strong>
-                                                        <span>
-                                                            {cotacao.valorPorKg
-                                                                ? `${formatarDinheiro(
-                                                                    cotacao.valorPorKg,
-                                                                )}/kg`
-                                                                : '-'}
-                                                        </span>
-                                                        <span>
-                                                            {cotacao.valorPorUnidade
-                                                                ? `${formatarDinheiro(
-                                                                    cotacao.valorPorUnidade,
-                                                                )}/${cotacao.unidadeMedida}`
-                                                                : '-'}
-                                                        </span>
+                                                    <div className="fornecedores-historico-fornecedor">
+                                                        <strong>{cotacao.fornecedorNome}</strong>
+                                                        <small>{[fornecedor?.municipio, fornecedor?.uf].filter(Boolean).join(' - ') || 'Local não informado'}</small>
                                                     </div>
-
-                                                    {cotacao.status
-                                                        === 'COTACAO' && (
-                                                        <div className="fornecedores-acoes-item">
-                                                            <button
-                                                                onClick={() =>
-                                                                    abrirMigracao(
-                                                                        cotacao,
-                                                                        'financeiro',
-                                                                    )
-                                                                }
-                                                                type="button"
-                                                            >
-                                                                Enviar ao dashboard
-                                                            </button>
-                                                            <button
-                                                                onClick={() =>
-                                                                    abrirMigracao(
-                                                                        cotacao,
-                                                                        'contas',
-                                                                    )
-                                                                }
-                                                                type="button"
-                                                            >
-                                                                Enviar a pagar
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                    <div className="fornecedores-historico-status"><span className={`fornecedores-status-tag ${cotacao.status === 'COTACAO' ? indice === 0 ? 'melhor' : 'analise' : 'enviada'}`}>{status}</span><small>{fornecedor?.condicaoFrete || 'Condição de frete não informada'}</small></div>
+                                                    <div className="fornecedores-historico-valor"><strong>{formatarDinheiro(valor)} <small>/ {obterUnidadeComparavel(cotacao)}</small></strong><span>Total: {formatarDinheiro(cotacao.valorLiquido ?? cotacao.valorTotal)}</span></div>
+                                                    <div className="fornecedores-historico-diferenca"><span className={indice === 0 && grupo.itens.length > 1 ? 'abaixo' : grupo.itens.length > 1 ? 'acima' : ''}>{variacao}</span></div>
+                                                    <div className="fornecedores-historico-acoes">
+                                                        <button aria-label={expandida ? 'Ocultar detalhes da cotação' : 'Ver detalhes da cotação'} onClick={() => setCotacaoExpandida(expandida ? null : cotacao.id)} type="button"><span className="material-symbols-outlined" aria-hidden="true">{expandida ? 'visibility_off' : 'visibility'}</span></button>
+                                                        <button aria-label="Enviar cotação a pagar" disabled={cotacao.status !== 'COTACAO'} onClick={() => abrirMigracao(cotacao, 'contas')} type="button"><span className="material-symbols-outlined" aria-hidden="true">receipt_long</span></button>
+                                                    </div>
                                                 </article>
-                                            ))}
-                                        </div>
-                                    </article>
-                                ))}
-                            </div>
+                                                {expandida && <div className="fornecedores-historico-detalhes"><span>Data: {formatarData(cotacao.dataCotacao)}</span><span>Quantidade: {formatarNumero(cotacao.quantidade)} {cotacao.unidadeMedida}</span><span>Frete: {formatarDinheiro(cotacao.frete)}</span><span>Desconto: {formatarDinheiro(cotacao.desconto)}</span>{fornecedor?.prazoMedioEntregaDias && <span>Prazo médio: {fornecedor.prazoMedioEntregaDias} dias</span>}{fornecedor?.prazoPagamento && <span>Pagamento: {fornecedor.prazoPagamento}</span>}{cotacao.observacao && <span>Observação: {cotacao.observacao}</span>}</div>}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                <div className="fornecedores-historico-paginacao">
+                                    <span>Mostrando {(paginaHistoricoAtual - 1) * 5 + 1} a {(paginaHistoricoAtual - 1) * 5 + linhasHistoricoPagina.length} de {linhasComparacaoFiltradas.length} cotações registradas</span>
+                                    <nav aria-label="Paginação do histórico de cotações">
+                                        <button disabled={paginaHistoricoAtual === 1} onClick={() => setPaginaHistorico((pagina) => Math.max(1, pagina - 1))} type="button">‹ Anterior</button>
+                                        {Array.from({ length: totalPaginasHistorico }, (_, indice) => indice + 1).map((pagina) => (
+                                            <button aria-current={pagina === paginaHistoricoAtual ? 'page' : undefined} className={pagina === paginaHistoricoAtual ? 'atual' : ''} key={pagina} onClick={() => setPaginaHistorico(pagina)} type="button">{pagina}</button>
+                                        ))}
+                                        <button disabled={paginaHistoricoAtual === totalPaginasHistorico} onClick={() => setPaginaHistorico((pagina) => Math.min(totalPaginasHistorico, pagina + 1))} type="button">Próxima ›</button>
+                                    </nav>
+                                </div>
+                            </>
                         )}
                     </section>
 
@@ -2577,65 +2830,130 @@ function Fornecedores() {
                         <div className="fornecedores-card-topo">
                             <div>
                                 <small>Compras registradas</small>
-                                <h2>
-                                    {fornecedorSelecionado
-                                        ? fornecedorSelecionado.nome
-                                        : 'Selecione um fornecedor'}
-                                </h2>
+                                <h2>Histórico de compras</h2>
+                            </div>
+                            <div className="fornecedores-compras-topo-acoes">
+                                <span className="fornecedores-compras-contagem">
+                                    {comprasFiltradas.length} de {compras.length} registros
+                                </span>
                             </div>
                         </div>
 
-                        {compras.length === 0 ? (
-                            <p className="fornecedores-vazio">
-                                Nenhuma compra selecionada.
-                            </p>
+                        {carregandoCompras ? (
+                            <p className="fornecedores-vazio">Carregando compras...</p>
+                        ) : compras.length === 0 ? (
+                            <p className="fornecedores-vazio">{filtroFornecedorCompras === 'todos' ? 'Nenhuma compra registrada.' : 'Nenhuma compra registrada para este fornecedor.'}</p>
                         ) : (
-                            <div className="fornecedores-compras-lista">
-                                {compras.map((compra) => (
-                                    <article
-                                        className="fornecedores-compra"
-                                        key={`${compra.origem}-${compra.origemId}`}
-                                    >
-                                        <div>
-                                            <strong>
-                                                {compra.descricao}
-                                            </strong>
-                                            <span>
-                                                {formatarData(compra.data)}
-                                                {' - '}
-                                                {compra.categoriaNome}
-                                            </span>
-                                            {compra.produtoNome && (
-                                                <span>
-                                                    {compra.produtoNome}
-                                                    {' - '}
-                                                    {compra.produtoClassificacao}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <strong>
-                                            {formatarDinheiro(
-                                                compra.valor,
-                                            )}
-                                        </strong>
-                                    </article>
-                                ))}
-                            </div>
+                            <>
+                                <div className="fornecedores-compras-filtros">
+                                    <label className="fornecedores-compras-busca">
+                                        <span className="material-symbols-outlined" aria-hidden="true">search</span>
+                                        <input aria-label="Buscar compras" onChange={(evento) => setBuscaCompra(evento.target.value)} placeholder="Buscar descrição, insumo ou categoria..." value={buscaCompra} />
+                                    </label>
+                                    <label className="fornecedores-compras-status-filtro">
+                                        <span className="material-symbols-outlined" aria-hidden="true">filter_list</span>
+                                        <select aria-label="Filtrar por situação" onChange={(evento) => setFiltroSituacaoCompra(evento.target.value)} value={filtroSituacaoCompra}>
+                                            <option value="">Todas as situações</option>
+                                            {situacoesCompras.map((situacao) => <option key={situacao} value={situacao}>{situacao}</option>)}
+                                        </select>
+                                    </label>
+                                    <label className="fornecedores-compras-fornecedor">
+                                        <span className="material-symbols-outlined" aria-hidden="true">storefront</span>
+                                        <span>Fornecedor:</span>
+                                        <select aria-label="Selecionar fornecedor das compras" disabled={carregandoCompras} onChange={(evento) => selecionarFornecedorCompras(evento.target.value)} value={filtroFornecedorCompras}>
+                                            <option value="todos">Todos os Fornecedores</option>
+                                            {fornecedores.map((fornecedor) => <option key={fornecedor.id} value={fornecedor.id}>{fornecedor.nome}</option>)}
+                                        </select>
+                                        <span className="material-symbols-outlined fornecedores-compras-seta" aria-hidden="true">expand_more</span>
+                                    </label>
+                                </div>
+                                {categoriasCompras.length > 0 && (
+                                    <div className="fornecedores-compras-categorias" aria-label="Filtrar compras por categoria">
+                                        <strong>Categoria:</strong>
+                                        <button aria-pressed={!categoriaCompra} className={!categoriaCompra ? 'ativa' : ''} onClick={() => setCategoriaCompra('')} type="button"><span className="material-symbols-outlined" aria-hidden="true">grid_view</span><span>Todos os Insumos</span><small>{compras.length}</small></button>
+                                        {categoriasCompras.map((categoria) => (
+                                            <button aria-pressed={categoriaCompra === categoria} className={categoriaCompra === categoria ? 'ativa' : ''} key={categoria} onClick={() => setCategoriaCompra(categoriaCompra === categoria ? '' : categoria)} type="button"><span className="material-symbols-outlined" aria-hidden="true">{/combust|diesel/i.test(categoria) ? 'local_gas_station' : /defensiv|sanidade/i.test(categoria) ? 'pest_control' : /fertiliz|nutrição|adubo/i.test(categoria) ? 'science' : /sement/i.test(categoria) ? 'grass' : /frete|serviço/i.test(categoria) ? 'local_shipping' : /máquina|peça|trator/i.test(categoria) ? 'agriculture' : 'category'}</span><span>{categoria}</span><small>{compras.filter((compra) => compra.categoriaNome === categoria).length}</small></button>
+                                        ))}
+                                    </div>
+                                )}
+                                {comprasFiltradas.length === 0 ? (
+                                    <p className="fornecedores-vazio">Nenhuma compra corresponde aos filtros.</p>
+                                ) : (
+                                    <div className="fornecedores-compras-tabela-rolagem">
+                                        <table className="fornecedores-compras-tabela">
+                                            <thead><tr><th>Pedido / registro</th><th>Insumo / destinação</th><th>Fornecedor</th><th>Categoria / responsável</th><th>Valor total / unitário</th><th>Status</th><th>Ações</th></tr></thead>
+                                            <tbody>
+                                                {comprasPagina.map((compra) => {
+                                                    const chave = `${compra.origem}-${compra.origemId}`
+                                                    const expandida = compraExpandida === chave
+                                                    const situacao = compra.situacao || 'Sem situação'
+                                                    const situacaoNormalizada = situacao.toLocaleLowerCase('pt-BR')
+                                                    const statusClasse = /saiu dinheiro/.test(situacaoNormalizada) ? 'saida' : /pendente/.test(situacaoNormalizada) ? 'pendente' : /pago|quitado|conclu|recebido/.test(situacaoNormalizada) ? 'concluido' : /vencid|atras/.test(situacaoNormalizada) ? 'atrasado' : 'aberto'
+                                                    return (
+                                                        <Fragment key={chave}>
+                                                            <tr>
+                                                                <td><strong>{compra.descricao || `${compra.origem} #${compra.origemId}`}</strong><small>{compra.origem} · {formatarData(compra.data)}</small></td>
+                                                                <td><strong>{compra.produtoNome || 'Insumo não informado'}</strong><small>{[compra.produtoClassificacao, compra.quantidade != null ? `${formatarNumero(compra.quantidade)} ${compra.unidadeMedida || ''}` : null].filter(Boolean).join(' · ') || 'Destinação não informada'}</small></td>
+                                                                <td><strong>{compra.fornecedorNome || fornecedorSelecionado?.nome || 'Fornecedor não informado'}</strong><small>{[compra.municipio || fornecedorSelecionado?.municipio, compra.uf || fornecedorSelecionado?.uf].filter(Boolean).join(' - ') || 'Local não informado'}</small></td>
+                                                                <td><strong>{compra.categoriaNome || 'Sem categoria'}</strong><small>{compra.compradorNome || 'Responsável não informado'}</small></td>
+                                                                <td className="fornecedores-compras-valor"><strong>{formatarDinheiro(compra.valor)}</strong><small>{compra.valorUnitario != null ? `${formatarDinheiro(compra.valorUnitario)} / ${compra.unidadeMedida || 'un.'}` : 'Valor unitário não informado'}</small></td>
+                                                                <td><span className={`fornecedores-compra-status ${statusClasse}`}>{situacao}</span></td>
+                                                                <td><button aria-label={expandida ? 'Ocultar detalhes da compra' : 'Ver detalhes da compra'} className="fornecedores-compra-detalhe" onClick={() => setCompraExpandida(expandida ? null : chave)} type="button"><span className="material-symbols-outlined" aria-hidden="true">{expandida ? 'visibility_off' : 'visibility'}</span></button></td>
+                                                            </tr>
+                                                            {expandida && <tr className="fornecedores-compras-detalhes"><td colSpan="7"><span>Descrição: {compra.descricao || 'Não informada'}</span><span>Origem: {compra.origem}</span><span>Comprador: {compra.compradorNome || 'Não informado'}</span><span>Categoria: {compra.categoriaNome || 'Não informada'}</span></td></tr>}
+                                                        </Fragment>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                                {comprasFiltradas.length > 0 && (
+                                    <div className="fornecedores-compras-paginacao">
+                                        <span>Mostrando {(paginaComprasAtual - 1) * 5 + 1} a {Math.min(paginaComprasAtual * 5, comprasFiltradas.length)} de {comprasFiltradas.length} compras</span>
+                                        <nav aria-label="Paginação das compras registradas">
+                                            <button disabled={paginaComprasAtual === 1} onClick={() => setPaginaCompras((pagina) => Math.max(1, pagina - 1))} type="button">‹ Anterior</button>
+                                            <span>Página {paginaComprasAtual} de {totalPaginasCompras}</span>
+                                            <button disabled={paginaComprasAtual === totalPaginasCompras} onClick={() => setPaginaCompras((pagina) => Math.min(totalPaginasCompras, pagina + 1))} type="button">Próxima ›</button>
+                                        </nav>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </section>
-                </main>
+
+                </div>
+
+                <section className="fornecedores-atalhos-painel fornecedores-atalhos-rodape" aria-label="Mais recursos de compras">
+                    <a href="#categorias-produtos"><span className="material-symbols-outlined">category</span><div><strong>Categorias de insumos</strong><small>Gerenciar grupos e unidades</small></div></a>
+                    <a href="#comparar-precos"><span className="material-symbols-outlined">query_stats</span><div><strong>Histórico de preços</strong><small>Série de cotações registradas</small></div></a>
+                    <button onClick={() => baixarRelatorio('excel')} type="button"><span className="material-symbols-outlined">description</span><div><strong>Relatório de compras</strong><small>Exportar dados da safra</small></div></button>
+                    <button onClick={() => setMostrarLixeira(true)} type="button"><span className="material-symbols-outlined">inventory_2</span><div><strong>Lixeira &amp; inativos</strong><small>{lixeira.length} fornecedor(es) arquivado(s)</small></div></button>
+                </section>
 
                 {confirmacao && (
-                    <div className="fornecedores-modal-fundo">
+                    <div
+                        className="fornecedores-modal-fundo fornecedores-confirmacao-fundo"
+                        onClick={() => !salvando && setConfirmacao(null)}
+                    >
                         <div
                             aria-modal="true"
-                            className="fornecedores-modal"
+                            aria-labelledby="fornecedores-confirmacao-titulo"
+                            className="fornecedores-modal fornecedores-confirmacao-modal"
                             role="dialog"
+                            onClick={(evento) => evento.stopPropagation()}
                         >
-                            <h2>{confirmacao.titulo}</h2>
+                            <div className="fornecedores-confirmacao-icone" aria-hidden="true">
+                                <span className="material-symbols-outlined">
+                                    {confirmacao.metodo === 'PATCH' ? 'restore_from_trash' : 'delete_outline'}
+                                </span>
+                            </div>
+                            <h2 id="fornecedores-confirmacao-titulo">{confirmacao.titulo}</h2>
                             <p>{confirmacao.texto}</p>
                             <div className="fornecedores-modal-acoes">
                                 <button
+                                    className="fornecedores-confirmacao-cancelar"
+                                    disabled={salvando}
                                     onClick={() =>
                                         setConfirmacao(null)
                                     }
@@ -2644,12 +2962,18 @@ function Fornecedores() {
                                     Cancelar
                                 </button>
                                 <button
-                                    className="perigo"
+                                    className="fornecedores-confirmacao-confirmar"
                                     disabled={salvando}
                                     onClick={executarConfirmacao}
                                     type="button"
                                 >
-                                    Confirmar
+                                    {salvando
+                                        ? 'Aguarde…'
+                                        : confirmacao.metodo === 'PATCH'
+                                            ? 'Restaurar fornecedor'
+                                            : confirmacao.caminho.endsWith('/permanente')
+                                                ? 'Excluir definitivamente'
+                                                : 'Mover para lixeira'}
                                 </button>
                             </div>
                         </div>
@@ -2825,6 +3149,7 @@ function Fornecedores() {
                 )}
             </div>
         </div>
+        </ShellDashboard>
     )
 }
 

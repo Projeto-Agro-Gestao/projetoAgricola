@@ -31,3 +31,5 @@ videos/pos-producao/musica/*.mp3
 videos/pos-producao/musica/*.m4a
 videos/pos-producao/musica/*.wav
 videos/pos-producao/audio/
+.vercel
+.env*

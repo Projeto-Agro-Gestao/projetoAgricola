@@ -1445,19 +1445,55 @@
     color: var(--ag-on-primary, #fff);
     box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45);
     cursor: pointer;
+    overflow: visible;
     transition: transform 160ms ease, box-shadow 160ms ease;
-    animation: contas-fab-pulso 2.2s ease-in-out infinite;
+    animation: contas-fab-pulso 2s ease-in-out infinite;
 }
 
-/* Pulso contínuo para chamar atenção para o botão de ações rápidas. */
+/* Anel externo de onda — pseudo-elemento posicionado sobre o FAB. */
+.contas-fab::before,
+.contas-fab::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid color-mix(in oklch, var(--ag-primary) 70%, transparent);
+    animation: contas-fab-onda 2s ease-out infinite;
+    pointer-events: none;
+}
+
+.contas-fab::after {
+    animation-delay: 0.75s;
+    border-color: color-mix(in oklch, var(--ag-primary) 50%, transparent);
+}
+
+/* Pulso principal: escala + sombra. */
 @keyframes contas-fab-pulso {
     0%, 100% {
+        transform: scale(1);
         box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45),
             0 0 0 0 color-mix(in oklch, var(--ag-primary) 55%, transparent);
     }
-    50% {
-        box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45),
+    45% {
+        transform: scale(1.07);
+        box-shadow: 0 14px 36px -8px rgb(9 24 11 / 0.55),
             0 0 0 10px color-mix(in oklch, var(--ag-primary) 0%, transparent);
+    }
+    55% {
+        transform: scale(1.07);
+    }
+}
+
+/* Onda expansiva dos pseudo-elementos. */
+@keyframes contas-fab-onda {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
     }
 }
 
@@ -1467,8 +1503,18 @@
     animation-play-state: paused;
 }
 
+.contas-fab:hover::before,
+.contas-fab:hover::after,
+.contas-fab[aria-expanded="true"]::before,
+.contas-fab[aria-expanded="true"]::after {
+    animation-play-state: paused;
+    opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .contas-fab {
+    .contas-fab,
+    .contas-fab::before,
+    .contas-fab::after {
         animation: none;
     }
 }
