@@ -429,6 +429,12 @@ function ContasFinanceiras() {
     const [menuAcoesAberto, setMenuAcoesAberto] =
         useState(false)
 
+    const [filtroSituacaoAberto, setFiltroSituacaoAberto] =
+        useState(false)
+
+    const [modalAlertaAberto, setModalAlertaAberto] =
+        useState(false)
+
     const [carregando, setCarregando] =
         useState(true)
 
@@ -893,6 +899,34 @@ function ContasFinanceiras() {
                     ),
             [contas],
         )
+
+    // Agregados do modal "Atenção aos Vencimentos", derivados dos lembretes
+    // reais (/lembretes). Vencidas: vencida === true. Próximas: a vencer em
+    // até 7 dias e não vencidas.
+    const resumoAlerta =
+        useMemo(() => {
+            const vencidas = lembretes.filter(
+                (item) => item.vencida === true,
+            )
+            const proximas = lembretes.filter(
+                (item) =>
+                    item.vencida !== true
+                    && Number(item.diasParaVencimento ?? 999) <= 7,
+            )
+            const somar = (lista) =>
+                lista.reduce(
+                    (soma, item) =>
+                        soma + Number(item.valorPendente ?? 0),
+                    0,
+                )
+            return {
+                vencidas,
+                proximas,
+                totalEmAtraso: somar(vencidas),
+                aVencer7Dias: somar(proximas),
+                impactoCaixa: somar(lembretes),
+            }
+        }, [lembretes])
 
     // Próximo grande vencimento: derivado da lista — conta a pagar ainda
     // pendente com a data de vencimento mais próxima no futuro.
@@ -1476,6 +1510,16 @@ function ContasFinanceiras() {
     ]
 
     // Chips de situação (mesma estrutura visual das abas). Reusa o estado
+    // Opções do filtro de situação (dropdown do funil). Reusa o estado
+    // `situacao`, que já filtra a lista via backend (dep de carregarDados).
+    const opcoesSituacao = [
+        { rotulo: 'Todas as situações', valor: '' },
+        { rotulo: 'Pendentes', valor: 'PENDENTE' },
+        { rotulo: 'Parcialmente quitadas', valor: 'PARCIAL' },
+        { rotulo: 'Quitadas', valor: 'QUITADA' },
+        { rotulo: 'Canceladas', valor: 'CANCELADA' },
+    ]
+
     // Período: mapeia os chips para a janela de dias já existente (diasGrafico).
     // ponytail: um preset "Este Mês (mês-calendário)" exigiria filtro por mês no
     // /projecao do backend; hoje é sempre uma janela de N dias a partir de hoje.
@@ -1521,14 +1565,6 @@ function ContasFinanceiras() {
                     </div>
 
                     <div className="ag-fin-filtros-direita">
-                        <button
-                            className="ag-fin-botao ag-fin-botao-contorno"
-                            onClick={abrirCategorias}
-                            type="button"
-                        >
-                            <Icone nome="sell" tamanho={18} />
-                            Filtrar por Categoria
-                        </button>
 
                         <button
                             className="ag-fin-botao"
@@ -1582,9 +1618,13 @@ function ContasFinanceiras() {
                             </p>
                         </div>
 
-                        <a href="#lista-contas">
+                        <button
+                            className="contas-alerta-botao"
+                            onClick={() => setModalAlertaAberto(true)}
+                            type="button"
+                        >
                             Ver contas
-                        </a>
+                        </button>
                     </section>
                 )}
 
@@ -1991,27 +2031,71 @@ function ContasFinanceiras() {
                                 <Icone nome="refresh" tamanho={18} />
                             </button>
 
-                            {/* ponytail: ícones de visão (lista/compacto) são
-                               placeholders decorativos — não há função de
-                               alternância de visão definida pelo produto/backend
-                               hoje. Viram um follow-up isolado quando houver. */}
-                            <button
-                                aria-label="Visão em lista (indisponível)"
-                                className="contas-lista-acao"
-                                disabled
-                                type="button"
-                            >
-                                <Icone nome="view_list" tamanho={18} />
-                            </button>
+                            <div className="contas-filtro-funil">
+                                <button
+                                    aria-expanded={filtroSituacaoAberto}
+                                    aria-haspopup="menu"
+                                    aria-label="Filtrar por situação"
+                                    className={`contas-lista-acao ${
+                                        situacao !== ''
+                                            ? 'contas-lista-acao-ativa'
+                                            : ''
+                                    }`}
+                                    onClick={() =>
+                                        setFiltroSituacaoAberto(
+                                            (aberto) => !aberto,
+                                        )
+                                    }
+                                    title="Filtrar por situação"
+                                    type="button"
+                                >
+                                    <Icone nome="filter_list" tamanho={18} />
+                                </button>
 
-                            <button
-                                aria-label="Visão compacta (indisponível)"
-                                className="contas-lista-acao"
-                                disabled
-                                type="button"
-                            >
-                                <Icone nome="view_agenda" tamanho={18} />
-                            </button>
+                                {filtroSituacaoAberto && (
+                                    <>
+                                        <button
+                                            aria-label="Fechar filtro"
+                                            className="contas-filtro-overlay"
+                                            onClick={() =>
+                                                setFiltroSituacaoAberto(false)
+                                            }
+                                            type="button"
+                                        />
+
+                                        <div
+                                            className="contas-filtro-menu"
+                                            role="menu"
+                                        >
+                                            {opcoesSituacao.map((opcao) => (
+                                                <button
+                                                    aria-current={
+                                                        situacao === opcao.valor
+                                                            ? 'true'
+                                                            : undefined
+                                                    }
+                                                    className={`contas-filtro-opcao ${
+                                                        situacao === opcao.valor
+                                                            ? 'contas-filtro-opcao-ativa'
+                                                            : ''
+                                                    }`}
+                                                    key={opcao.valor || 'todas'}
+                                                    onClick={() => {
+                                                        setSituacao(opcao.valor)
+                                                        setFiltroSituacaoAberto(
+                                                            false,
+                                                        )
+                                                    }}
+                                                    role="menuitem"
+                                                    type="button"
+                                                >
+                                                    {opcao.rotulo}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                     </div>
@@ -2864,6 +2948,144 @@ function ContasFinanceiras() {
                                 </button>
                             </div>
                         </form>
+                    </section>
+                </div>
+            )}
+
+            {modalAlertaAberto && (
+                <div className="contas-modal-fundo" role="presentation">
+                    <section
+                        aria-modal="true"
+                        className="contas-modal contas-alerta-modal"
+                        role="dialog"
+                    >
+                        <div className="contas-alerta-modal-topo">
+                            <div className="contas-alerta-modal-titulo">
+                                <span className="contas-alerta-modal-icone">
+                                    <Icone nome="warning" tamanho={22} />
+                                </span>
+                                <div>
+                                    <h2>Atenção aos Vencimentos</h2>
+                                    <div className="contas-alerta-modal-tags">
+                                        {resumoAlerta.vencidas.length > 0 && (
+                                            <span className="contas-alerta-tag contas-alerta-tag-vencida">
+                                                {resumoAlerta.vencidas.length} vencida(s)
+                                            </span>
+                                        )}
+                                        {resumoAlerta.proximas.length > 0 && (
+                                            <span className="contas-alerta-tag contas-alerta-tag-proxima">
+                                                {resumoAlerta.proximas.length} próxima(s) (até 7 dias)
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                aria-label="Fechar"
+                                className="contas-alerta-modal-fechar"
+                                onClick={() => setModalAlertaAberto(false)}
+                                type="button"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <p className="contas-alerta-modal-sub">
+                            Contas com vencimento nos próximos 7 dias ou em atraso que requerem atenção para manter o fluxo saudável.
+                        </p>
+
+                        <div className="contas-alerta-kpis">
+                            <div className="contas-alerta-kpi contas-alerta-kpi-atraso">
+                                <span>Total em atraso</span>
+                                <strong>
+                                    {formatarDinheiro(resumoAlerta.totalEmAtraso)}
+                                </strong>
+                                <small>
+                                    {resumoAlerta.vencidas.length} título(s)
+                                </small>
+                            </div>
+
+                            <div className="contas-alerta-kpi contas-alerta-kpi-proximo">
+                                <span>A vencer em 7 dias</span>
+                                <strong>
+                                    {formatarDinheiro(resumoAlerta.aVencer7Dias)}
+                                </strong>
+                                <small>
+                                    {resumoAlerta.proximas.length} título(s)
+                                </small>
+                            </div>
+
+                            <div className="contas-alerta-kpi contas-alerta-kpi-impacto">
+                                <span>Impacto no caixa</span>
+                                <strong>
+                                    {formatarDinheiro(resumoAlerta.impactoCaixa)}
+                                </strong>
+                                <small>
+                                    {lembretes.length} título(s)
+                                </small>
+                            </div>
+                        </div>
+
+                        <div className="contas-alerta-lista">
+                            {lembretes.map((item) => (
+                                <article
+                                    className={`contas-alerta-item ${
+                                        item.vencida
+                                            ? 'contas-alerta-item-vencida'
+                                            : ''
+                                    }`}
+                                    key={item.id}
+                                >
+                                    <div className="contas-alerta-item-info">
+                                        <strong>{item.descricao}</strong>
+
+                                        <span className="contas-alerta-item-venc">
+                                            {item.vencida
+                                                ? 'Vencido'
+                                                : 'Vence'}{' '}
+                                            em {formatarData(item.dataVencimento)}
+                                            {' · '}
+                                            {obterTextoVencimento(item)}
+                                        </span>
+
+                                        {(item.favorecido
+                                            || item.fornecedorNome
+                                            || item.categoriaNome) && (
+                                            <small>
+                                                {[
+                                                    item.categoriaNome,
+                                                    item.favorecido,
+                                                    item.fornecedorNome,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(' · ')}
+                                            </small>
+                                        )}
+                                    </div>
+
+                                    <div className="contas-alerta-item-direita">
+                                        <strong className="contas-valor-pagar">
+                                            {formatarDinheiro(item.valorPendente)}
+                                        </strong>
+
+                                        {item.situacao !== 'QUITADA'
+                                            && item.situacao !== 'CANCELADA' && (
+                                                <button
+                                                    className="contas-acao-principal"
+                                                    onClick={() => {
+                                                        setModalAlertaAberto(false)
+                                                        abrirLiquidacao(item)
+                                                    }}
+                                                    type="button"
+                                                >
+                                                    Quitar
+                                                </button>
+                                            )}
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
                     </section>
                 </div>
             )}

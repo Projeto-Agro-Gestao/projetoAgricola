@@ -106,15 +106,25 @@
     font-size: 0.78rem;
 }
 
-.contas-alerta a {
+.contas-alerta a,
+.contas-alerta-botao {
     margin-left: auto;
     padding: 9px 13px;
+    border: 0;
     border-radius: var(--radius);
     background: var(--foreground);
     color: var(--card);
+    font: inherit;
     font-size: 0.74rem;
     font-weight: 600;
     text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: filter 160ms ease;
+}
+
+.contas-alerta-botao:hover {
+    filter: brightness(1.15);
 }
 
 .contas-lista-painel {
@@ -937,7 +947,8 @@
         flex-wrap: wrap;
     }
 
-    .contas-alerta a {
+    .contas-alerta a,
+    .contas-alerta-botao {
         width: 100%;
         margin-left: 0;
         text-align: center;
@@ -1433,6 +1444,31 @@
     box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45);
     cursor: pointer;
     transition: transform 160ms ease, box-shadow 160ms ease;
+    animation: contas-fab-pulso 2.2s ease-in-out infinite;
+}
+
+/* Pulso contínuo para chamar atenção para o botão de ações rápidas. */
+@keyframes contas-fab-pulso {
+    0%, 100% {
+        box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45),
+            0 0 0 0 color-mix(in oklch, var(--ag-primary) 55%, transparent);
+    }
+    50% {
+        box-shadow: 0 10px 30px -8px rgb(9 24 11 / 0.45),
+            0 0 0 10px color-mix(in oklch, var(--ag-primary) 0%, transparent);
+    }
+}
+
+/* Pausa o pulso quando o menu está aberto ou no hover (já há interação). */
+.contas-fab:hover,
+.contas-fab[aria-expanded="true"] {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .contas-fab {
+        animation: none;
+    }
 }
 
 /* Tooltip "Ações rápidas" à esquerda do FAB (hover/focus). */
@@ -1501,4 +1537,260 @@
 @keyframes contas-fab-entra {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Filtro de situação (funil) --------------------------------- */
+.contas-filtro-funil {
+    position: relative;
+    display: inline-flex;
+}
+
+.contas-lista-acao-ativa {
+    border-color: var(--ag-primary, #3b7b00);
+    color: var(--ag-primary, #3b7b00);
+}
+
+.contas-filtro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    border: 0;
+    background: transparent;
+    cursor: default;
+}
+
+.contas-filtro-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 210px;
+    padding: 6px;
+    border: 1px solid var(--ag-outline-variant, #d4d4d8);
+    border-radius: var(--ag-radius-lg, 10px);
+    background: var(--ag-surface-lowest, #fff);
+    box-shadow: 0 16px 40px -12px rgb(9 24 11 / 0.26);
+    animation: contas-fab-entra 140ms ease;
+}
+
+.contas-filtro-opcao {
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ag-on-surface, #1e293b);
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.contas-filtro-opcao:hover {
+    background: var(--ag-surface-high, #f1f5f0);
+}
+
+.contas-filtro-opcao-ativa {
+    color: var(--ag-primary, #3b7b00);
+    font-weight: 700;
+}
+
+/* ---- Modal "Atenção aos Vencimentos" ---------------------------- */
+.contas-alerta-modal {
+    width: min(880px, 100%);
+    text-align: left;
+}
+
+.contas-alerta-modal-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.contas-alerta-modal-titulo {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.contas-alerta-modal-icone {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: color-mix(in oklch, var(--destructive) 14%, white);
+    color: var(--destructive);
+}
+
+.contas-alerta-modal-titulo h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.contas-alerta-modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.contas-alerta-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.contas-alerta-tag-vencida {
+    background: color-mix(in oklch, var(--destructive) 14%, white);
+    color: var(--destructive);
+}
+
+.contas-alerta-tag-proxima {
+    background: var(--ag-secondary-fixed, #fde7cf);
+    color: var(--ag-secondary, #b45309);
+}
+
+.contas-alerta-modal-fechar {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    background: var(--card);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.contas-alerta-modal-sub {
+    margin: 12px 0 18px;
+    color: var(--muted-foreground);
+    font-size: 0.82rem;
+}
+
+.contas-alerta-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.contas-alerta-kpi {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.contas-alerta-kpi span {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+}
+
+.contas-alerta-kpi strong {
+    display: block;
+    margin: 6px 0 2px;
+    font-size: 1.3rem;
+}
+
+.contas-alerta-kpi small {
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+}
+
+.contas-alerta-kpi-atraso {
+    background: color-mix(in oklch, var(--destructive) 6%, white);
+    border-color: color-mix(in oklch, var(--destructive) 22%, white);
+}
+.contas-alerta-kpi-atraso strong { color: var(--destructive); }
+
+.contas-alerta-kpi-proximo {
+    background: var(--ag-secondary-fixed, #fde7cf);
+}
+.contas-alerta-kpi-proximo strong { color: var(--ag-secondary, #b45309); }
+
+.contas-alerta-kpi-impacto {
+    background: color-mix(in oklch, var(--primary) 6%, white);
+    border-color: color-mix(in oklch, var(--primary) 22%, white);
+}
+.contas-alerta-kpi-impacto strong { color: var(--primary); }
+
+.contas-alerta-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 42vh;
+    overflow-y: auto;
+}
+
+.contas-alerta-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--ag-secondary, #b45309);
+    border-radius: 10px;
+}
+
+.contas-alerta-item-vencida {
+    border-left-color: var(--destructive);
+}
+
+.contas-alerta-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.contas-alerta-item-info strong {
+    font-size: 0.9rem;
+}
+
+.contas-alerta-item-venc {
+    font-size: 0.76rem;
+    color: var(--muted-foreground);
+}
+
+.contas-alerta-item-info small {
+    font-size: 0.72rem;
+    color: var(--muted-foreground);
+}
+
+.contas-alerta-item-direita {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.contas-alerta-item-direita strong {
+    font-size: 1rem;
+}
+
+@media (max-width: 720px) {
+    .contas-alerta-kpis {
+        grid-template-columns: 1fr;
+    }
+    .contas-alerta-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .contas-alerta-item-direita {
+        align-items: flex-start;
+    }
 }
