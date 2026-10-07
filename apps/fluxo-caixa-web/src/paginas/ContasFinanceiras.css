@@ -1256,7 +1256,9 @@
 
 /* ---- Layout da lista: coluna única (o painel lateral virou FAB) --- */
 
-.ag-contas-layout {
+/* Especificidade maior que .ag-fin-analytics (Dashboard.css): em produção a
+   ordem dos CSS muda e a grade de 2 colunas do Dashboard vencia. */
+.ag-fin-analytics.ag-contas-layout {
     grid-template-columns: 1fr;
     align-items: start;
 }
