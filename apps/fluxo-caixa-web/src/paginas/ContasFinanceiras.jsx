@@ -2162,7 +2162,6 @@ function ContasFinanceiras() {
                                                                 : 'contas-valor-pagar'
                                                         }
                                                     >
-                                                        {ehReceber ? '+' : '-'}{' '}
                                                         {formatarDinheiro(
                                                             conta.valorPendente,
                                                         )}
@@ -2254,15 +2253,17 @@ function ContasFinanceiras() {
                                                                 {conta.situacao !== 'QUITADA'
                                                                     && conta.situacao !== 'CANCELADA' && (
                                                                         <button
-                                                                            className="contas-acao-perigo"
+                                                                            aria-label="Enviar para lixeira"
+                                                                            className="contas-acao-icone contas-acao-perigo"
                                                                             onClick={() =>
                                                                                 abrirCancelamento(
                                                                                     conta,
                                                                                 )
                                                                             }
+                                                                            title="Enviar para lixeira"
                                                                             type="button"
                                                                         >
-                                                                            Enviar para lixeira
+                                                                            <Icone nome="delete" tamanho={18} />
                                                                         </button>
                                                                     )}
                                                             </>
