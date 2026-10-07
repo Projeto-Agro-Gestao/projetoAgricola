@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.contafinanceira;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.categoria.CategoriaNaoEncontradaException;
 import br.com.fluxocaixa.categoria.CategoriaRepository;
@@ -480,7 +482,7 @@ public class ContaFinanceiraService {
                             criarDescricaoMovimentacao(conta),
                             valorPendente,
                             tipoMovimentacao,
-                            LocalDate.now(),
+                            FusoHorario.hoje(),
                             criarObservacaoMovimentacao(
                                     conta,
                                     request.observacao()
@@ -501,7 +503,7 @@ public class ContaFinanceiraService {
 
         conta.marcarEnviadaAoFinanceiro(
                 movimentacaoSalva,
-                LocalDate.now()
+                FusoHorario.hoje()
         );
 
         ContaFinanceira contaSalva =
@@ -527,7 +529,7 @@ public class ContaFinanceiraService {
 
         if (
                 request.dataLiquidacao()
-                        .isAfter(LocalDate.now())
+                        .isAfter(FusoHorario.hoje())
         ) {
             throw new
                     OperacaoContaFinanceiraInvalidaException(
@@ -684,7 +686,7 @@ public class ContaFinanceiraService {
         buscarEmpresa(empresaId);
 
         LocalDate dataAtual =
-                LocalDate.now();
+                FusoHorario.hoje();
 
         LocalDate dataLimite =
                 dataAtual.plusDays(
@@ -723,7 +725,7 @@ public class ContaFinanceiraService {
 
         if (dataInicial == null) {
             dataInicial =
-                    LocalDate.now();
+                    FusoHorario.hoje();
         }
 
         if (dataFinal == null) {
@@ -768,7 +770,7 @@ public class ContaFinanceiraService {
                                 empresaId
                         );
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         LocalDate inicio = dataInicial;
         LocalDate fim = dataFinal;
@@ -854,7 +856,7 @@ public class ContaFinanceiraService {
 
         LocalDate inicio =
                 dataInicial == null
-                        ? LocalDate.now()
+                        ? FusoHorario.hoje()
                         : dataInicial;
 
         LocalDate fim =

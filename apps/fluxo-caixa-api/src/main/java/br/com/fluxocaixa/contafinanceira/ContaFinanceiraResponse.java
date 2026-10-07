@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.contafinanceira;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,7 +65,7 @@ public record ContaFinanceiraResponse(
 
         return de(
                 conta,
-                LocalDate.now()
+                FusoHorario.hoje()
         );
     }
 

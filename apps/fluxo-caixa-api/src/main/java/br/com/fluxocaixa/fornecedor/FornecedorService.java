@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.fornecedor;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.empresa.Empresa;
 import br.com.fluxocaixa.empresa.EmpresaNaoEncontradaException;
 import br.com.fluxocaixa.empresa.EmpresaRepository;
@@ -277,7 +279,7 @@ public class FornecedorService {
 
         verificarEmpresa(empresaId);
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         LocalDate inicioMes = hoje.withDayOfMonth(1);
         LocalDate inicioAno = hoje.withDayOfYear(1);
 
@@ -697,7 +699,7 @@ public class FornecedorService {
                         cotacao.getValorLiquido(),
                         TipoMovimentacao.DESPESA,
                         request.dataMovimentacao() == null
-                                ? LocalDate.now()
+                                ? FusoHorario.hoje()
                                 : request.dataMovimentacao(),
                         criarObservacaoCotacao(
                                 cotacao,
@@ -749,7 +751,7 @@ public class FornecedorService {
                         TipoMovimentacao.DESPESA
                 );
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         ContaFinanceira conta =
                 new ContaFinanceira(
@@ -1679,7 +1681,7 @@ public class FornecedorService {
                         .add(cotacao)
         );
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         return porProduto
                 .values()
@@ -1890,7 +1892,7 @@ public class FornecedorService {
 
         long dias = ChronoUnit.DAYS.between(
                 data,
-                LocalDate.now()
+                FusoHorario.hoje()
         );
 
         if (dias == 0) {

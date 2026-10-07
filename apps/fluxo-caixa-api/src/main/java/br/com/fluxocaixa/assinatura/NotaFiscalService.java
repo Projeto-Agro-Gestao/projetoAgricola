@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.integration.asaas.AsaasClient;
 import br.com.fluxocaixa.integration.asaas.AsaasException;
 import br.com.fluxocaixa.integration.asaas.AsaasInvoiceRequest;
@@ -80,7 +82,7 @@ public class NotaFiscalService {
         garantirConfiguracaoFiscal(configuracao);
         garantirFiscalInfoConfigurado();
 
-        LocalDate emissao = LocalDate.now();
+        LocalDate emissao = FusoHorario.hoje();
         String descricao = montarDescricao(configuracao, pagamento);
         String codigoServico = primeiroTexto(
                 configuracao.getNfseMunicipalServiceCode(),
@@ -322,7 +324,7 @@ public class NotaFiscalService {
             AssinaturaPagamento pagamento) {
 
         LocalDate competencia = pagamento.getPagoEm() == null
-                ? LocalDate.now()
+                ? FusoHorario.hoje()
                 : pagamento.getPagoEm();
 
         return configuracao.getNfseServiceDescriptionTemplate()

@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.usuario.Usuario;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -46,7 +48,7 @@ public class AssinaturaAcessoService {
 
         atualizarStatusTrial(
                 assinatura,
-                LocalDate.now(),
+                FusoHorario.hoje(),
                 configuracao
         );
 
@@ -61,7 +63,7 @@ public class AssinaturaAcessoService {
         AssinaturaStatus status =
                 calcularStatusAtual(
                         assinatura,
-                        LocalDate.now(),
+                        FusoHorario.hoje(),
                         buscarConfiguracao()
                 );
 
@@ -191,7 +193,7 @@ public class AssinaturaAcessoService {
             Assinatura assinatura,
             AssinaturaConfiguracao configuracao) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         AssinaturaStatus statusAtual =
                 calcularStatusAtual(
                         assinatura,

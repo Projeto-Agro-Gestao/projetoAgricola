@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.categoria.AreaCategoria;
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.categoria.CategoriaRepository;
@@ -96,7 +98,7 @@ public class AssinaturaService {
         AssinaturaConfiguracao configuracao =
                 acessoService.buscarConfiguracao();
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         LocalDate fimTrial = configuracao.isTrialHabilitado()
                 ? hoje.plusDays(configuracao.getDiasTrialPadrao())
                 : null;
@@ -125,7 +127,7 @@ public class AssinaturaService {
 
         acessoService.atualizarStatusTrial(
                 assinatura,
-                LocalDate.now(),
+                FusoHorario.hoje(),
                 configuracao
         );
 
@@ -423,14 +425,14 @@ public class AssinaturaService {
 
         Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
         LocalDate base = assinatura.getTrialFim() == null
-                || assinatura.getTrialFim().isBefore(LocalDate.now())
-                ? LocalDate.now()
+                || assinatura.getTrialFim().isBefore(FusoHorario.hoje())
+                ? FusoHorario.hoje()
                 : assinatura.getTrialFim();
 
         int dias = request.dias() == null ? 1 : request.dias();
         assinatura.definirTrial(
                 assinatura.getTrialInicio() == null
-                        ? LocalDate.now()
+                        ? FusoHorario.hoje()
                         : assinatura.getTrialInicio(),
                 base.plusDays(dias)
         );
@@ -454,7 +456,7 @@ public class AssinaturaService {
         Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
         assinatura.definirTrial(
                 assinatura.getTrialInicio() == null
-                        ? LocalDate.now()
+                        ? FusoHorario.hoje()
                         : assinatura.getTrialInicio(),
                 request.trialFim()
         );
@@ -468,7 +470,7 @@ public class AssinaturaService {
         validarAdministrador();
 
         Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
-        assinatura.encerrarTrial(LocalDate.now());
+        assinatura.encerrarTrial(FusoHorario.hoje());
 
         return acessoService.obterResumo(empresaId);
     }
@@ -624,7 +626,7 @@ public class AssinaturaService {
                 "assinatura-" + assinatura.getId()
                         + "-" + UUID.randomUUID();
 
-        LocalDate vencimento = LocalDate.now().plusDays(3);
+        LocalDate vencimento = FusoHorario.hoje().plusDays(3);
 
         AsaasPaymentResponse response =
                 criarPagamentoAsaasComRecuperacaoDeCustomer(
@@ -799,7 +801,7 @@ public class AssinaturaService {
                         pagamento.getValor(),
                         TipoMovimentacao.RECEITA,
                         pagamento.getPagoEm() == null
-                                ? LocalDate.now()
+                                ? FusoHorario.hoje()
                                 : pagamento.getPagoEm(),
                         "Receita registrada automaticamente pelo Asaas."
                 )
@@ -846,7 +848,7 @@ public class AssinaturaService {
 
         acessoService.atualizarStatusTrial(
                 assinatura,
-                LocalDate.now(),
+                FusoHorario.hoje(),
                 configuracao
         );
 
@@ -862,7 +864,7 @@ public class AssinaturaService {
                 assinatura.getValorMensal(),
                 acessoService.calcularStatusAtual(
                         assinatura,
-                        LocalDate.now(),
+                        FusoHorario.hoje(),
                         configuracao
                 ),
                 assinatura.getTrialInicio(),

@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.colaboracao;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.categoria.Categoria;
 import br.com.fluxocaixa.categoria.CategoriaRepository;
 import br.com.fluxocaixa.empresa.Empresa;
@@ -100,7 +102,7 @@ public class ColaboracaoService {
         Usuario usuario = usuarioAtual();
         validarAcessoEmpresa(usuario, empresaId);
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         LocalDate inicio = hoje.withDayOfMonth(1);
         LocalDate fim = hoje.withDayOfMonth(
                 hoje.lengthOfMonth()
@@ -155,7 +157,7 @@ public class ColaboracaoService {
 
         List<Empresa> empresas = empresasAcessiveisNaCarteira(contador);
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         LocalDate inicio = hoje.withDayOfMonth(1);
         LocalDate fim = hoje.withDayOfMonth(
                 hoje.lengthOfMonth()
@@ -1260,7 +1262,7 @@ public class ColaboracaoService {
                                         ? RegimeTributario.OUTRO
                                         : request.regime(),
                                 request.dataInicio() == null
-                                        ? LocalDate.now()
+                                        ? FusoHorario.hoje()
                                         : request.dataInicio(),
                                 request.dataFim(),
                                 request.competencia(),
@@ -1513,7 +1515,7 @@ public class ColaboracaoService {
             LocalDate dataInicial,
             LocalDate dataFinal) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
         LocalDate inicio = dataInicial == null
                 ? LocalDate.of(hoje.getYear(), 1, 1)
                 : dataInicial;

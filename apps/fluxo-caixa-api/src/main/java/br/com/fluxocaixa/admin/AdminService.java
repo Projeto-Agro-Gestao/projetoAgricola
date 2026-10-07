@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.admin;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.categoria.CategoriaSugeridaService;
 import br.com.fluxocaixa.colaboracao.AuditoriaAgro;
 import br.com.fluxocaixa.colaboracao.AuditoriaAgroRepository;
@@ -362,7 +364,7 @@ public class AdminService {
     private AdminUsuarioResponse montarResponse(
             Usuario usuario) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         long usosHoje =
                 usuarioAcessoRepository.somarUsosPorUsuarioEData(
@@ -476,7 +478,7 @@ public class AdminService {
                 );
             }
 
-            return LocalDate.now()
+            return FusoHorario.hoje()
                     .plusDays(request.diasAcesso());
         }
 

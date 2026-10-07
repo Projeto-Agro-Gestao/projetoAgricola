@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.empresa.Empresa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -195,7 +197,7 @@ public class NotaFiscal {
 
         if (status == NotaFiscalStatus.AUTHORIZED) {
             this.dataAutorizacao = dataAutorizacao == null
-                    ? LocalDate.now()
+                    ? FusoHorario.hoje()
                     : dataAutorizacao;
         }
     }

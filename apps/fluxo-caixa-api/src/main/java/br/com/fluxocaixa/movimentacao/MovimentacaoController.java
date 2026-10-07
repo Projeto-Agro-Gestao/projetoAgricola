@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.movimentacao;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,7 +81,7 @@ public class MovimentacaoController {
             )
             Pageable pageable) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         LocalDate inicio = dataInicial != null
                 ? dataInicial

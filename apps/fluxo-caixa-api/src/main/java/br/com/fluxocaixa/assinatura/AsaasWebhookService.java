@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.assinatura;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.integration.asaas.AsaasProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -180,7 +182,7 @@ public class AsaasWebhookService {
         );
 
         return data == null || data.isBlank()
-                ? LocalDate.now()
+                ? FusoHorario.hoje()
                 : LocalDate.parse(data);
     }
 

@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.autenticacao;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.assinatura.AssinaturaAcessoService;
 import br.com.fluxocaixa.usuario.UsuarioRepository;
 import br.com.fluxocaixa.usuario.Usuario;
@@ -92,7 +94,7 @@ public class AcessoEmpresaAuthorizationManager
                 return new AuthorizationDecision(false);
             }
 
-            if (usuario.possuiAcessoValido(LocalDate.now())) {
+            if (usuario.possuiAcessoValido(FusoHorario.hoje())) {
                 return new AuthorizationDecision(true);
             }
 

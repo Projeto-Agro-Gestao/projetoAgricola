@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.relatorio;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -129,7 +131,7 @@ public class RelatorioController {
             LocalDate dataFinal) {
 
         LocalDate hoje =
-                LocalDate.now();
+                FusoHorario.hoje();
 
         LocalDate inicio =
                 dataInicial != null

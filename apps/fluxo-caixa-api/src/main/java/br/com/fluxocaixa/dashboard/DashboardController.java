@@ -1,5 +1,7 @@
 package br.com.fluxocaixa.dashboard;
 
+import br.com.fluxocaixa.comum.FusoHorario;
+
 import br.com.fluxocaixa.categoria.AreaCategoria;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +47,7 @@ public class DashboardController {
             @RequestParam(required = false)
             AreaCategoria area) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         LocalDate inicio =
                 dataInicial != null
@@ -89,7 +91,7 @@ public class DashboardController {
             @RequestParam(required = false)
             AreaCategoria area) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = FusoHorario.hoje();
 
         LocalDate fim =
                 dataFinal != null
