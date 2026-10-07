@@ -397,7 +397,8 @@
     display: grid;
     padding: 20px;
     place-items: center;
-    background: rgb(9 24 11 / 0.48);
+    background: rgb(9 24 11 / 0.72);
+    backdrop-filter: blur(2px);
 }
 
 .contas-modal {
