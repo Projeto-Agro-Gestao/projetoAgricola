@@ -4,9 +4,10 @@
  * Usa tokens --ag-* do App.css.
  */
 .ag-dash {
+    --ag-page-background: #f1f5e9;
     display: flex;
     min-height: 100vh;
-    background: var(--ag-surface);
+    background: var(--ag-page-background);
     color: var(--ag-on-surface);
 }
 
@@ -110,6 +111,19 @@
     min-width: 0;
     min-height: 100vh;
     padding-left: 272px;
+    background: var(--ag-page-background);
+}
+
+.ag-dash .ag-dash-main > .fornecedores-pagina,
+.ag-dash .ag-dash-main > .contador-carteira-pagina,
+.ag-dash .ag-dash-main > .perfil-pagina,
+.ag-dash .ag-dash-main > .plano-pagina,
+.ag-dash .ag-dash-main > .admin-painel,
+.ag-dash .ag-dash-main > .admin-assinaturas,
+.ag-dash .ag-dash-main > .app-mobile,
+.ag-dash .ag-dash-main > .movimentacao-pagina,
+.ag-dash .ag-dash-main > .nova-conta-pagina {
+    background: var(--ag-page-background);
 }
 
 .ag-dash-header {
@@ -205,20 +219,10 @@
 .ag-dash-ponto-ok { width: 9px; height: 9px; border-radius: 50%; background: var(--ag-primary); }
 
 /* Composição do painel do produtor conforme a tela colaborativa do Stitch. */
-.ag-dash-produtor { background: #f1f5e9; }
+.ag-dash-produtor { background: var(--ag-page-background); }
 .ag-dash-produtor .ag-dash-main { padding: 40px 32px 44px; }
-.ag-dash-produtor .ag-dash-sidebar { width: 344px; }
-.ag-dash-produtor .ag-dash-conteudo { padding-left: 344px; }
-.ag-dash-produtor .ag-dash-header {
-    height: 84px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 640px) minmax(0, 1fr);
-    gap: 22px;
-    padding: 0 32px;
-}
 .ag-dash-produtor .ag-dash-busca { min-width: 0; }
 .ag-dash-produtor .ag-dash-busca > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ag-dash-produtor .ag-dash-marca { align-items: flex-start; }
-.ag-dash-produtor .ag-dash-marca small { line-height: 1.6; }
 .ag-dash-produtor .ag-dash-propriedade { position: relative; }
 .ag-dash-produtor .ag-dash-prop-icone { background: #eef4e6; }
 .ag-dash-produtor .ag-dash-prop-badge {
@@ -234,14 +238,6 @@
     font-size: .84rem;
     font-weight: 750;
 }
-@media (max-width: 1200px) {
-    .ag-dash-produtor .ag-dash-header {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        gap: 12px;
-        padding: 0 18px;
-    }
-}
-
 @media (max-width: 900px) {
     .ag-dash-produtor .ag-dash-sidebar {
         position: static;
@@ -257,10 +253,6 @@
     .ag-dash-produtor .ag-dash-nav-titulo { display: none; }
     .ag-dash-produtor .ag-dash-sidebar-base { flex-direction: row; flex-wrap: wrap; }
     .ag-dash-produtor .ag-dash-conteudo { padding-left: 0; }
-    .ag-dash-produtor .ag-dash-header {
-        height: 64px;
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
     .ag-dash-produtor .ag-dash-main { padding: 24px; }
 }
 

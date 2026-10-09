@@ -48,6 +48,7 @@ function ShellDashboard({ sessao, ativo, children }) {
 
     const navItens = [
         { chave: 'visao-geral', icone: 'grid_view', rotulo: 'Visão Geral', rota: '/dashboard', exata: true },
+        { chave: 'produtor', icone: 'agriculture', rotulo: 'Produtor', rota: '/dashboard/produtor', exata: true },
         { chave: 'financeiro', icone: 'monitoring', rotulo: 'Financeiro', rota: '/dashboard/financeiro' },
         { chave: 'lancamentos', icone: 'receipt_long', rotulo: 'Lançamentos', rota: '/dashboard/movimentacoes' },
         { chave: 'contas', icone: 'account_balance_wallet', rotulo: 'Contas', rota: '/dashboard/contas' },
@@ -62,8 +63,7 @@ function ShellDashboard({ sessao, ativo, children }) {
             return ativo === item.chave
         }
         return item.exata
-            ? location.pathname === item.rota ||
-                (rotaProdutor && item.chave === 'visao-geral')
+            ? location.pathname === item.rota
             : location.pathname.startsWith(item.rota)
     }
 
@@ -80,11 +80,11 @@ function ShellDashboard({ sessao, ativo, children }) {
                 <div className="ag-dash-sidebar-topo">
                     <div className="ag-dash-marca">
                         <span className="ag-dash-marca-icone">
-                            <Icone nome={rotaProdutor ? 'menu_book' : 'eco'} tamanho={22} />
+                            <Icone nome="eco" tamanho={22} />
                         </span>
                         <div>
                             <strong>Agro Gestão</strong>
-                            <small>{rotaProdutor ? <>GESTÃO RURAL<br />INTELIGENTE</> : 'Gestão rural'}</small>
+                            <small>Gestão rural</small>
                         </div>
                     </div>
 
@@ -111,7 +111,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                                 onClick={() => navigate(item.rota)}
                                 type="button"
                             >
-                                <Icone nome={rotaProdutor && item.chave === 'visao-geral' ? 'home' : item.icone} tamanho={20} />
+                                <Icone nome={item.icone} tamanho={20} />
                                 {rotaProdutor && item.chave === 'contas'
                                     ? 'Contas Bancárias'
                                     : item.rotulo}
