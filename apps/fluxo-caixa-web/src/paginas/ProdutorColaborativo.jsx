@@ -730,8 +730,8 @@ function ProdutorColaborativo() {
                 <header className="produtor-colaborativo-cabecalho">
                     <div className="produtor-colaborativo-identificador">
                         <span>AgroGestão colaborativo</span>
-                        <i aria-hidden="true">•</i>
-                        <span>Canal integrado com contabilidade</span>
+                        <i aria-hidden="true" />
+                        <strong>Canal integrado com contabilidade</strong>
                     </div>
                     <h1>Início do produtor</h1>
                     <p>

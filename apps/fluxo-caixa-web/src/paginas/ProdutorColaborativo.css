@@ -25,36 +25,34 @@
 }
 
 .produtor-colaborativo-identificador {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
+    margin-bottom: 4px;
     color: var(--produtor-suave);
-    font-size: .82rem;
-}
-
-.produtor-colaborativo-identificador span:first-child {
-    padding: 5px 11px;
-    border-radius: 999px;
-    background: #e4edda;
-    color: var(--produtor-verde);
     font-size: .72rem;
-    font-weight: 750;
-    letter-spacing: .045em;
+    font-weight: 600;
+    letter-spacing: .08em;
     text-transform: uppercase;
 }
 
+.produtor-colaborativo-identificador strong { color: var(--produtor-verde); font-weight: 700; }
+
 .produtor-colaborativo-identificador i {
-    color: #9aa593;
-    font-style: normal;
+    width: 4px;
+    height: 4px;
+    flex: 0 0 4px;
+    border-radius: 50%;
+    background: #9aa593;
 }
 
 .produtor-colaborativo-cabecalho h1 {
     margin: 0;
     color: #192317;
-    font-size: clamp(2rem, 2.2vw, 2.65rem);
-    font-weight: 760;
-    letter-spacing: -.04em;
-    line-height: 1.1;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.15;
 }
 
 .produtor-colaborativo-cabecalho p {
@@ -1264,12 +1262,8 @@
         font-size: .72rem;
     }
 
-    .produtor-colaborativo-identificador span:first-child {
-        font-size: .64rem;
-    }
-
     .produtor-colaborativo-cabecalho h1 {
-        font-size: 2rem;
+        font-size: clamp(1.5rem, 3.2vw, 2rem);
     }
 
     .produtor-colaborativo-cabecalho p {

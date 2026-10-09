@@ -155,6 +155,11 @@ public class AssinaturaService {
 
         Assinatura assinatura =
                 prepararAssinaturaParaCobranca(empresaId);
+        AssinaturaPagamentoResponse existente =
+                obterCobrancaPendente(assinatura, FormaPagamentoAssinatura.PIX);
+        if (existente != null) {
+            return existente;
+        }
 
         AssinaturaPagamento pagamento =
                 criarCobranca(
@@ -240,6 +245,11 @@ public class AssinaturaService {
 
         Assinatura assinatura =
                 prepararAssinaturaParaCobranca(empresaId);
+        AssinaturaPagamentoResponse existente =
+                obterCobrancaPendente(assinatura, FormaPagamentoAssinatura.BOLETO);
+        if (existente != null) {
+            return existente;
+        }
 
         AssinaturaPagamento pagamento =
                 criarCobranca(
@@ -569,6 +579,9 @@ public class AssinaturaService {
     private Assinatura prepararAssinaturaParaCobranca(Long empresaId) {
 
         Assinatura assinatura = buscarOuCriarAssinatura(empresaId);
+        assinatura = assinaturaRepository
+                .findByEmpresaIdParaCobranca(empresaId)
+                .orElse(assinatura);
         AssinaturaConfiguracao configuracao =
                 acessoService.buscarConfiguracao();
 
@@ -586,6 +599,40 @@ public class AssinaturaService {
 
         assinatura.pendente();
         return assinatura;
+    }
+
+    private AssinaturaPagamentoResponse obterCobrancaPendente(
+            Assinatura assinatura,
+            FormaPagamentoAssinatura formaSolicitada) {
+
+        LocalDate hoje = FusoHorario.hoje();
+        LocalDateTime agora = LocalDateTime.now(FusoHorario.BRASILIA);
+
+        return pagamentoRepository
+                .findAllByAssinatura_IdAndStatusOrderByCriadoEmDescIdDesc(
+                        assinatura.getId(),
+                        StatusPagamentoAssinatura.PENDING
+                )
+                .stream()
+                .filter(pagamento -> !pagamento.getVencimento().isBefore(hoje))
+                .filter(pagamento -> pagamento.getFormaPagamento()
+                        != FormaPagamentoAssinatura.PIX
+                        || pagamento.getPixExpiraEm() == null
+                        || pagamento.getPixExpiraEm().isAfter(agora))
+                .findFirst()
+                .map(pagamento -> {
+                    if (pagamento.getFormaPagamento() != formaSolicitada) {
+                        throw new CobrancaPendenteException(
+                                "Já existe uma cobrança "
+                                        + (pagamento.getFormaPagamento()
+                                        == FormaPagamentoAssinatura.PIX
+                                        ? "Pix" : "por boleto")
+                                        + " pendente. Use a cobrança atual ou aguarde sua expiração."
+                        );
+                    }
+                    return AssinaturaPagamentoResponse.de(pagamento);
+                })
+                .orElse(null);
     }
 
     private void garantirFormaPagamentoHabilitada(

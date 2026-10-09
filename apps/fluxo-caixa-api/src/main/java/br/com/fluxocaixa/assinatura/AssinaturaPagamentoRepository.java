@@ -19,6 +19,11 @@ public interface AssinaturaPagamentoRepository
     List<AssinaturaPagamento>
     findAllByEmpresa_IdOrderByCriadoEmDescIdDesc(Long empresaId);
 
+    List<AssinaturaPagamento>
+    findAllByAssinatura_IdAndStatusOrderByCriadoEmDescIdDesc(
+            Long assinaturaId,
+            StatusPagamentoAssinatura status);
+
     Optional<AssinaturaPagamento>
     findFirstByEmpresa_IdOrderByCriadoEmDescIdDesc(Long empresaId);
 }

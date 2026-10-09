@@ -5,6 +5,7 @@ import br.com.fluxocaixa.admin.AcessoUsuarioBloqueadoException;
 import br.com.fluxocaixa.admin.RegraAdministrativaException;
 import br.com.fluxocaixa.autenticacao.CredenciaisInvalidasException;
 import br.com.fluxocaixa.categoria.CategoriaComMovimentacoesException;
+import br.com.fluxocaixa.assinatura.CobrancaPendenteException;
 import br.com.fluxocaixa.categoria.CategoriaJaCadastradaException;
 import br.com.fluxocaixa.categoria.CategoriaNaoEncontradaException;
 import br.com.fluxocaixa.categoria.TransferenciaCategoriaInvalidaException;
@@ -447,6 +448,20 @@ public class ManipuladorGlobalDeErros {
                 HttpStatus.BAD_REQUEST,
                 "Parâmetro inválido",
                 mensagem,
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(CobrancaPendenteException.class)
+    public ResponseEntity<ErroResposta> tratarCobrancaPendente(
+            CobrancaPendenteException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.CONFLICT,
+                "Cobrança pendente",
+                exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()
         );
