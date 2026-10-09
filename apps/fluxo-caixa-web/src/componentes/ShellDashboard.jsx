@@ -25,6 +25,7 @@ function ShellDashboard({ sessao, ativo, children }) {
     const navigate = useNavigate()
     const location = useLocation()
     const [confirmandoSaida, setConfirmandoSaida] = useState(false)
+    const rotaProdutor = location.pathname === '/dashboard/produtor'
 
     const papel = sessao.usuario.papel
     const hoje = new Date()
@@ -59,36 +60,47 @@ function ShellDashboard({ sessao, ativo, children }) {
             return ativo === item.chave
         }
         return item.exata
-            ? location.pathname === item.rota
+            ? location.pathname === item.rota ||
+                (rotaProdutor && item.chave === 'visao-geral')
             : location.pathname.startsWith(item.rota)
     }
 
+    const iniciaisUsuario = sessao.usuario.nome
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((parte) => parte[0])
+        .join('')
+
     return (
-        <div className="ag-dash publica">
+        <div className={`ag-dash publica${rotaProdutor ? ' ag-dash-produtor' : ''}`}>
             <aside className="ag-dash-sidebar">
                 <div className="ag-dash-sidebar-topo">
                     <div className="ag-dash-marca">
                         <span className="ag-dash-marca-icone">
-                            <Icone nome="eco" tamanho={22} />
+                            <Icone nome={rotaProdutor ? 'menu_book' : 'eco'} tamanho={22} />
                         </span>
                         <div>
                             <strong>Agro Gestão</strong>
-                            <small>Gestão rural</small>
+                            <small>{rotaProdutor ? <>GESTÃO RURAL<br />INTELIGENTE</> : 'Gestão rural'}</small>
                         </div>
                     </div>
 
                     <div className="ag-dash-propriedade">
                         <span className="ag-dash-prop-icone">
-                            <Icone nome="agriculture" tamanho={20} />
+                            <Icone nome={rotaProdutor ? 'home' : 'agriculture'} tamanho={20} />
                         </span>
                         <div className="ag-dash-prop-texto">
                             <small>Propriedade ativa</small>
                             <strong>{sessao.usuario.nomeEmpresa}</strong>
                         </div>
+                        {rotaProdutor && <span className="ag-dash-prop-badge">Matriz</span>}
                     </div>
 
                     <nav className="ag-dash-nav" aria-label="Navegação principal">
-                        <span className="ag-dash-nav-titulo">Navegação</span>
+                        <span className="ag-dash-nav-titulo">
+                            {rotaProdutor ? 'Navegação principal' : 'Navegação'}
+                        </span>
                         {navItens.map((item) => (
                             <button
                                 aria-current={estaAtivo(item) ? 'page' : undefined}
@@ -97,8 +109,10 @@ function ShellDashboard({ sessao, ativo, children }) {
                                 onClick={() => navigate(item.rota)}
                                 type="button"
                             >
-                                <Icone nome={item.icone} tamanho={20} />
-                                {item.rotulo}
+                                <Icone nome={rotaProdutor && item.chave === 'visao-geral' ? 'home' : item.icone} tamanho={20} />
+                                {rotaProdutor && item.chave === 'contas'
+                                    ? 'Contas Bancárias'
+                                    : item.rotulo}
                             </button>
                         ))}
                     </nav>
@@ -123,11 +137,11 @@ function ShellDashboard({ sessao, ativo, children }) {
                         type="button"
                     >
                         <Icone nome="credit_card" tamanho={20} />
-                        Plano e pagamentos
+                        {rotaProdutor ? 'Plano e Pagamentos' : 'Plano e pagamentos'}
                     </button>
                     <button className="ag-dash-nav-item ag-dash-sair" onClick={() => setConfirmandoSaida(true)} type="button">
                         <Icone nome="logout" tamanho={20} />
-                        Sair
+                        {rotaProdutor ? 'Sair da Conta' : 'Sair'}
                     </button>
                 </div>
             </aside>
@@ -141,13 +155,19 @@ function ShellDashboard({ sessao, ativo, children }) {
 
                     <div className="ag-dash-busca">
                         <Icone nome="search" tamanho={18} />
-                        <span>Buscar operações, documentos, movimentações...</span>
+                        <span>
+                            {rotaProdutor
+                                ? 'Buscar operações, documentos, movimentações... (Ctrl+K)'
+                                : 'Buscar operações, documentos, movimentações...'}
+                        </span>
                     </div>
 
                     <div className="ag-dash-header-acoes">
-                        <button className="ag-dash-icone-botao" onClick={() => navigate('/app')} type="button" title="App simples">
-                            <Icone nome="smartphone" tamanho={20} />
-                        </button>
+                        {!rotaProdutor && (
+                            <button className="ag-dash-icone-botao" onClick={() => navigate('/app')} type="button" title="App simples">
+                                <Icone nome="smartphone" tamanho={20} />
+                            </button>
+                        )}
                         <button
                             className="ag-dash-icone-botao"
                             type="button"
@@ -162,7 +182,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                                 <small>{rotuloPapel}</small>
                             </div>
                             <span className="ag-dash-avatar">
-                                <Icone nome="person" tamanho={18} />
+                                {rotaProdutor ? iniciaisUsuario : <Icone nome="person" tamanho={18} />}
                             </span>
                         </button>
                     </div>
