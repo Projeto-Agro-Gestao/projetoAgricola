@@ -4,23 +4,21 @@ import {
     useState,
 } from 'react'
 import { useNavigate } from 'react-router'
-import AlternadorModulos from '../componentes/AlternadorModulos.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
-import { voltarPaginaAnterior } from '../navegacao.js'
 import './ContadorCarteira.css'
 import { apiFetch } from '../servicos/api.js'
 import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 
 const ABAS = [
-    ['GERAL', 'Visao geral'],
-    ['MOVIMENTACOES', 'Movimentacoes'],
-    ['DOCUMENTOS', 'Documentos'],
-    ['PENDENCIAS', 'Pendencias'],
-    ['CLASSIFICACAO', 'Classificacao'],
-    ['TRIBUTARIO', 'Tributario'],
-    ['SIMULACOES', 'Simulacoes'],
-    ['RELATORIOS', 'Relatorios'],
+    ['GERAL', 'Visão geral', 'grid_view'],
+    ['MOVIMENTACOES', 'Movimentações', 'swap_horiz'],
+    ['DOCUMENTOS', 'Documentos', 'description'],
+    ['PENDENCIAS', 'Pendências', 'flag'],
+    ['CLASSIFICACAO', 'Classificação', 'account_tree'],
+    ['TRIBUTARIO', 'Tributário', 'account_balance'],
+    ['SIMULACOES', 'Simulações', 'calculate'],
+    ['RELATORIOS', 'Relatórios', 'description'],
 ]
 
 const TRATAMENTOS = [
@@ -993,36 +991,29 @@ function ContadorCarteira() {
     }
 
     const analiseEmLote = selecionadas.length > 0 && analiseEditando
+    const acoesPendentes = [
+        Number(dashboardFiscal?.despesasSemDocumento ?? clienteSelecionado?.despesasSemDocumento ?? 0) > 0,
+        Number(dashboardFiscal?.despesasPendentesClassificacao ?? clienteSelecionado?.movimentacoesSemClassificacao ?? 0) > 0,
+        !regimeAtual?.regime,
+        !simulacao,
+    ].filter(Boolean).length
 
     return (
         <div className="contador-carteira-pagina">
             <div className="contador-carteira-conteudo">
                 <header className="contador-carteira-cabecalho">
-                    <div className="contador-carteira-navegacao">
-                        <button
-                            type="button"
-                            onClick={() => voltarPaginaAnterior(navigate)}
-                        >
-                            Voltar
-                        </button>
-
-                        <AlternadorModulos />
-                    </div>
-
-                    <p>
+                    <p className="contador-carteira-contexto">
                         {exibindoVisaoPropria
-                            ? 'Area fiscal da propriedade'
-                            : 'Area do contador'}
+                            ? 'Área fiscal da propriedade'
+                            : 'Área do contador'}
+                        <span aria-hidden="true">•</span>
+                        Exercício {new Date().getFullYear()}/{new Date().getFullYear() + 1}
                     </p>
-                    <h1>
-                        {exibindoVisaoPropria
-                            ? 'Minha analise contabil e fiscal'
-                            : 'Carteira e trabalho fiscal'}
-                    </h1>
+                    <h1>Carteira e trabalho fiscal</h1>
                     <span>
                         {exibindoVisaoPropria
-                            ? 'Veja a mesma base de movimentacoes, documentos, classificacoes, regimes, simulacoes e relatorios que fica disponivel para o contador.'
-                            : 'Trabalhe sobre as movimentacoes reais do produtor: documentos, classificacoes, pendencias, regimes, simulacoes e relatorios em uma unica base.'}
+                            ? 'Veja a mesma base de movimentações, documentos, classificações, regimes, simulações e relatórios que fica disponível para o contador.'
+                            : 'Trabalhe sobre as movimentações reais do produtor: documentos, classificações, pendências, regimes, simulações e relatórios em uma única base.'}
                     </span>
                 </header>
 
@@ -1036,34 +1027,49 @@ function ContadorCarteira() {
 
                 <section className="contador-carteira-filtros">
                     {[
-                        ['TODOS', 'Todos'],
-                        ['PENDENCIAS', 'Com pendencias'],
-                        ['SEM_DOCUMENTO', 'Sem documento'],
-                        ['SEM_CLASSIFICACAO', 'Sem classificacao'],
-                    ].map(([valor, texto]) => (
+                        ['TODOS', 'Todos', 'done_all'],
+                        ['PENDENCIAS', 'Com pendências', 'error_outline'],
+                        ['SEM_DOCUMENTO', 'Sem documento', 'description'],
+                        ['SEM_CLASSIFICACAO', 'Sem classificação fiscal', 'label_off'],
+                    ].map(([valor, texto, icone]) => (
                         <button
                             key={valor}
-                            className={filtro === valor ? 'ativo' : ''}
+                            className={`contador-filtro contador-filtro-${valor.toLowerCase()} ${filtro === valor ? 'ativo' : ''}`}
+                            aria-pressed={filtro === valor}
                             type="button"
                             onClick={() => setFiltro(valor)}
                         >
+                            <span className="material-symbols-outlined" aria-hidden="true">{icone}</span>
                             {texto}
+                            {valor === 'SEM_DOCUMENTO' && (
+                                <span className="contador-filtro-contagem">
+                                    {dashboardFiscal?.despesasSemDocumento ?? clienteSelecionado?.despesasSemDocumento ?? 0}
+                                </span>
+                            )}
+                            {valor === 'SEM_CLASSIFICACAO' && (
+                                <span className="contador-filtro-contagem">
+                                    {dashboardFiscal?.despesasPendentesClassificacao ?? clienteSelecionado?.movimentacoesSemClassificacao ?? 0}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </section>
 
                 <div className="contador-carteira-grade">
-                    <section className="contador-carteira-card">
+                    <section className="contador-carteira-card contador-card-empresa">
                         <div className="contador-carteira-card-topo">
                             <div>
-                                <small>Clientes</small>
+                                <small>
+                                    <span className="material-symbols-outlined" aria-hidden="true">business</span>
+                                    Clientes &amp; vínculos
+                                </small>
                                 <h2>
                                     {exibindoVisaoPropria
-                                        ? 'Minha empresa'
+                                        ? 'Minha empresa rural'
                                         : 'Produtores atendidos'}
                                 </h2>
                             </div>
-                            <span>{clientesFiltrados.length}</span>
+                            <span className="contador-contagem-clientes">{clientesFiltrados.length}</span>
                         </div>
 
                         <div className="contador-carteira-clientes">
@@ -1086,25 +1092,26 @@ function ContadorCarteira() {
                                         type="button"
                                         onClick={() => carregarCliente(cliente)}
                                     >
-                                        <strong>{cliente.empresaNome}</strong>
-                                        <span>
-                                            {cliente.statusEmpresa} -{' '}
-                                            {cliente.pendenciasAbertas}{' '}
-                                            pendencias
+                                        <span className="contador-empresa-identidade">
+                                            <strong>{cliente.empresaNome}</strong>
+                                            <span className="material-symbols-outlined" aria-hidden="true">task_alt</span>
                                         </span>
-                                        <small>
-                                            Resultado do mes:{' '}
-                                            {formatarDinheiro(
-                                                cliente.resultadoMes,
-                                            )}
-                                        </small>
+                                        <small className="contador-inscricao">Inscrição Estadual: {cliente.inscricaoEstadual || 'Não informada'}</small>
+                                        <span className="contador-status-empresa">
+                                            <i aria-hidden="true" />
+                                            {cliente.statusEmpresa} · {cliente.pendenciasAbertas} pendências
+                                        </span>
+                                        <span className="contador-resultado-mes">
+                                            <small>Resultado contábil apurado do mês:</small>
+                                            <strong>{formatarDinheiro(cliente.resultadoMes)}</strong>
+                                        </span>
                                     </button>
                                 ))
                             )}
                         </div>
                     </section>
 
-                    <section className="contador-carteira-card">
+                    <section className="contador-carteira-card contador-mesa-fiscal">
                         <div className="contador-carteira-card-topo">
                             <div>
                                 <small>Mesa fiscal</small>
@@ -1124,115 +1131,123 @@ function ContadorCarteira() {
 
                         <div className="contador-carteira-indicadores">
                             <button
+                                className="contador-indicador-pendencias"
                                 type="button"
                                 onClick={() => abrirLista('TODAS')}
                             >
-                                <small>Pendencias</small>
-                                <strong>
-                                    {clienteSelecionado?.pendenciasAbertas ?? 0}
-                                </strong>
+                                <small>Pendências</small>
+                                <span className="contador-indicador-valor">
+                                    <strong>{clienteSelecionado?.pendenciasAbertas ?? 0}</strong>
+                                    <span className="contador-indicador-icone material-symbols-outlined" aria-hidden="true">check</span>
+                                </span>
+                                <span className="contador-indicador-legenda">Conformidade total</span>
                             </button>
                             <button
+                                className="contador-indicador-documentos"
                                 type="button"
                                 onClick={() => abrirLista('SEM_DOCUMENTO')}
                             >
                                 <small>Sem documento</small>
-                                <strong>
-                                    {dashboardFiscal?.despesasSemDocumento ??
+                                <span className="contador-indicador-valor">
+                                    <strong>{dashboardFiscal?.despesasSemDocumento ??
                                         clienteSelecionado
                                             ?.despesasSemDocumento ??
-                                        0}
-                                </strong>
+                                        0}</strong>
+                                    <span className="contador-indicador-icone material-symbols-outlined" aria-hidden="true">receipt_long</span>
+                                </span>
+                                <span className="contador-indicador-legenda">Exige comprovantes</span>
                             </button>
                             <button
+                                className="contador-indicador-classificacao"
                                 type="button"
                                 onClick={() =>
                                     abrirLista('SEM_CLASSIFICACAO')
                                 }
                             >
-                                <small>Sem classificacao fiscal</small>
-                                <strong>
-                                    {dashboardFiscal
+                                <small>Sem classificação fiscal</small>
+                                <span className="contador-indicador-valor">
+                                    <strong>{dashboardFiscal
                                         ?.despesasPendentesClassificacao ??
                                         clienteSelecionado
                                             ?.movimentacoesSemClassificacao ??
-                                        0}
-                                </strong>
+                                        0}</strong>
+                                    <span className="contador-indicador-icone material-symbols-outlined" aria-hidden="true">sell</span>
+                                </span>
+                                <span className="contador-indicador-legenda">Plano de contas rural</span>
                             </button>
                             <button
+                                className="contador-indicador-recebidos"
                                 type="button"
                                 onClick={() => setAba('DOCUMENTOS')}
                             >
                                 <small>Documentos recebidos</small>
-                                <strong>{documentos.length}</strong>
+                                <span className="contador-indicador-valor">
+                                    <strong>{documentos.length}</strong>
+                                    <span className="contador-indicador-icone material-symbols-outlined" aria-hidden="true">inbox</span>
+                                </span>
+                                <span className="contador-indicador-legenda">Validados pelo fisco</span>
                             </button>
                         </div>
 
-                        <div className="contador-carteira-tributaria">
-                            <h3>Resultado do periodo</h3>
+                        <div className="contador-carteira-tributaria contador-painel-periodo">
+                            <h3>Resultado do período</h3>
                             <p>
-                                Estes valores saem do financeiro real do
-                                produtor. A base tributaria so muda depois das
-                                classificacoes, documentos e parametros.
+                                Estes valores saem do financeiro real do produtor. A base tributária só muda depois das classificações, conferência de documentos e parâmetros de dedutibilidade.
                             </p>
                             <div>
-                                <button
+                                <button className="contador-resultado-receitas"
                                     type="button"
                                     onClick={() => abrirLista('RECEITAS')}
                                 >
-                                    Receitas:{' '}
-                                    {formatarDinheiro(visao?.receitasAno)}
+                                    <small>Receitas:</small>
+                                    <strong>{formatarDinheiro(visao?.receitasAno)}</strong>
+                                    <span className="contador-resultado-detalhe"><i className="material-symbols-outlined" aria-hidden="true">trending_up</i>Entradas rurais</span>
                                 </button>
-                                <button
+                                <button className="contador-resultado-despesas"
                                     type="button"
                                     onClick={() => abrirLista('DESPESAS')}
                                 >
-                                    Despesas:{' '}
-                                    {formatarDinheiro(visao?.despesasAno)}
+                                    <small>Despesas:</small>
+                                    <strong>{formatarDinheiro(visao?.despesasAno)}</strong>
+                                    <span className="contador-resultado-detalhe"><i className="material-symbols-outlined" aria-hidden="true">inventory_2</i>Insumos e custeio</span>
                                 </button>
-                                <button
+                                <button className="contador-resultado-total"
                                     type="button"
                                     onClick={() => abrirLista('TODAS')}
                                 >
-                                    Resultado:{' '}
-                                    {formatarDinheiro(
-                                        visao?.resultadoAcumulado,
-                                    )}
+                                    <small>Resultado:</small>
+                                    <strong>{formatarDinheiro(visao?.resultadoAcumulado)}</strong>
+                                    <span className="contador-resultado-detalhe"><i className="material-symbols-outlined" aria-hidden="true">trending_down</i>Déficit operacional</span>
                                 </button>
-                                <button
+                                <button className="contador-resultado-projecao"
                                     type="button"
                                     onClick={() => setAba('SIMULACOES')}
                                 >
-                                    Projecao:{' '}
-                                    {formatarDinheiro(
-                                        visao?.resultadoProjetado,
-                                    )}
+                                    <small>Projeção:</small>
+                                    <strong>{formatarDinheiro(visao?.resultadoProjetado)}</strong>
+                                    <span className="contador-resultado-detalhe"><i className="material-symbols-outlined" aria-hidden="true">schedule</i>Até fechamento</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="contador-carteira-tributaria">
-                            <h3>Painel contabil e fiscal</h3>
+                        <div className="contador-carteira-tributaria contador-painel-fiscal">
+                            <h3>Painel contábil e fiscal <span>Simulação preliminar</span></h3>
                             <div>
-                                <button
+                                <button className="contador-tributario-base"
                                     type="button"
                                     onClick={() => abrirLista('SIMULACAO')}
                                 >
-                                    Base estimada:{' '}
-                                    {formatarDinheiro(
-                                        dashboardFiscal?.baseEstimadaSimulacao,
-                                    )}
+                                    <small>Base estimada:</small>
+                                    <strong>{formatarDinheiro(dashboardFiscal?.baseEstimadaSimulacao)}</strong>
                                 </button>
-                                <button
+                                <button className="contador-tributario-imposto"
                                     type="button"
                                     onClick={() => setAba('SIMULACOES')}
                                 >
-                                    Tributo estimado:{' '}
-                                    {formatarDinheiro(
-                                        dashboardFiscal?.tributoEstimado,
-                                    )}
+                                    <small>Tributo estimado:</small>
+                                    <strong>{formatarDinheiro(dashboardFiscal?.tributoEstimado)}</strong>
                                 </button>
-                                <button
+                                <button className="contador-tributario-dedutivel"
                                     type="button"
                                     onClick={() =>
                                         abrirLista(
@@ -1240,36 +1255,34 @@ function ContadorCarteira() {
                                         )
                                     }
                                 >
-                                    Potencialmente dedutivel:{' '}
-                                    {formatarDinheiro(
-                                        dashboardFiscal
-                                            ?.valorPotencialmenteDedutivel,
-                                    )}
+                                    <small>Potencialmente dedutível:</small>
+                                    <strong>{formatarDinheiro(dashboardFiscal?.valorPotencialmenteDedutivel)}</strong>
                                 </button>
-                                <button
+                                <button className="contador-tributario-regime"
                                     type="button"
                                     onClick={() => setAba('TRIBUTARIO')}
                                 >
-                                    Regime:{' '}
-                                    {dashboardFiscal?.regimeAtual ?? 'nao configurado'}
+                                    <small>Regime:</small>
+                                    <strong>{dashboardFiscal?.regimeAtual ?? 'Não configurado'}</strong>
                                 </button>
                             </div>
                             <small>
                                 {dashboardFiscal?.aviso ??
-                                    'Valores estimados para apoio a analise. A apuracao fiscal definitiva deve ser validada pelo profissional responsavel.'}
+                                    'Valores estimados para apoio à análise gerencial. A apuração fiscal definitiva deve ser validada pelo profissional contábil responsável antes do envio da declaração.'}
                             </small>
                         </div>
                     </section>
                 </div>
 
                 <section className="contador-carteira-abas">
-                    {ABAS.map(([valor, texto]) => (
+                    {ABAS.map(([valor, texto, icone]) => (
                         <button
                             key={valor}
                             type="button"
                             className={aba === valor ? 'ativo' : ''}
                             onClick={() => setAba(valor)}
                         >
+                            <span className="material-symbols-outlined" aria-hidden="true">{icone}</span>
                             {texto}
                         </button>
                     ))}
@@ -1280,20 +1293,22 @@ function ContadorCarteira() {
                         <article className="contador-carteira-card">
                             <div className="contador-carteira-card-topo">
                                 <div>
-                                    <small>Composicao</small>
-                                    <h2>Memoria do resultado</h2>
+                                    <small>Composição</small>
+                                    <h2>Memória do resultado</h2>
+                                    <p>Detalhamento dos totais operacionais consolidados na safra ativa.</p>
                                 </div>
                             </div>
                             <div className="contador-memoria">
-                                <span>
+                                <span className="contador-memoria-receitas">
                                     Receitas brutas
                                     <strong>
                                         {formatarDinheiro(
                                             dashboardFiscal?.receitaBruta,
                                         )}
                                     </strong>
+                                    <small>Venda de grãos e contratos</small>
                                 </span>
-                                <span>
+                                <span className="contador-memoria-despesas">
                                     Despesas registradas
                                     <strong>
                                         {formatarDinheiro(
@@ -1301,8 +1316,9 @@ function ContadorCarteira() {
                                                 ?.despesasRegistradas,
                                         )}
                                     </strong>
+                                    <small>Custeio agrícola apurado</small>
                                 </span>
-                                <span>
+                                <span className="contador-memoria-resultado">
                                     Resultado financeiro
                                     <strong>
                                         {formatarDinheiro(
@@ -1310,61 +1326,81 @@ function ContadorCarteira() {
                                                 ?.resultadoFinanceiro,
                                         )}
                                     </strong>
+                                    <small>Saldo de caixa acumulado</small>
                                 </span>
-                                <span>
-                                    Nao considerado
+                                <span className="contador-memoria-nao-considerado">
+                                    Não considerado
                                     <strong>
                                         {formatarDinheiro(
                                             dashboardFiscal
                                                 ?.valorNaoConsiderado,
                                         )}
                                     </strong>
+                                    <small>Itens desconsiderados no LCDPR</small>
                                 </span>
-                                <span>
-                                    Base estimada
+                                <span className="contador-memoria-base">
+                                    <small>Base de cálculo fiscal estimada</small>
                                     <strong>
                                         {formatarDinheiro(
                                             dashboardFiscal
                                                 ?.baseEstimadaSimulacao,
                                         )}
                                     </strong>
+                                    <button type="button" onClick={() => window.print()}>
+                                        <i className="material-symbols-outlined" aria-hidden="true">print</i>
+                                        Imprimir memória
+                                    </button>
                                 </span>
                             </div>
                         </article>
 
-                        <article className="contador-carteira-card">
+                        <article className="contador-carteira-card contador-card-atencao">
                             <div className="contador-carteira-card-topo">
                                 <div>
-                                    <small>Proximas acoes</small>
-                                    <h2>O que precisa de atencao</h2>
+                                    <small>Próximas ações</small>
+                                    <h2>O que precisa de atenção</h2>
+                                    <p>Tarefas essenciais para regularizar a escrituração contábil.</p>
                                 </div>
+                                <span className="contador-pendencias-resumo">{acoesPendentes} pendentes</span>
                             </div>
                             <div className="contador-carteira-lista">
                                 <button
+                                    className="contador-acao-documentos"
                                     type="button"
                                     onClick={() => abrirLista('SEM_DOCUMENTO')}
                                 >
-                                    Solicitar documentos faltantes
+                                    <span className="contador-acao-icone material-symbols-outlined" aria-hidden="true">upload_file</span>
+                                    <span><strong>Solicitar documentos faltantes</strong><small>{dashboardFiscal?.despesasSemDocumento ?? clienteSelecionado?.despesasSemDocumento ?? 0} comprovantes de movimentações pendentes de anexo</small></span>
+                                    <span className="contador-acao-seta material-symbols-outlined" aria-hidden="true">chevron_right</span>
                                 </button>
                                 <button
+                                    className="contador-acao-classificacao"
                                     type="button"
                                     onClick={() =>
                                         abrirLista('SEM_CLASSIFICACAO')
                                     }
                                 >
-                                    Classificar movimentacoes pendentes
+                                    <span className="contador-acao-icone material-symbols-outlined" aria-hidden="true">tune</span>
+                                    <span><strong>Classificar movimentações pendentes</strong><small>Vincular receitas e despesas ao plano de contas contábil</small></span>
+                                    <span className="contador-acao-seta material-symbols-outlined" aria-hidden="true">chevron_right</span>
                                 </button>
                                 <button
+                                    className="contador-acao-regime"
                                     type="button"
                                     onClick={() => setAba('TRIBUTARIO')}
                                 >
-                                    Revisar regime e parametros
+                                    <span className="contador-acao-icone material-symbols-outlined" aria-hidden="true">gavel</span>
+                                    <span><strong>Revisar regime e parâmetros</strong><small>Definir forma de apuração: {dashboardFiscal?.regimeAtual ? rotulo(dashboardFiscal.regimeAtual) : 'regime não configurado'}</small></span>
+                                    <span className="contador-acao-seta material-symbols-outlined" aria-hidden="true">chevron_right</span>
                                 </button>
                                 <button
+                                    className="contador-acao-simulacao"
                                     type="button"
                                     onClick={() => setAba('SIMULACOES')}
                                 >
-                                    Calcular simulacao e memoria
+                                    <span className="contador-acao-icone material-symbols-outlined" aria-hidden="true">calculate</span>
+                                    <span><strong>Calcular simulação e memória</strong><small>Emitir prévia do LCDPR em formato TXT / PDF oficial da RFB</small></span>
+                                    <span className="contador-acao-seta material-symbols-outlined" aria-hidden="true">chevron_right</span>
                                 </button>
                             </div>
                         </article>
@@ -2191,6 +2227,7 @@ function ContadorCarteira() {
                                         {simulacao?.regime ??
                                             'Nao configurado'}
                                     </strong>
+                                    <small>Venda de grãos e contratos</small>
                                 </span>
                                 <span>
                                     Receita considerada

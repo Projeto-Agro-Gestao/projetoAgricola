@@ -53,7 +53,7 @@ function ShellDashboard({ sessao, ativo, children }) {
         { chave: 'lancamentos', icone: 'receipt_long', rotulo: 'Lançamentos', rota: '/dashboard/movimentacoes' },
         { chave: 'contas', icone: 'account_balance_wallet', rotulo: 'Contas', rota: '/dashboard/contas' },
         { chave: 'fornecedores', icone: 'local_shipping', rotulo: 'Fornecedores', rota: '/dashboard/fornecedores' },
-        { chave: 'fiscal', icone: 'account_balance', rotulo: 'LCDPR & Fiscal', rota: '/contador' },
+        { chave: 'fiscal', icone: 'account_balance', rotulo: 'Fiscal', rota: '/contador' },
         { chave: 'config', icone: 'tune', rotulo: 'Configurações', rota: '/dashboard/perfil' },
     ]
 
@@ -66,13 +66,6 @@ function ShellDashboard({ sessao, ativo, children }) {
             ? location.pathname === item.rota
             : location.pathname.startsWith(item.rota)
     }
-
-    const iniciaisUsuario = sessao.usuario.nome
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((parte) => parte[0])
-        .join('')
 
     return (
         <div className={`ag-dash publica${rotaProdutor ? ' ag-dash-produtor' : ''}`}>
@@ -171,7 +164,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                                 <small>{rotuloPapel}</small>
                             </div>
                             <span className="ag-dash-avatar">
-                                {rotaProdutor ? iniciaisUsuario : <Icone nome="person" tamanho={18} />}
+                                <Icone nome="person" tamanho={18} />
                             </span>
                         </button>
                     </div>

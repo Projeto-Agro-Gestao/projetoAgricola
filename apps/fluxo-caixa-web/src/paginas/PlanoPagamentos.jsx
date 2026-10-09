@@ -761,6 +761,11 @@ function PlanoPagamentos() {
             )}
             <div className="plano-conteudo">
                 <header className="plano-cabecalho">
+                    <div className="plano-identificador">
+                        <span>Gestão financeira &amp; fiscal</span>
+                        <i aria-hidden="true" />
+                        <strong>Assinatura e cobrança</strong>
+                    </div>
                     <h1>Plano e pagamentos</h1>
                     <p>
                         Acompanhe seu teste gratuito, assinatura e cobranças do Gestão Agrícola.

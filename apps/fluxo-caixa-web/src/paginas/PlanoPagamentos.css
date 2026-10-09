@@ -274,6 +274,22 @@
 .plano-pix-rodape-fechar { padding: 10px 14px; border: 0; background: transparent; color: #596651; cursor: pointer; font: inherit; font-size: .84rem; font-weight: 650; }
 .plano-pix-confirmar { min-height: 42px; padding: 0 18px; }
 
+.plano-cabecalho { display: grid; gap: 7px; }
+.plano-identificador {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: #63705e;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+.plano-identificador strong { color: #347d00; font-weight: 700; }
+.plano-identificador i { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #9aa593; }
+
 .plano-cabecalho h1 {
     margin: 0;
     color: #172116;
@@ -292,6 +308,8 @@
     font-size: .82rem;
     line-height: 1.5;
 }
+
+.plano-cabecalho p { margin: 0; }
 
 .plano-aviso,
 .plano-banner,
@@ -377,6 +395,11 @@
     background: #fff8df;
     color: #a35a13;
     font-size: .72rem;
+}
+
+.plano-grade article > span + .plano-status {
+    margin: 0 0 0 6px;
+    vertical-align: middle;
 }
 
 .plano-card {

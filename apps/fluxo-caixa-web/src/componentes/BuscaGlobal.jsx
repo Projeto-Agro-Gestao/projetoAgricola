@@ -20,7 +20,7 @@ const modulosBase = [
     { id: 'contas', titulo: 'Contas', descricao: 'Contas a pagar e a receber', rota: '/dashboard/contas', termos: 'pagamentos recebimentos vencimentos' },
     { id: 'fornecedores', titulo: 'Fornecedores', descricao: 'Cadastro e compras', rota: '/dashboard/fornecedores', termos: 'compras parceiros' },
     { id: 'produtor', titulo: 'Produtor rural', descricao: 'Documentos, propriedades e atividades', rota: '/dashboard/produtor', termos: 'propriedades documentos atividades produtor' },
-    { id: 'fiscal', titulo: 'LCDPR & Fiscal', descricao: 'Carteira contábil e informações fiscais', rota: '/contador', termos: 'lcdpr contador fiscal tributário' },
+    { id: 'fiscal', titulo: 'Fiscal', descricao: 'Carteira contábil e informações fiscais', rota: '/contador', termos: 'lcdpr contador fiscal tributário' },
     { id: 'categorias', titulo: 'Categorias', descricao: 'Organização financeira', rota: '/dashboard/categorias', termos: 'categorias classificação' },
     { id: 'plano', titulo: 'Plano e pagamentos', descricao: 'Assinatura e cobrança', rota: '/dashboard/plano', termos: 'plano assinatura cobrança pagamento' },
     { id: 'configuracoes', titulo: 'Configurações', descricao: 'Perfil e preferências da conta', rota: '/dashboard/perfil', termos: 'configurações perfil conta' },

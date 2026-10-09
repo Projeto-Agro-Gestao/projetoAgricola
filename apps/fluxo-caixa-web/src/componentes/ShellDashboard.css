@@ -234,10 +234,6 @@
     font-size: .62rem;
     font-weight: 750;
 }
-.ag-dash-produtor .ag-dash-avatar {
-    font-size: .84rem;
-    font-weight: 750;
-}
 @media (max-width: 900px) {
     .ag-dash-produtor .ag-dash-sidebar {
         position: static;
