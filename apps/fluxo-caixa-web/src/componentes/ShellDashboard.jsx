@@ -32,6 +32,11 @@ function ShellDashboard({ sessao, ativo, children }) {
     const safraAtual = `${anoSafra}/${anoSafra + 1}`
     const podeAdministrar =
         papel === 'ADMINISTRADOR' || papel === 'SUPER_ADMIN'
+    const rotuloPapel = papel === 'CONTADOR'
+        ? 'Contador'
+        : podeAdministrar
+            ? 'Administrador'
+            : 'Produtor rural'
 
     function sair() {
         limparSessao()
@@ -102,7 +107,8 @@ function ShellDashboard({ sessao, ativo, children }) {
                 <div className="ag-dash-sidebar-base">
                     {podeAdministrar && (
                         <button
-                            className="ag-dash-nav-item"
+                            aria-current={location.pathname.startsWith('/admin') ? 'page' : undefined}
+                            className={`ag-dash-nav-item${location.pathname.startsWith('/admin') ? ' ag-ativo' : ''}`}
                             onClick={() => navigate('/admin')}
                             type="button"
                         >
@@ -110,7 +116,12 @@ function ShellDashboard({ sessao, ativo, children }) {
                             Área administrativa
                         </button>
                     )}
-                    <button className="ag-dash-nav-item" onClick={() => navigate('/dashboard/plano')} type="button">
+                    <button
+                        aria-current={location.pathname === '/dashboard/plano' ? 'page' : undefined}
+                        className={`ag-dash-nav-item${location.pathname === '/dashboard/plano' ? ' ag-ativo' : ''}`}
+                        onClick={() => navigate('/dashboard/plano')}
+                        type="button"
+                    >
                         <Icone nome="credit_card" tamanho={20} />
                         Plano e pagamentos
                     </button>
@@ -148,7 +159,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                         <button className="ag-dash-usuario" onClick={() => navigate('/dashboard/perfil')} type="button">
                             <div className="ag-dash-usuario-texto">
                                 <strong>{sessao.usuario.nome}</strong>
-                                <small>{papel === 'CONTADOR' ? 'Contador' : 'Produtor rural'}</small>
+                                <small>{rotuloPapel}</small>
                             </div>
                             <span className="ag-dash-avatar">
                                 <Icone nome="person" tamanho={18} />

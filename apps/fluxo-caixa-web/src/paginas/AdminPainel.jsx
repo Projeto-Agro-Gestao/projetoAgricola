@@ -9,6 +9,7 @@ import './AdminPainel.css'
 import { apiFetch } from '../servicos/api.js'
 import { obterSessao } from '../servicos/sessao.js'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
+import ShellDashboard from '../componentes/ShellDashboard.jsx'
 
 const STATUS_PAGAMENTO = [
     'EM_DIA',
@@ -19,7 +20,7 @@ const STATUS_PAGAMENTO = [
 
 const TIPOS_ACESSO = {
     NORMAL: 'Normal',
-    VITALICIO: 'Vitalicio',
+    VITALICIO: 'Vitalício',
     PRAZO: 'Por prazo',
 }
 
@@ -36,6 +37,7 @@ const FILTROS_USUARIOS = [
     { valor: 'PRODUTORES', rotulo: 'Produtores' },
     { valor: 'CONTADORES', rotulo: 'Contadores' },
 ]
+const USUARIOS_POR_PAGINA = 5
 
 async function obterMensagemDeErro(resposta) {
     const dados = await resposta.json().catch(() => null)
@@ -125,6 +127,13 @@ function formatarDataHora(dataHora) {
     }).format(new Date(dataHora))
 }
 
+function formatarMediaUso(valor) {
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 2,
+    }).format(Number(valor ?? 0))
+}
+
 function AdminPainel() {
     const navigate = useNavigate()
     const [sessao] = useState(() => obterSessao())
@@ -135,6 +144,7 @@ function AdminPainel() {
     const [diasAcesso, setDiasAcesso] = useState({})
     const [buscaUsuarios, setBuscaUsuarios] = useState('')
     const [filtroUsuarios, setFiltroUsuarios] = useState('TODOS')
+    const [paginaUsuarios, setPaginaUsuarios] = useState(1)
     const [usuarioEmEdicao, setUsuarioEmEdicao] =
         useState(null)
     const [confirmacaoPapel, setConfirmacaoPapel] =
@@ -196,7 +206,7 @@ function AdminPainel() {
     const usuariosFiltrados = useMemo(() => {
         const termo = buscaUsuarios.trim().toLowerCase()
 
-        return usuarios.filter((usuario) => {
+        const filtrados = usuarios.filter((usuario) => {
             const atendeBusca = !termo || [
                 usuario.nome,
                 usuario.email,
@@ -231,7 +241,27 @@ function AdminPainel() {
 
             return atendeBusca && atendeFiltro
         })
+
+        return filtrados
     }, [buscaUsuarios, filtroUsuarios, usuarios])
+
+    const totalPaginasUsuarios = Math.ceil(
+        usuariosFiltrados.length / USUARIOS_POR_PAGINA,
+    )
+    const paginaAtualUsuarios = Math.min(
+        paginaUsuarios,
+        Math.max(totalPaginasUsuarios, 1),
+    )
+    const usuariosPaginados = useMemo(() => {
+        const inicio = (paginaAtualUsuarios - 1) * USUARIOS_POR_PAGINA
+        return usuariosFiltrados.slice(inicio, inicio + USUARIOS_POR_PAGINA)
+    }, [paginaAtualUsuarios, usuariosFiltrados])
+
+    useEffect(() => {
+        if (paginaUsuarios > Math.max(totalPaginasUsuarios, 1)) {
+            setPaginaUsuarios(Math.max(totalPaginasUsuarios, 1))
+        }
+    }, [paginaUsuarios, totalPaginasUsuarios])
 
     const empresasClienteDisponiveis = useMemo(() => {
         const empresas = new Map()
@@ -698,11 +728,15 @@ function AdminPainel() {
         navigate('/admin/integracoes')
     }
 
+    if (!sessao?.usuario) {
+        return <CarregamentoTela compacto texto="Validando acesso" />
+    }
+
     return (
-        <main className="admin-painel">
+        <ShellDashboard sessao={sessao}>
+            <main className="admin-painel admin-painel-shell">
             <header className="admin-topo">
                 <div>
-                    <span className="admin-marca">AgroGestão</span>
                     <p className="admin-etiqueta">
                         Administração
                     </p>
@@ -719,6 +753,7 @@ function AdminPainel() {
                         onClick={abrirSistema}
                         type="button"
                     >
+                        <span aria-hidden="true" className="material-symbols-outlined">open_in_new</span>
                         Ir para o sistema
                     </button>
 
@@ -727,6 +762,7 @@ function AdminPainel() {
                         onClick={abrirAssinaturas}
                         type="button"
                     >
+                        <span aria-hidden="true" className="material-symbols-outlined">credit_card</span>
                         Plano e pagamentos
                     </button>
 
@@ -735,7 +771,8 @@ function AdminPainel() {
                         onClick={abrirIntegracoes}
                         type="button"
                     >
-                        Integracoes oficiais
+                        <span aria-hidden="true" className="material-symbols-outlined">sync_alt</span>
+                        Integrações oficiais
                     </button>
 
                 </div>
@@ -751,63 +788,66 @@ function AdminPainel() {
                 <article>
                     <span>Usuários</span>
                     <strong>{resumo.usuarios}</strong>
+                    <small>Cadastrados</small>
                 </article>
 
                 <article>
                     <span>Liberados</span>
                     <strong>{resumo.liberados}</strong>
+                    <small>Acesso ativo</small>
                 </article>
 
                 <article>
                     <span>Bloqueados</span>
                     <strong>{resumo.bloqueados}</strong>
+                    <small>Sem pendências</small>
                 </article>
 
                 <article>
                     <span>Atrasados</span>
                     <strong>{resumo.atrasados}</strong>
+                    <small>Em dia</small>
                 </article>
 
                 <article>
                     <span>Sem pagar</span>
                     <strong>{resumo.semPagamento}</strong>
+                    <small>Faturamento OK</small>
                 </article>
 
                 <article>
                     <span>Sem uso</span>
                     <strong>{resumo.semUso}</strong>
+                    <small>Sem atividade</small>
                 </article>
             </section>
 
-            <section className="admin-tabela-bloco">
+            <section className="admin-tabela-bloco" id="admin-usuarios">
                 <div className="admin-tabela-cabecalho">
                     <div>
-                        <span className="admin-secao-etiqueta">
-                            Gestão de clientes
-                        </span>
                         <h2>Usuários cadastrados</h2>
                         <p>
-                            {resumo.usosHoje} usos hoje ·{' '}
-                            {resumo.usosTotais} usos totais
+                            {resumo.usosHoje} usos hoje · {resumo.usosTotais} usos totais
                         </p>
                     </div>
 
                     <div className="admin-tabela-ferramentas">
                         <input
-                            aria-label="Buscar usuário"
-                            onChange={(evento) =>
+                            aria-label="Buscar usuário na lista"
+                            onChange={(evento) => {
                                 setBuscaUsuarios(evento.target.value)
-                            }
+                                setPaginaUsuarios(1)
+                            }}
                             placeholder="Buscar nome, e-mail ou propriedade"
                             type="search"
                             value={buscaUsuarios}
                         />
-
                         <select
                             aria-label="Filtrar usuários"
-                            onChange={(evento) =>
+                            onChange={(evento) => {
                                 setFiltroUsuarios(evento.target.value)
-                            }
+                                setPaginaUsuarios(1)
+                            }}
                             value={filtroUsuarios}
                         >
                             {FILTROS_USUARIOS.map((item) => (
@@ -822,6 +862,7 @@ function AdminPainel() {
                 {carregando ? (
                     <CarregamentoTela compacto texto="Carregando usuários" />
                 ) : (
+                    <>
                     <div className="admin-tabela-area">
                         <table className="admin-tabela">
                             <thead>
@@ -836,7 +877,13 @@ function AdminPainel() {
                             </thead>
 
                             <tbody>
-                                {usuariosFiltrados.map((usuario) => (
+                                {usuariosPaginados.length === 0 ? (
+                                    <tr>
+                                        <td className="admin-tabela-sem-resultados" colSpan="6">
+                                            Nenhum usuário encontrado.
+                                        </td>
+                                    </tr>
+                                ) : usuariosPaginados.map((usuario) => (
                                     <tr key={usuario.id}>
                                         <td>
                                             <div className="admin-usuario-identidade">
@@ -859,19 +906,21 @@ function AdminPainel() {
                                                 </span>
                                             </div>
 
-                                            <span>
-                                                {usuario.email}
-                                            </span>
-                                            {usuario.telefone && (
-                                                <span>
-                                                    {
-                                                        usuario.telefone
-                                                    }
+                                            <div className="admin-usuario-contato">
+                                                <span>{usuario.email}</span>
+                                                {usuario.telefone && (
+                                                    <>
+                                                        <span aria-hidden="true" className="admin-contato-separador">•</span>
+                                                        <span>{usuario.telefone}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                            {usuario.nomeEmpresa && (
+                                                <span className="admin-propriedade">
+                                                    <span aria-hidden="true" className="material-symbols-outlined">agriculture</span>
+                                                    {usuario.nomeEmpresa}
                                                 </span>
                                             )}
-                                            <span>
-                                                {usuario.nomeEmpresa}
-                                            </span>
                                         </td>
 
                                         <td>
@@ -940,11 +989,6 @@ function AdminPainel() {
                                                     ''
                                                 }
                                             />
-                                            <span>
-                                                {formatarData(
-                                                    usuario.dataVencimentoPagamento,
-                                                )}
-                                            </span>
                                         </td>
 
                                         <td>
@@ -960,244 +1004,167 @@ function AdminPainel() {
                                         </td>
 
                                         <td>
-                                            <strong>
-                                                {usuario.usosHoje}
-                                            </strong>
-                                            <span>
-                                                hoje · média{' '}
-                                                {
-                                                    usuario.mediaUsoPorDia
-                                                }
-                                                /dia
-                                            </span>
-                                            <span>
-                                                Último uso:{' '}
-                                                {formatarDataHora(
-                                                    usuario.ultimoUsoEm,
-                                                )}
-                                            </span>
+                                            <div className="admin-uso-painel">
+                                                <div className="admin-uso-hoje">
+                                                    <strong>{usuario.usosHoje}</strong>
+                                                    <span>hoje</span>
+                                                    <span className="admin-uso-media">
+                                                        {formatarMediaUso(usuario.mediaUsoPorDia)}/dia
+                                                    </span>
+                                                </div>
+                                                <div className="admin-uso-ultimo">
+                                                    <span>
+                                                        <span aria-hidden="true" className="material-symbols-outlined">history</span>
+                                                        Último:
+                                                    </span>
+                                                    <time>{formatarDataHora(usuario.ultimoUsoEm)}</time>
+                                                </div>
+                                            </div>
                                         </td>
 
                                         <td>
-                                            <div className="admin-acesso-info">
-                                                <strong>
-                                                    {formatarTipoAcesso(
-                                                        usuario.tipoAcesso,
-                                                    )}
-                                                </strong>
-                                                <span>
-                                                    Expira:{' '}
-                                                    {formatarData(
-                                                        usuario.acessoExpiraEm,
-                                                    )}
-                                                </span>
-                                            </div>
-
-                                            <button
-                                                className="admin-botao-secundario"
-                                                disabled={
-                                                    salvandoId ===
-                                                    usuario.id
-                                                }
-                                                onClick={() =>
-                                                    abrirEdicao(
-                                                        usuario,
-                                                    )
-                                                }
-                                                type="button"
-                                            >
-                                                Editar
-                                            </button>
-
-                                            {usuario.papel !==
-                                                'SUPER_ADMIN' && (
-                                                <button
-                                                    className={
-                                                        isAdministradorUsuario(
-                                                            usuario,
-                                                        )
-                                                            ? 'admin-botao-secundario'
-                                                            : 'admin-botao-primario'
-                                                    }
-                                                    disabled={
-                                                        salvandoId ===
-                                                        usuario.id
-                                                    }
-                                                    onClick={() =>
-                                                        alternarPapelAdministrativo(
-                                                            usuario,
-                                                        )
-                                                    }
-                                                    type="button"
-                                                >
-                                                    {salvandoId === usuario.id
-                                                        ? 'Atualizando...'
-                                                        : isAdministradorUsuario(
-                                                            usuario,
-                                                        )
-                                                        ? 'Tornar cliente'
-                                                        : 'Tornar administrador'}
-                                                </button>
-                                            )}
-
-                                            {usuario.papel === 'CONTADOR' && (
-                                                <button
-                                                    className="admin-botao-secundario"
-                                                    disabled={
-                                                        salvandoId ===
-                                                        usuario.id
-                                                    }
-                                                    onClick={() =>
-                                                        abrirVinculosContador(
-                                                            usuario,
-                                                        )
-                                                    }
-                                                    type="button"
-                                                >
-                                                    Clientes
-                                                </button>
-                                            )}
-
-                                            {usuario.situacao ===
-                                                'PENDENTE_APROVACAO' && (
-                                                <div className="admin-prazo-acesso">
+                                            <div className="admin-acesso-painel">
+                                                <div className="admin-acesso-painel-topo">
+                                                    <div className="admin-acesso-info">
+                                                        <strong>{formatarTipoAcesso(usuario.tipoAcesso)}</strong>
+                                                        <span>
+                                                            Expira: {usuario.tipoAcesso === 'VITALICIO'
+                                                                ? 'Nunca'
+                                                                : formatarData(usuario.acessoExpiraEm)}
+                                                        </span>
+                                                    </div>
                                                     <button
-                                                        className="admin-botao-primario"
-                                                        disabled={
-                                                            salvandoId ===
-                                                            usuario.id
-                                                        }
-                                                        onClick={() =>
-                                                            aprovarUsuario(
-                                                                usuario,
-                                                                'PRODUTOR',
-                                                            )
-                                                        }
+                                                        className={usuario.acessoLiberado ? 'admin-botao-perigo' : 'admin-botao-primario'}
+                                                        disabled={salvandoId === usuario.id}
+                                                        onClick={() => alternarAcesso(usuario)}
                                                         type="button"
                                                     >
-                                                        Aprovar produtor
-                                                    </button>
-                                                    <button
-                                                        className="admin-botao-secundario"
-                                                        disabled={
-                                                            salvandoId ===
-                                                            usuario.id
-                                                        }
-                                                        onClick={() =>
-                                                            aprovarUsuario(
-                                                                usuario,
-                                                                'CONTADOR',
-                                                            )
-                                                        }
-                                                        type="button"
-                                                    >
-                                                        Aprovar contador
+                                                        <span aria-hidden="true" className="material-symbols-outlined">
+                                                            {usuario.acessoLiberado ? 'block' : 'lock_open'}
+                                                        </span>
+                                                        {usuario.acessoLiberado ? 'Bloquear' : 'Liberar'}
                                                     </button>
                                                 </div>
-                                            )}
 
-                                            <button
-                                                className={
-                                                    usuario.acessoLiberado
-                                                        ? 'admin-botao-perigo'
-                                                        : 'admin-botao-primario'
-                                                }
-                                                disabled={
-                                                    salvandoId ===
-                                                    usuario.id
-                                                }
-                                                onClick={() =>
-                                                    alternarAcesso(
-                                                        usuario,
-                                                    )
-                                                }
-                                                type="button"
-                                            >
-                                                {usuario.acessoLiberado
-                                                    ? 'Bloquear'
-                                                    : 'Liberar'}
-                                            </button>
+                                                {usuario.situacao === 'PENDENTE_APROVACAO' && (
+                                                    <div className="admin-acesso-aprovacao">
+                                                        <button
+                                                            className="admin-botao-primario"
+                                                            disabled={salvandoId === usuario.id}
+                                                            onClick={() => aprovarUsuario(usuario, 'PRODUTOR')}
+                                                            type="button"
+                                                        >Aprovar produtor</button>
+                                                        <button
+                                                            className="admin-botao-secundario"
+                                                            disabled={salvandoId === usuario.id}
+                                                            onClick={() => aprovarUsuario(usuario, 'CONTADOR')}
+                                                            type="button"
+                                                        >Aprovar contador</button>
+                                                    </div>
+                                                )}
 
-                                            <button
-                                                className="admin-botao-primario"
-                                                disabled={
-                                                    salvandoId ===
-                                                    usuario.id
-                                                }
-                                                onClick={() =>
-                                                    darAcessoVitalicio(
-                                                        usuario,
-                                                    )
-                                                }
-                                                type="button"
-                                            >
-                                                Vitalicio
-                                            </button>
+                                                <div className="admin-acesso-administracao">
+                                                    <button
+                                                        className="admin-botao-secundario"
+                                                        disabled={salvandoId === usuario.id}
+                                                        onClick={() => abrirEdicao(usuario)}
+                                                        type="button"
+                                                    >
+                                                        <span aria-hidden="true" className="material-symbols-outlined">edit</span>
+                                                        Editar
+                                                    </button>
+                                                    {usuario.papel !== 'SUPER_ADMIN' && (
+                                                        <button
+                                                            className={isAdministradorUsuario(usuario) ? 'admin-botao-secundario' : 'admin-botao-primario'}
+                                                            disabled={salvandoId === usuario.id}
+                                                            onClick={() => alternarPapelAdministrativo(usuario)}
+                                                            type="button"
+                                                        >
+                                                            <span aria-hidden="true" className="material-symbols-outlined">{isAdministradorUsuario(usuario) ? 'person' : 'shield_person'}</span>
+                                                            {salvandoId === usuario.id
+                                                                ? 'Atualizando...'
+                                                                : isAdministradorUsuario(usuario)
+                                                                    ? 'Tornar cliente'
+                                                                    : 'Tornar administrador'}
+                                                        </button>
+                                                    )}
+                                                    {usuario.papel === 'CONTADOR' && (
+                                                        <button
+                                                            className="admin-botao-secundario"
+                                                            disabled={salvandoId === usuario.id}
+                                                            onClick={() => abrirVinculosContador(usuario)}
+                                                            type="button"
+                                                        >Clientes</button>
+                                                    )}
+                                                </div>
 
-                                            <div className="admin-prazo-acesso">
-                                                <input
-                                                    aria-label="Dias de acesso"
-                                                    disabled={
-                                                        salvandoId ===
-                                                        usuario.id
-                                                    }
-                                                    min="1"
-                                                    onChange={(
-                                                        evento,
-                                                    ) =>
-                                                        atualizarDiasAcesso(
-                                                            usuario.id,
-                                                            evento
-                                                                .target
-                                                                .value,
-                                                        )
-                                                    }
-                                                    type="number"
-                                                    value={
-                                                        diasAcesso[
-                                                            usuario.id
-                                                        ] ?? 30
-                                                    }
-                                                />
-
-                                                <button
-                                                    className="admin-botao-secundario"
-                                                    disabled={
-                                                        salvandoId ===
-                                                        usuario.id
-                                                    }
-                                                    onClick={() =>
-                                                        liberarPorPrazo(
-                                                            usuario,
-                                                        )
-                                                    }
-                                                    type="button"
-                                                >
-                                                    Liberar por prazo
-                                                </button>
+                                                <div className="admin-acesso-liberacao">
+                                                    <button
+                                                        className="admin-botao-vitalicio"
+                                                        disabled={salvandoId === usuario.id}
+                                                        onClick={() => darAcessoVitalicio(usuario)}
+                                                        type="button"
+                                                    >Vitalício</button>
+                                                    <button
+                                                        className="admin-botao-normal"
+                                                        disabled={salvandoId === usuario.id}
+                                                        onClick={() => voltarAcessoNormal(usuario)}
+                                                        type="button"
+                                                    >Normal</button>
+                                                    <div className="admin-prazo-acesso">
+                                                        <input
+                                                            aria-label="Dias de acesso"
+                                                            disabled={salvandoId === usuario.id}
+                                                            min="1"
+                                                            onChange={(evento) => atualizarDiasAcesso(usuario.id, evento.target.value)}
+                                                            type="number"
+                                                            value={diasAcesso[usuario.id] ?? 30}
+                                                        />
+                                                        <span>dias</span>
+                                                        <button
+                                                            className="admin-botao-secundario"
+                                                            disabled={salvandoId === usuario.id}
+                                                            onClick={() => liberarPorPrazo(usuario)}
+                                                            type="button"
+                                                        >Liberar por prazo</button>
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                            <button
-                                                className="admin-botao-secundario"
-                                                disabled={
-                                                    salvandoId ===
-                                                    usuario.id
-                                                }
-                                                onClick={() =>
-                                                    voltarAcessoNormal(
-                                                        usuario,
-                                                    )
-                                                }
-                                                type="button"
-                                            >
-                                                Normal
-                                            </button>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                    <footer className="admin-paginacao">
+                        <span>
+                            Mostrando <strong>{usuariosFiltrados.length === 0 ? 0 : (paginaAtualUsuarios - 1) * USUARIOS_POR_PAGINA + 1}</strong> a <strong>{Math.min(paginaAtualUsuarios * USUARIOS_POR_PAGINA, usuariosFiltrados.length)}</strong> de <strong>{usuariosFiltrados.length}</strong> usuários cadastrados
+                        </span>
+                        {totalPaginasUsuarios > 1 && (
+                            <nav aria-label="Paginação de usuários" className="admin-paginacao-controles">
+                                <button
+                                    disabled={paginaAtualUsuarios === 1}
+                                    onClick={() => setPaginaUsuarios(paginaAtualUsuarios - 1)}
+                                    type="button"
+                                >Anterior</button>
+                                {Array.from({ length: totalPaginasUsuarios }, (_, indice) => indice + 1).map((pagina) => (
+                                    <button
+                                        aria-current={pagina === paginaAtualUsuarios ? 'page' : undefined}
+                                        className={pagina === paginaAtualUsuarios ? 'ativo' : ''}
+                                        key={pagina}
+                                        onClick={() => setPaginaUsuarios(pagina)}
+                                        type="button"
+                                    >{pagina}</button>
+                                ))}
+                                <button
+                                    disabled={paginaAtualUsuarios === totalPaginasUsuarios}
+                                    onClick={() => setPaginaUsuarios(paginaAtualUsuarios + 1)}
+                                    type="button"
+                                >Próximo</button>
+                            </nav>
+                        )}
+                    </footer>
+                    </>
                 )}
             </section>
 
@@ -1556,7 +1523,8 @@ function AdminPainel() {
                     </div>
                 </div>
             )}
-        </main>
+            </main>
+        </ShellDashboard>
     )
 }
 

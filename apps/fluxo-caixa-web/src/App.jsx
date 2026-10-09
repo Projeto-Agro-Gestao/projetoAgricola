@@ -4,6 +4,8 @@ import {
     useEffect,
 } from 'react'
 import {
+    Navigate,
+    Outlet,
     useLocation,
     Route,
     Routes,
@@ -11,7 +13,9 @@ import {
 import PaginaInicial from './PaginaInicial.jsx'
 import AppShell from './componentes/AppShell.jsx'
 import CarregandoRota from './componentes/CarregandoRota.jsx'
+import ShellDashboard from './componentes/ShellDashboard.jsx'
 import { registrarRotaAtual } from './navegacao.js'
+import { obterSessao } from './servicos/sessao.js'
 
 const EscolhaModulo = lazy(() => import('./paginas/EscolhaModulo.jsx'))
 const Dashboard = lazy(() => import('./paginas/Dashboard.jsx'))
@@ -40,6 +44,28 @@ const TermosDeUso = lazy(() => import('./paginas/TermosDeUso.jsx'))
 const PoliticaDePrivacidade = lazy(() =>
     import('./paginas/PoliticaDePrivacidade.jsx'),
 )
+
+function ShellRotasAutenticadas() {
+    const sessao = obterSessao()
+    const location = useLocation()
+
+    if (!sessao) {
+        return <Navigate replace to="/login" />
+    }
+
+    if (
+        location.pathname.startsWith('/admin/') &&
+        !['ADMINISTRADOR', 'SUPER_ADMIN'].includes(sessao.usuario?.papel)
+    ) {
+        return <Navigate replace to="/dashboard" />
+    }
+
+    return (
+        <ShellDashboard sessao={sessao}>
+            <Outlet />
+        </ShellDashboard>
+    )
+}
 
 function App() {
     const location = useLocation()
@@ -94,33 +120,8 @@ function App() {
                 />
 
                 <Route
-                    path="/admin/assinaturas"
-                    element={<AdminAssinaturas />}
-                />
-
-                <Route
-                    path="/admin/integracoes"
-                    element={<AdminIntegracoes />}
-                />
-
-                <Route
                     path="/dashboard"
                     element={<EscolhaModulo />}
-                />
-
-                <Route
-                    path="/app"
-                    element={<AppMobile />}
-                />
-
-                <Route
-                    path="/dashboard/perfil"
-                    element={<Perfil />}
-                />
-
-                <Route
-                    path="/dashboard/plano"
-                    element={<PlanoPagamentos />}
                 />
 
                 <Route
@@ -129,33 +130,8 @@ function App() {
                 />
 
                 <Route
-                    path="/dashboard/movimentacoes"
-                    element={<Movimentacoes />}
-                />
-
-                <Route
-                    path="/dashboard/movimentacoes/nova"
-                    element={<NovaMovimentacao />}
-                />
-
-                <Route
-                    path="/dashboard/movimentacoes/:movimentacaoId/editar"
-                    element={<EditarMovimentacao />}
-                />
-
-                <Route
-                    path="/dashboard/categorias"
-                    element={<Categorias />}
-                />
-
-                <Route
                     path="/dashboard/contas"
                     element={<ContasFinanceiras />}
-                />
-
-                <Route
-                    path="/dashboard/contas/nova"
-                    element={<NovaContaFinanceira />}
                 />
 
                 <Route
@@ -163,15 +139,20 @@ function App() {
                     element={<Fornecedores />}
                 />
 
-                <Route
-                    path="/dashboard/produtor"
-                    element={<ProdutorColaborativo />}
-                />
-
-                <Route
-                    path="/contador"
-                    element={<ContadorCarteira />}
-                />
+                <Route element={<ShellRotasAutenticadas />}>
+                    <Route path="/admin/assinaturas" element={<AdminAssinaturas />} />
+                    <Route path="/admin/integracoes" element={<AdminIntegracoes />} />
+                    <Route path="/app" element={<AppMobile />} />
+                    <Route path="/dashboard/perfil" element={<Perfil />} />
+                    <Route path="/dashboard/plano" element={<PlanoPagamentos />} />
+                    <Route path="/dashboard/movimentacoes" element={<Movimentacoes />} />
+                    <Route path="/dashboard/movimentacoes/nova" element={<NovaMovimentacao />} />
+                    <Route path="/dashboard/movimentacoes/:movimentacaoId/editar" element={<EditarMovimentacao />} />
+                    <Route path="/dashboard/categorias" element={<Categorias />} />
+                    <Route path="/dashboard/contas/nova" element={<NovaContaFinanceira />} />
+                    <Route path="/dashboard/produtor" element={<ProdutorColaborativo />} />
+                    <Route path="/contador" element={<ContadorCarteira />} />
+                </Route>
                 </Routes>
             </Suspense>
         </>

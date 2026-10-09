@@ -56,7 +56,12 @@ function AdminAssinaturas() {
     const [dataPorEmpresa, setDataPorEmpresa] = useState({})
 
     useEffect(() => {
-        if (!sessao || sessao.usuario?.papel !== 'ADMINISTRADOR') {
+        if (
+            !sessao ||
+            !['ADMINISTRADOR', 'SUPER_ADMIN'].includes(
+                sessao.usuario?.papel,
+            )
+        ) {
             navigate('/dashboard', { replace: true })
             return
         }
