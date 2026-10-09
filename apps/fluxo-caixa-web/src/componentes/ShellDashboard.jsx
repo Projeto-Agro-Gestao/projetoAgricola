@@ -8,6 +8,8 @@ import {
 import './ShellDashboard.css'
 import { limparSessao } from '../servicos/sessao.js'
 import ModalAnimado from './ModalAnimado.jsx'
+import CentralNotificacoes from './CentralNotificacoes.jsx'
+import BuscaGlobal from './BuscaGlobal.jsx'
 
 function Icone({ nome, tamanho }) {
     return (
@@ -153,14 +155,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                         Safra: <strong>{safraAtual} Ativa</strong>
                     </div>
 
-                    <div className="ag-dash-busca">
-                        <Icone nome="search" tamanho={18} />
-                        <span>
-                            {rotaProdutor
-                                ? 'Buscar operações, documentos, movimentações... (Ctrl+K)'
-                                : 'Buscar operações, documentos, movimentações...'}
-                        </span>
-                    </div>
+                    <BuscaGlobal sessao={sessao} />
 
                     <div className="ag-dash-header-acoes">
                         {!rotaProdutor && (
@@ -168,13 +163,7 @@ function ShellDashboard({ sessao, ativo, children }) {
                                 <Icone nome="smartphone" tamanho={20} />
                             </button>
                         )}
-                        <button
-                            className="ag-dash-icone-botao"
-                            type="button"
-                            title="Notificações (em breve)"
-                        >
-                            <Icone nome="notifications" tamanho={20} />
-                        </button>
+                        <CentralNotificacoes sessao={sessao} />
                         <div className="ag-dash-divisor" />
                         <button className="ag-dash-usuario" onClick={() => navigate('/dashboard/perfil')} type="button">
                             <div className="ag-dash-usuario-texto">
