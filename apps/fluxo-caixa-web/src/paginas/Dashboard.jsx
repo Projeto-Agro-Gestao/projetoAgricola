@@ -745,7 +745,7 @@ function Dashboard() {
 
     if (carregando) {
         return (
-            <div className="ag-fin-estado publica">
+            <div className="ag-fin-estado ag-fin-carregando publica">
                 <CarregamentoTela texto="Carregando dashboard financeiro" />
             </div>
         )

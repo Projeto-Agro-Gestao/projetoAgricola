@@ -249,8 +249,11 @@
 .admin-tabela-ferramentas select,
 .admin-tabela select,
 .admin-tabela input {
-    min-height: 46px;
-    padding: 0 12px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 0 9px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     background: #fff;
@@ -333,9 +336,9 @@
 
 .admin-tabela {
     width: 100%;
-    min-width: 1480px;
+    table-layout: fixed;
     border-collapse: collapse;
-    font-size: .9rem;
+    font-size: .82rem;
 }
 
 .admin-tabela th:nth-child(1),
@@ -353,10 +356,12 @@
 
 .admin-tabela th,
 .admin-tabela td {
-    padding: 16px 16px;
+    min-width: 0;
+    padding: 11px 9px;
     border-top: 1px solid #f1f5f9;
     text-align: left;
     vertical-align: top;
+    overflow-wrap: anywhere;
 }
 
 .admin-tabela th {
@@ -390,7 +395,7 @@
 }
 
 .admin-tabela td:last-child {
-    min-width: 500px;
+    min-width: 0;
 }
 
 .admin-usuario-identidade {
@@ -464,7 +469,8 @@
 }
 
 .admin-uso-painel {
-    max-width: 250px;
+    box-sizing: border-box;
+    width: 100%;
     padding: 10px 12px;
     border-radius: 9px;
     background: #f5f7f1;
@@ -503,6 +509,7 @@
     margin-top: 6px;
     padding-top: 6px;
     border-top: 1px solid #e4e9de;
+    flex-wrap: wrap;
 }
 
 .admin-uso-ultimo > span {
@@ -524,14 +531,15 @@
     color: #4b5946;
     font-size: .68rem;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .admin-acesso-painel {
     display: grid;
     gap: 0;
-    min-width: 500px;
-    padding: 10px 11px;
+    min-width: 0;
+    padding: 8px;
     border: 1px solid #dce5d5;
     border-radius: 10px;
     background: #f7f9f3;
@@ -541,6 +549,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
     padding-bottom: 7px;
     border-bottom: 1px solid #e0e7da;
@@ -578,7 +587,7 @@
 .admin-acesso-info > span {
     color: #485345;
     font-size: .78rem;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .admin-acesso-painel .admin-botao-secundario,
@@ -659,7 +668,7 @@
     color: #475569;
     font-size: .7rem;
     font-weight: 650;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .admin-status-em_dia { background: var(--admin-green-soft); color: var(--admin-green-dark); }
@@ -858,6 +867,24 @@
     .admin-resumo { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
+@media (max-width: 1400px) {
+    .admin-tabela { min-width: 0; }
+    .admin-tabela thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+    .admin-tabela tbody,
+    .admin-tabela tr { display: block; }
+    .admin-tabela tbody tr { padding: 8px 14px; border-top: 1px solid #f1f5f9; }
+    .admin-tabela td,
+    .admin-tabela td:last-child { display: block; width: 100%; min-width: 0; padding: 9px 0; border: 0; }
+    .admin-tabela td::before { display: block; margin-bottom: 7px; color: #64748b; content: ''; font-size: .67rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .admin-tabela td:nth-child(1)::before { content: 'Usuário'; }
+    .admin-tabela td:nth-child(2)::before { content: 'Pagamento'; }
+    .admin-tabela td:nth-child(3)::before { content: 'Vencimento'; }
+    .admin-tabela td:nth-child(4)::before { content: 'Situação'; }
+    .admin-tabela td:nth-child(5)::before { content: 'Uso'; }
+    .admin-tabela td:nth-child(6)::before { content: 'Acesso'; }
+    .admin-tabela td:last-child > button { margin: 0 6px 6px 0; }
+}
+
 @media (max-width: 840px) {
     .admin-resumo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .admin-topo { align-items: flex-start; flex-direction: column; }
@@ -875,21 +902,6 @@
     .admin-resumo strong { font-size: 1.6rem; }
     .admin-tabela-cabecalho { align-items: stretch; flex-direction: column; padding: 18px; }
     .admin-tabela-ferramentas { grid-template-columns: 1fr; width: 100%; }
-    .admin-tabela { min-width: 0; }
-    .admin-tabela thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
-    .admin-tabela tbody,
-    .admin-tabela tr { display: block; }
-    .admin-tabela tbody tr { padding: 8px 14px; border-top: 1px solid #f1f5f9; }
-    .admin-tabela td,
-    .admin-tabela td:last-child { display: block; min-width: 0; padding: 9px 0; border: 0; }
-    .admin-tabela td::before { display: block; margin-bottom: 7px; color: #64748b; content: ''; font-size: .67rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-    .admin-tabela td:nth-child(1)::before { content: 'Usuário'; }
-    .admin-tabela td:nth-child(2)::before { content: 'Pagamento'; }
-    .admin-tabela td:nth-child(3)::before { content: 'Vencimento'; }
-    .admin-tabela td:nth-child(4)::before { content: 'Situação'; }
-    .admin-tabela td:nth-child(5)::before { content: 'Uso'; }
-    .admin-tabela td:nth-child(6)::before { content: 'Acesso'; }
-    .admin-tabela td:last-child > button { margin: 0 6px 6px 0; }
     .admin-paginacao { align-items: flex-start; flex-direction: column; padding: 12px 16px; }
     .admin-paginacao-controles { max-width: 100%; flex-wrap: wrap; }
     .admin-acesso-painel { min-width: 0; }
