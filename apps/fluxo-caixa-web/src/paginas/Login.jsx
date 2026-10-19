@@ -50,6 +50,7 @@ function Login() {
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
     const [lembrarAcesso, setLembrarAcesso] = useState(false)
+    const [acessoEmailAberto, setAcessoEmailAberto] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
 
@@ -234,81 +235,93 @@ function Login() {
                                 lembrarAcesso={lembrarAcesso}
                             />
 
-                            <div className="ag-login-divisor">
-                                <span>ou entre com e-mail</span>
-                            </div>
+                            <button
+                                aria-controls="formulario-login-email"
+                                aria-expanded={acessoEmailAberto}
+                                className="ag-login-email-toggle"
+                                onClick={() => setAcessoEmailAberto((aberto) => !aberto)}
+                                type="button"
+                            >
+                                {acessoEmailAberto ? 'Ocultar acesso por e-mail' : 'Entrar com e-mail'}
+                            </button>
 
-                            <form className="ag-login-form" onSubmit={entrar}>
-                                <div className="ag-login-campo">
-                                    <label htmlFor="emailLogin">E-mail</label>
-                                    <div className="ag-login-input">
-                                        <Simbolo nome="badge" tamanho={20} />
-                                        <input
-                                            autoComplete="email"
-                                            disabled={carregando}
-                                            id="emailLogin"
-                                            name="email"
-                                            onChange={(evento) => setEmail(evento.target.value)}
-                                            placeholder="seu.email@exemplo.com"
-                                            required
-                                            type="email"
-                                            value={email}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="ag-login-campo">
-                                    <div className="ag-login-campo-topo">
-                                        <label htmlFor="senhaLogin">Senha de acesso</label>
-                                        <Link className="ag-login-link" to="/esqueci-senha">
-                                            Esqueceu a senha?
-                                        </Link>
-                                    </div>
-                                    <div className="ag-login-input">
-                                        <Simbolo nome="key" tamanho={20} />
-                                        <input
-                                            autoComplete="current-password"
-                                            disabled={carregando}
-                                            id="senhaLogin"
-                                            minLength="6"
-                                            name="senha"
-                                            onChange={(evento) => setSenha(evento.target.value)}
-                                            placeholder="Digite sua senha"
-                                            required
-                                            type={mostrarSenha ? 'text' : 'password'}
-                                            value={senha}
-                                        />
-                                        <button
-                                            aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-                                            className="ag-login-olho"
-                                            disabled={carregando}
-                                            onClick={() => setMostrarSenha((v) => !v)}
-                                            type="button"
-                                        >
-                                            <Simbolo nome={mostrarSenha ? 'visibility' : 'visibility_off'} tamanho={20} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <label className="ag-login-lembrar">
-                                    <input
-                                        checked={lembrarAcesso}
-                                        disabled={carregando}
-                                        onChange={(evento) => setLembrarAcesso(evento.target.checked)}
-                                        type="checkbox"
-                                    />
-                                    <span>Lembrar este dispositivo</span>
-                                </label>
-
-                                <button
-                                    className="ag-login-botao"
-                                    disabled={carregando}
-                                    type="submit"
+                            {acessoEmailAberto && (
+                                <form
+                                    className="ag-login-form"
+                                    id="formulario-login-email"
+                                    onSubmit={entrar}
                                 >
-                                    {carregando ? 'Entrando...' : 'Entrar no Agro Gestão'}
-                                    <Simbolo nome="arrow_forward" tamanho={20} />
-                                </button>
-                            </form>
+                                    <div className="ag-login-campo">
+                                        <label htmlFor="emailLogin">E-mail</label>
+                                        <div className="ag-login-input">
+                                            <Simbolo nome="badge" tamanho={20} />
+                                            <input
+                                                autoComplete="email"
+                                                disabled={carregando}
+                                                id="emailLogin"
+                                                name="email"
+                                                onChange={(evento) => setEmail(evento.target.value)}
+                                                placeholder="seu.email@exemplo.com"
+                                                required
+                                                type="email"
+                                                value={email}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="ag-login-campo">
+                                        <div className="ag-login-campo-topo">
+                                            <label htmlFor="senhaLogin">Senha de acesso</label>
+                                            <Link className="ag-login-link" to="/esqueci-senha">
+                                                Esqueceu a senha?
+                                            </Link>
+                                        </div>
+                                        <div className="ag-login-input">
+                                            <Simbolo nome="key" tamanho={20} />
+                                            <input
+                                                autoComplete="current-password"
+                                                disabled={carregando}
+                                                id="senhaLogin"
+                                                minLength="6"
+                                                name="senha"
+                                                onChange={(evento) => setSenha(evento.target.value)}
+                                                placeholder="Digite sua senha"
+                                                required
+                                                type={mostrarSenha ? 'text' : 'password'}
+                                                value={senha}
+                                            />
+                                            <button
+                                                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                                                className="ag-login-olho"
+                                                disabled={carregando}
+                                                onClick={() => setMostrarSenha((v) => !v)}
+                                                type="button"
+                                            >
+                                                <Simbolo nome={mostrarSenha ? 'visibility' : 'visibility_off'} tamanho={20} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <label className="ag-login-lembrar">
+                                        <input
+                                            checked={lembrarAcesso}
+                                            disabled={carregando}
+                                            onChange={(evento) => setLembrarAcesso(evento.target.checked)}
+                                            type="checkbox"
+                                        />
+                                        <span>Lembrar este dispositivo</span>
+                                    </label>
+
+                                    <button
+                                        className="ag-login-botao"
+                                        disabled={carregando}
+                                        type="submit"
+                                    >
+                                        {carregando ? 'Entrando...' : 'Entrar no Agro Gestão'}
+                                        <Simbolo nome="arrow_forward" tamanho={20} />
+                                    </button>
+                                </form>
+                            )}
 
                         </div>
                     </section>

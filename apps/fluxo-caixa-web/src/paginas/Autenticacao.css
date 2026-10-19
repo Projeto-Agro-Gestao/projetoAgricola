@@ -1016,6 +1016,32 @@
     cursor: not-allowed;
 }
 .ag-login-google p { font-size: 0.78rem; color: var(--ag-on-surface-variant); }
+.ag-login-email-toggle {
+    display: inline-flex;
+    min-height: 36px;
+    margin: 18px auto 0;
+    padding: 7px 13px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ag-on-surface-variant);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.ag-login-email-toggle:hover {
+    border-color: var(--ag-primary);
+    background: var(--ag-campo);
+    color: var(--ag-primary);
+}
+.ag-login-email-toggle:focus-visible {
+    outline: 3px solid color-mix(in oklch, var(--ag-primary) 24%, transparent);
+    outline-offset: 2px;
+}
 .ag-login-google-onboarding {
     display: grid;
     width: 100%;
