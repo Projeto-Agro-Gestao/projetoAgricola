@@ -21,6 +21,7 @@ import br.com.fluxocaixa.movimentacao.TipoMovimentacaoIncompativelException;
 import br.com.fluxocaixa.recuperacaosenha.TokenRecuperacaoSenhaInvalidoException;
 import br.com.fluxocaixa.refreshtoken.RefreshTokenInvalidoException;
 import br.com.fluxocaixa.usuario.EmailJaCadastradoException;
+import br.com.fluxocaixa.usuario.CadastroGoogleNecessarioException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -57,6 +58,20 @@ public class ManipuladorGlobalDeErros {
         return criarResposta(
                 HttpStatus.CONFLICT,
                 "Documento já cadastrado",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(CadastroGoogleNecessarioException.class)
+    public ResponseEntity<ErroResposta> tratarCadastroGoogleNecessario(
+            CadastroGoogleNecessarioException exception,
+            HttpServletRequest request) {
+
+        return criarResposta(
+                HttpStatus.CONFLICT,
+                "Cadastro Google necessário",
                 exception.getMessage(),
                 request.getRequestURI(),
                 Map.of()

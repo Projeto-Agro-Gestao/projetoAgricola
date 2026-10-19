@@ -76,11 +76,18 @@ public class GoogleAuthService {
                     usuario.marcarEmailVerificado();
                     return autenticacaoService.emitirSessao(usuario, false);
                 })
-                .orElseGet(() -> cadastrarNovoUsuario(
-                        request,
-                        tokenInfo,
-                        email
-                ));
+                .orElseGet(() -> {
+                    if (request.nomeEmpresa() == null
+                            || request.nomeEmpresa().isBlank()) {
+                        throw new CadastroGoogleNecessarioException();
+                    }
+
+                    return cadastrarNovoUsuario(
+                            request,
+                            tokenInfo,
+                            email
+                    );
+                });
     }
 
     private br.com.fluxocaixa.autenticacao.SessaoEmitida cadastrarNovoUsuario(
@@ -91,7 +98,7 @@ public class GoogleAuthService {
         String nomeEmpresa =
                 normalizarTextoObrigatorio(
                         request.nomeEmpresa(),
-                        "Conclua o cadastro com Google informando o nome da propriedade."
+                        "Informe o nome da propriedade."
                 );
 
         if (!request.agriculturaAtiva()

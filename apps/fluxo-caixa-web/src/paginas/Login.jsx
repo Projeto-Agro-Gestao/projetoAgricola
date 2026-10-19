@@ -4,9 +4,7 @@ import {
 } from 'react'
 import { Link, useNavigate } from 'react-router'
 import {
-    API_GOOGLE_AUTH_URL,
     API_LOGIN_URL,
-    GOOGLE_CLIENT_ID,
 } from '../config.js'
 import {
     limparPreferenciaLembrarAcesso,
@@ -15,7 +13,7 @@ import {
     salvarPreferenciaLembrarAcesso,
     salvarSessao,
 } from '../servicos/sessao.js'
-import { renderizarBotaoGoogle } from '../utils/googleIdentity.js'
+import AcessoGoogle from '../componentes/AcessoGoogle.jsx'
 import MarcaAgro from '../componentes/MarcaAgro.jsx'
 import '../App.css'
 import './Autenticacao.css'
@@ -54,9 +52,6 @@ function Login() {
     const [lembrarAcesso, setLembrarAcesso] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
-    const [carregandoGoogle, setCarregandoGoogle] = useState(false)
-    const [googleDisponivel, setGoogleDisponivel] =
-        useState(Boolean(GOOGLE_CLIENT_ID))
 
     useEffect(() => {
         const preferencia = obterPreferenciaLembrarAcesso()
@@ -64,33 +59,6 @@ function Login() {
         if (preferencia.lembrar) {
             setEmail(preferencia.email)
             setLembrarAcesso(true)
-        }
-    }, [])
-
-    useEffect(() => {
-        if (!GOOGLE_CLIENT_ID) {
-            setGoogleDisponivel(false)
-            return
-        }
-
-        let ativo = true
-
-        renderizarBotaoGoogle({
-            clientId: GOOGLE_CLIENT_ID,
-            elementId: 'google-login-botao',
-            onCredential: async (credential) => {
-                if (ativo) {
-                    await entrarComGoogle(credential)
-                }
-            },
-        }).catch(() => {
-            if (ativo) {
-                setGoogleDisponivel(false)
-            }
-        })
-
-        return () => {
-            ativo = false
         }
     }, [])
 
@@ -165,89 +133,6 @@ function Login() {
             )
         } finally {
             setCarregando(false)
-        }
-    }
-
-    async function entrarComGoogle(credential) {
-        if (carregando || carregandoGoogle) {
-            return
-        }
-
-        setMensagem('')
-        setCarregandoGoogle(true)
-
-        try {
-            const resposta = await fetch(API_GOOGLE_AUTH_URL, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type':
-                        'application/json; charset=utf-8',
-                },
-                body: JSON.stringify({
-                    credential,
-                    nomeEmpresa: null,
-                    telefone: null,
-                    documento: null,
-                    inscricaoEstadual: null,
-                    isentoInscricaoEstadual: false,
-                    inscricaoMunicipal: null,
-                    isentoInscricaoMunicipal: false,
-                    agriculturaAtiva: false,
-                    pecuariaAtiva: false,
-                }),
-            })
-
-            const dados = await resposta
-                .json()
-                .catch(() => null)
-
-            if (!resposta.ok) {
-                throw new Error(
-                    dados?.mensagem ??
-                    'Nao foi possivel entrar com Google. Se ainda nao tiver conta, cadastre-se primeiro.',
-                )
-            }
-
-            if (!dados?.token || !dados?.usuario?.empresaId) {
-                throw new Error(
-                    'O servidor retornou uma resposta de login invalida',
-                )
-            }
-
-            salvarSessao({
-                token: dados.token,
-                tipoToken: dados.tipo ?? 'Bearer',
-                usuario: dados.usuario,
-                expiraEmSegundos: dados.expiraEmSegundos,
-            })
-
-            if (lembrarAcesso) {
-                salvarPreferenciaLembrarAcesso(
-                    dados.usuario?.email ?? email,
-                )
-            } else {
-                limparPreferenciaLembrarAcesso()
-            }
-
-            navigate(
-                dados.usuario.papel === 'ADMINISTRADOR' ||
-                    dados.usuario.papel === 'SUPER_ADMIN'
-                    ? '/admin'
-                    : '/dashboard',
-                {
-                    replace: true,
-                },
-            )
-        } catch (erro) {
-            setMensagem(
-                mensagemDeFalhaConexao(
-                    erro,
-                    'Nao foi possivel entrar com Google',
-                ),
-            )
-        } finally {
-            setCarregandoGoogle(false)
         }
     }
 
@@ -344,6 +229,15 @@ function Login() {
                                 </div>
                             )}
 
+                            <AcessoGoogle
+                                elementId="google-acesso-login"
+                                lembrarAcesso={lembrarAcesso}
+                            />
+
+                            <div className="ag-login-divisor">
+                                <span>ou entre com e-mail</span>
+                            </div>
+
                             <form className="ag-login-form" onSubmit={entrar}>
                                 <div className="ag-login-campo">
                                     <label htmlFor="emailLogin">E-mail</label>
@@ -408,7 +302,7 @@ function Login() {
 
                                 <button
                                     className="ag-login-botao"
-                                    disabled={carregando || carregandoGoogle}
+                                    disabled={carregando}
                                     type="submit"
                                 >
                                     {carregando ? 'Entrando...' : 'Entrar no Agro Gestão'}
@@ -416,20 +310,6 @@ function Login() {
                                 </button>
                             </form>
 
-                            <div className="ag-login-divisor">
-                                <span>ou acesse com</span>
-                            </div>
-
-                            <div className="ag-login-google">
-                                {googleDisponivel ? (
-                                    <div id="google-login-botao" />
-                                ) : (
-                                    <button className="ag-login-google-indisponivel" disabled type="button">
-                                        Entrar com Google indisponível
-                                    </button>
-                                )}
-                                {carregandoGoogle && <p>Validando conta Google...</p>}
-                            </div>
                         </div>
                     </section>
                 </div>
