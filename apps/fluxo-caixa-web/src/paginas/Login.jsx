@@ -186,6 +186,15 @@ function Login() {
                 },
                 body: JSON.stringify({
                     credential,
+                    nomeEmpresa: null,
+                    telefone: null,
+                    documento: null,
+                    inscricaoEstadual: null,
+                    isentoInscricaoEstadual: false,
+                    inscricaoMunicipal: null,
+                    isentoInscricaoMunicipal: false,
+                    agriculturaAtiva: false,
+                    pecuariaAtiva: false,
                 }),
             })
 
