@@ -89,6 +89,7 @@ function Cadastro() {
     const [erro, setErro] = useState('')
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
+    const [cadastroEmailAberto, setCadastroEmailAberto] = useState(false)
 
     async function criarConta(evento) {
         evento.preventDefault()
@@ -278,16 +279,23 @@ function Cadastro() {
                                 </div>
                             )}
 
-                            <div className="ag-login-divisor">
-                                <span>continue com sua conta Google</span>
-                            </div>
                             <AcessoGoogle elementId="google-acesso-cadastro" />
-                            <div className="ag-login-divisor">
-                                <span>ou preencha o cadastro</span>
-                            </div>
+                            <button
+                                aria-controls="formulario-cadastro-email"
+                                aria-expanded={cadastroEmailAberto}
+                                className="ag-login-email-toggle"
+                                onClick={() => setCadastroEmailAberto((aberto) => !aberto)}
+                                type="button"
+                            >
+                                {cadastroEmailAberto
+                                    ? 'Ocultar cadastro com e-mail'
+                                    : 'Criar conta com e-mail'}
+                            </button>
 
+                            {cadastroEmailAberto && (
                             <form
                                 className="ag-login-form"
+                                id="formulario-cadastro-email"
                                 onSubmit={criarConta}
                                 ref={formularioRef}
                             >
@@ -520,6 +528,7 @@ function Cadastro() {
                                     <Simbolo nome="arrow_forward" tamanho={20} />
                                 </button>
                             </form>
+                            )}
                         </div>
                     </section>
                 </div>
