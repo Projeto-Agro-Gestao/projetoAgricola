@@ -11,16 +11,16 @@ const roteiros = [
             await page.goto('/', { waitUntil: 'networkidle' })
             await pausa(page, 1000)
 
-            await rolarAte(page, '#atividades')
+            await rolarAte(page, '#produtores')
             await pausa(page, 500)
+
+            await rolarAte(page, '#contadores')
+            await pausa(page, 600)
 
             await rolarAte(page, '#recursos')
             await pausa(page, 600)
 
-            await rolarAte(page, '#financeiro')
-            await pausa(page, 600)
-
-            await rolarAte(page, '.publica-chamada')
+            await rolarAte(page, '#conhecer')
             await pausa(page, 900)
         },
     },
@@ -30,20 +30,17 @@ const roteiros = [
             await page.goto('/login', { waitUntil: 'networkidle' })
             await pausa(page, 2200)
 
-            await page.fill('#emailLogin', CONFIG.email)
+            await page.fill('#emailLogin', 'produtor@exemplo.com')
             await pausa(page, 700)
 
-            await page.fill('#senhaLogin', CONFIG.senha)
+            await page.fill('#senhaLogin', 'senha-ficticia')
             await pausa(page, 700)
 
-            await page.click('.autenticacao-mostrar-senha')
+            await page.click('.ag-login-olho')
             await pausa(page, 1200)
 
-            await page.click('.autenticacao-mostrar-senha')
+            await page.click('.ag-login-olho')
             await pausa(page, 600)
-
-            await page.click('.autenticacao-botao')
-            await page.waitForTimeout(4000)
         },
     },
     {

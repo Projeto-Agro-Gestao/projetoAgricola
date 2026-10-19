@@ -1,6 +1,12 @@
 import { CONFIG } from '../config.js'
 
 export async function obterSessaoDemo() {
+    if (!CONFIG.email || !CONFIG.senha) {
+        throw new Error(
+            'Defina VIDEO_EMAIL e VIDEO_SENHA em videos/.env.',
+        )
+    }
+
     const resposta = await fetch(`${CONFIG.apiURL}/auth/login`, {
         method: 'POST',
         headers: {

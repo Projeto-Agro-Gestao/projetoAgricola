@@ -15,6 +15,10 @@ const raizSaida = path.join(diretorio, '..', 'videos-output')
 
 async function gravar(cena) {
     const pasta = path.join(raizSaida, cena.nome)
+    const viewport =
+        cena.nome === 'dashboard-9x16'
+            ? { width: 960, height: 1706 }
+            : cena.viewport
 
     fs.rmSync(pasta, { recursive: true, force: true })
     fs.mkdirSync(pasta, { recursive: true })
@@ -25,11 +29,11 @@ async function gravar(cena) {
 
     const contexto = await navegador.newContext({
         baseURL,
-        viewport: cena.viewport,
+        viewport,
         deviceScaleFactor: 1,
         recordVideo: {
             dir: pasta,
-            size: cena.viewport,
+            size: viewport,
         },
     })
 

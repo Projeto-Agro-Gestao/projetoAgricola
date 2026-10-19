@@ -211,16 +211,6 @@ svg {
   }
 }
 
-@keyframes brilhoEsqueleto {
-  from {
-    opacity: 0.55;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 .surgir {
   animation: surgir var(--motion-slow) var(--ease-out) both;
 }
@@ -231,17 +221,6 @@ svg {
 
 .girando {
   animation: girar 0.7s linear infinite;
-}
-
-.esqueleto {
-  display: block;
-  border-radius: calc(var(--radius) * 0.7);
-  background: color-mix(
-          in oklch,
-          var(--muted-foreground) 16%,
-          transparent
-  );
-  animation: brilhoEsqueleto 1.1s ease-in-out infinite alternate;
 }
 
 .pagina-transicao {

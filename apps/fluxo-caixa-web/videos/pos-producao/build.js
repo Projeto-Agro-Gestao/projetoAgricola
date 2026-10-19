@@ -231,8 +231,8 @@ function processarCena(webm, musica) {
 
         const mix =
             entradas.length > 1
-                ? `${entradas.join('')}amix=inputs=${entradas.length}:duration=longest:dropout_transition=0[a]`
-                : `${entradas[0]}anull[a]`
+                ? `${entradas.join('')}amix=inputs=${entradas.length}:duration=longest:dropout_transition=0,apad=whole_dur=${duracaoVideo}[a]`
+                : `${entradas[0]}apad=whole_dur=${duracaoVideo}[a]`
 
         args.push(
             '-filter_complex',
@@ -242,6 +242,8 @@ function processarCena(webm, musica) {
             '-map', '0:s?',
             '-c:v', 'copy',
             '-c:a', 'aac',
+            '-ar', '48000',
+            '-ac', '2',
             '-b:a', '192k',
             '-c:s', 'copy',
             '-t', String(duracaoVideo),
