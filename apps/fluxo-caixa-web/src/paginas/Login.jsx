@@ -230,11 +230,6 @@ function Login() {
                                 </div>
                             )}
 
-                            <AcessoGoogle
-                                elementId="google-acesso-login"
-                                lembrarAcesso={lembrarAcesso}
-                            />
-
                             <button
                                 aria-controls="formulario-login-email"
                                 aria-expanded={acessoEmailAberto}
@@ -322,6 +317,11 @@ function Login() {
                                     </button>
                                 </form>
                             )}
+
+                            <AcessoGoogle
+                                elementId="google-acesso-login"
+                                lembrarAcesso={lembrarAcesso}
+                            />
 
                         </div>
                     </section>

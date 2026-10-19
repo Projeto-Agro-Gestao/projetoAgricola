@@ -1019,7 +1019,7 @@
 .ag-login-email-toggle {
     display: inline-flex;
     min-height: 36px;
-    margin: 18px auto 0;
+    margin: 18px auto;
     padding: 7px 13px;
     align-items: center;
     justify-content: center;
