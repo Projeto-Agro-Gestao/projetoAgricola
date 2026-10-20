@@ -1004,7 +1004,12 @@
 }
 
 .ag-login-google { display: grid; gap: 8px; justify-items: center; }
-.ag-login-google > div { display: flex; justify-content: center; width: 100%; }
+.ag-login-google > div {
+    display: flex;
+    width: 100%;
+    max-width: 500px;
+    justify-content: center;
+}
 .ag-login-google-indisponivel {
     width: 100%;
     padding: 11px;
@@ -1017,14 +1022,15 @@
 }
 .ag-login-google p { font-size: 0.78rem; color: var(--ag-on-surface-variant); }
 .ag-login-email-toggle {
-    display: inline-flex;
-    min-height: 36px;
+    display: flex;
+    width: min(100%, 500px);
+    min-height: 48px;
     margin: 18px auto;
-    padding: 7px 13px;
+    padding: 10px 16px;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--ag-outline-variant);
-    border-radius: 999px;
+    border-radius: var(--ag-radius-lg);
     background: transparent;
     color: var(--ag-on-surface-variant);
     font: inherit;
