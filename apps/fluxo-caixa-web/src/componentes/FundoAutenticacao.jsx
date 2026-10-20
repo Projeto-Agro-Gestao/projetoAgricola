@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 const cenas = ['trigo', 'milho', 'soja']
+const chavePreferencia = 'agrogestao_video_fundo'
+function obterEscolha() {
+    try {
+        const valor = localStorage.getItem(chavePreferencia)
+        return valor === 'ativo' ? true : valor === 'inativo' ? false : null
+    } catch { return null }
+}
 
 export default function FundoAutenticacao() {
     const [cena] = useState(() => cenas[Math.floor(Math.random() * cenas.length)])
     const imagemCampo = `/media/colheita-${cena}.jpg`
     const [reproduzir, setReproduzir] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches && !navigator.connection?.saveData)
     const [falhou, setFalhou] = useState(false)
-    const [escolha, setEscolha] = useState(null)
+    const [escolha, setEscolha] = useState(obterEscolha)
     const ativo = escolha ?? reproduzir
     useEffect(() => {
         const movimento = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -27,7 +34,12 @@ export default function FundoAutenticacao() {
         <div className="ag-auth-contraste" />
     </div>
     <button type="button" className="ag-auth-video-controle" aria-pressed={ativo && !falhou}
-        onClick={() => { setFalhou(false); setEscolha(falhou || !ativo) }}>
+        onClick={() => {
+            const proxima = falhou || !ativo
+            setFalhou(false)
+            setEscolha(proxima)
+            try { localStorage.setItem(chavePreferencia, proxima ? 'ativo' : 'inativo') } catch { /* A reprodução continua sem armazenamento. */ }
+        }}>
         {falhou ? 'Tentar carregar vídeo' : ativo ? 'Desativar vídeo de fundo' : 'Ativar vídeo de fundo'}
     </button>
     </>
