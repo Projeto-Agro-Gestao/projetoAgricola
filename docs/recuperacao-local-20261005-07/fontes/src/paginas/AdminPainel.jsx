@@ -1,0 +1,1044 @@
+import { IconeAgro } from '../componentes/MarcaAgro.jsx'
+import {
+    useEffect,
+    useMemo,
+    useState,
+} from 'react'
+import { useNavigate } from 'react-router'
+import { API_BASE_URL as API_URL } from '../config.js'
+import './AdminPainel.css'
+
+const STATUS_PAGAMENTO = [
+    'EM_DIA',
+    'ATRASADO',
+    'ISENTO',
+    'TESTE',
+]
+
+const TIPOS_ACESSO = {
+    NORMAL: 'Normal',
+    VITALICIO: 'Vitalicio',
+    PRAZO: 'Por prazo',
+}
+
+const FILTROS_USUARIOS = [
+    { valor: 'TODOS', rotulo: 'Todos' },
+    { valor: 'LIBERADOS', rotulo: 'Liberados' },
+    { valor: 'BLOQUEADOS', rotulo: 'Bloqueados' },
+    { valor: 'ATRASADOS', rotulo: 'Atrasados' },
+    { valor: 'SEM_PAGAR', rotulo: 'Sem pagar' },
+    { valor: 'SEM_USO', rotulo: 'Sem uso' },
+]
+
+function limparSessao() {
+    localStorage.removeItem('agrogestao_token')
+    localStorage.removeItem('agrogestao_tipo_token')
+    localStorage.removeItem('agrogestao_usuario')
+    localStorage.removeItem('agrogestao_token_expira_em')
+}
+
+function obterSessao() {
+    try {
+        const token = localStorage.getItem('agrogestao_token')
+        const tipoToken =
+            localStorage.getItem('agrogestao_tipo_token') ??
+            'Bearer'
+        const usuarioSalvo =
+            localStorage.getItem('agrogestao_usuario')
+        const expiraEm = Number(
+            localStorage.getItem('agrogestao_token_expira_em'),
+        )
+
+        if (!token || !usuarioSalvo) {
+            return null
+        }
+
+        if (expiraEm && Date.now() >= expiraEm) {
+            limparSessao()
+            return null
+        }
+
+        return {
+            token,
+            tipoToken,
+            usuario: JSON.parse(usuarioSalvo),
+        }
+    } catch {
+        limparSessao()
+        return null
+    }
+}
+
+async function obterMensagemDeErro(resposta) {
+    const dados = await resposta.json().catch(() => null)
+    return dados?.mensagem ?? 'Não foi possível concluir a ação'
+}
+
+function formatarStatus(valor) {
+    return {
+        EM_DIA: 'Em dia',
+        ATRASADO: 'Atrasado',
+        ISENTO: 'Isento',
+        TESTE: 'Teste / sem pagar',
+    }[valor] ?? valor
+}
+
+function formatarSituacao(valor) {
+    return {
+        EM_DIA: 'Em dia',
+        BLOQUEADO: 'Bloqueado',
+        ATRASADO: 'Atrasado',
+        USANDO_SEM_PAGAR: 'Usando sem pagar',
+        SEM_USO: 'Sem uso recente',
+        ACESSO_EXPIRADO: 'Acesso expirado',
+    }[valor] ?? valor
+}
+
+function formatarData(data) {
+    if (!data) {
+        return '-'
+    }
+
+    const [ano, mes, dia] = data.split('-')
+    return `${dia}/${mes}/${ano}`
+}
+
+function formatarTipoAcesso(valor) {
+    return TIPOS_ACESSO[valor] ?? 'Normal'
+}
+
+function formatarDataHora(dataHora) {
+    if (!dataHora) {
+        return '-'
+    }
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+    }).format(new Date(dataHora))
+}
+
+function AdminPainel() {
+    const navigate = useNavigate()
+    const [sessao] = useState(() => obterSessao())
+    const [usuarios, setUsuarios] = useState([])
+    const [mensagem, setMensagem] = useState('')
+    const [carregando, setCarregando] = useState(true)
+    const [salvandoId, setSalvandoId] = useState(null)
+    const [diasAcesso, setDiasAcesso] = useState({})
+    const [buscaUsuarios, setBuscaUsuarios] = useState('')
+    const [filtroUsuarios, setFiltroUsuarios] = useState('TODOS')
+    const [usuarioEmEdicao, setUsuarioEmEdicao] =
+        useState(null)
+    const [formularioEdicao, setFormularioEdicao] =
+        useState({
+            nomeEmpresa: '',
+            nome: '',
+            email: '',
+            telefone: '',
+            agriculturaAtiva: true,
+            pecuariaAtiva: false,
+        })
+
+    const resumo = useMemo(() => {
+        return usuarios.reduce(
+            (total, usuario) => {
+                total.usuarios += 1
+
+                if (usuario.acessoLiberado) {
+                    total.liberados += 1
+                } else {
+                    total.bloqueados += 1
+                }
+
+                if (usuario.statusPagamento === 'ATRASADO') {
+                    total.atrasados += 1
+                }
+
+                if (usuario.statusPagamento === 'TESTE') {
+                    total.semPagamento += 1
+                }
+
+                if (usuario.situacao === 'SEM_USO') {
+                    total.semUso += 1
+                }
+
+                total.usosHoje += usuario.usosHoje ?? 0
+                total.usosTotais += usuario.usosTotais ?? 0
+                return total
+            },
+            {
+                usuarios: 0,
+                liberados: 0,
+                bloqueados: 0,
+                atrasados: 0,
+                semPagamento: 0,
+                semUso: 0,
+                usosHoje: 0,
+                usosTotais: 0,
+            },
+        )
+    }, [usuarios])
+
+    const usuariosFiltrados = useMemo(() => {
+        const termo = buscaUsuarios.trim().toLowerCase()
+
+        return usuarios.filter((usuario) => {
+            const atendeBusca = !termo || [
+                usuario.nome,
+                usuario.email,
+                usuario.telefone,
+                usuario.nomeEmpresa,
+            ].some((valor) =>
+                String(valor ?? '').toLowerCase().includes(termo),
+            )
+
+            const atendeFiltro =
+                filtroUsuarios === 'TODOS' ||
+                (filtroUsuarios === 'LIBERADOS' &&
+                    usuario.acessoLiberado) ||
+                (filtroUsuarios === 'BLOQUEADOS' &&
+                    !usuario.acessoLiberado) ||
+                (filtroUsuarios === 'ATRASADOS' &&
+                    usuario.statusPagamento === 'ATRASADO') ||
+                (filtroUsuarios === 'SEM_PAGAR' &&
+                    usuario.statusPagamento === 'TESTE') ||
+                (filtroUsuarios === 'SEM_USO' &&
+                    usuario.situacao === 'SEM_USO')
+
+            return atendeBusca && atendeFiltro
+        })
+    }, [buscaUsuarios, filtroUsuarios, usuarios])
+
+    useEffect(() => {
+        if (!sessao) {
+            navigate('/login', { replace: true })
+            return
+        }
+
+        if (sessao.usuario?.papel !== 'ADMINISTRADOR') {
+            navigate('/dashboard', { replace: true })
+        }
+    }, [navigate, sessao])
+
+    async function carregarUsuarios(sessaoAtual) {
+        setCarregando(true)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/usuarios`,
+                {
+                    headers: {
+                        Authorization:
+                            `${sessaoAtual.tipoToken} ${sessaoAtual.token}`,
+                    },
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(resposta),
+                )
+            }
+
+            setUsuarios(await resposta.json())
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Não foi possível carregar os usuários',
+            )
+        } finally {
+            setCarregando(false)
+        }
+    }
+
+    useEffect(() => {
+        if (sessao?.usuario?.papel === 'ADMINISTRADOR') {
+            void Promise.resolve().then(() =>
+                carregarUsuarios(sessao),
+            )
+        }
+    }, [sessao])
+
+    async function alternarAcesso(usuario) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: !usuario.acessoLiberado,
+                tipoAcesso: usuario.tipoAcesso ?? 'NORMAL',
+                acessoExpiraEm: usuario.acessoExpiraEm ?? null,
+            },
+        )
+    }
+
+    async function darAcessoVitalicio(usuario) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'VITALICIO',
+                acessoExpiraEm: null,
+                diasAcesso: null,
+            },
+        )
+    }
+
+    async function liberarPorPrazo(usuario) {
+        const dias = Number(diasAcesso[usuario.id] ?? 30)
+
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'PRAZO',
+                diasAcesso: dias,
+            },
+        )
+    }
+
+    async function voltarAcessoNormal(usuario) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/acesso`,
+            {
+                acessoLiberado: true,
+                tipoAcesso: 'NORMAL',
+                acessoExpiraEm: null,
+                diasAcesso: null,
+            },
+        )
+    }
+
+    function atualizarDiasAcesso(usuarioId, valor) {
+        setDiasAcesso((atual) => ({
+            ...atual,
+            [usuarioId]: valor,
+        }))
+    }
+
+    async function atualizarPagamento(usuario, campos) {
+        await salvarAlteracao(
+            usuario.id,
+            `${API_URL}/admin/usuarios/${usuario.id}/pagamento`,
+            {
+                statusPagamento:
+                    campos.statusPagamento ??
+                    usuario.statusPagamento,
+                dataVencimentoPagamento:
+                    campos.dataVencimentoPagamento ??
+                    usuario.dataVencimentoPagamento,
+            },
+        )
+    }
+
+    async function salvarAlteracao(usuarioId, url, corpo) {
+        if (!sessao) {
+            return
+        }
+
+        setSalvandoId(usuarioId)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization:
+                        `${sessao.tipoToken} ${sessao.token}`,
+                    'Content-Type':
+                        'application/json; charset=utf-8',
+                },
+                body: JSON.stringify(corpo),
+            })
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(resposta),
+                )
+            }
+
+            const usuarioAtualizado = await resposta.json()
+
+            setUsuarios((listaAtual) =>
+                listaAtual.map((usuario) =>
+                    usuario.id === usuarioAtualizado.id
+                        ? usuarioAtualizado
+                        : usuario,
+                ),
+            )
+
+            setMensagem('Alteração salva com sucesso.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Não foi possível salvar a alteração',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
+    }
+
+    function abrirEdicao(usuario) {
+        setUsuarioEmEdicao(usuario)
+        setFormularioEdicao({
+            nomeEmpresa: usuario.nomeEmpresa ?? '',
+            nome: usuario.nome ?? '',
+            email: usuario.email ?? '',
+            telefone: usuario.telefone ?? '',
+            agriculturaAtiva:
+                usuario.agriculturaAtiva ?? true,
+            pecuariaAtiva:
+                usuario.pecuariaAtiva ?? false,
+        })
+        setMensagem('')
+    }
+
+    function fecharEdicao() {
+        setUsuarioEmEdicao(null)
+    }
+
+    function atualizarCampoEdicao(campo, valor) {
+        setFormularioEdicao((atual) => ({
+            ...atual,
+            [campo]: valor,
+        }))
+    }
+
+    async function salvarDadosUsuario(evento) {
+        evento.preventDefault()
+
+        if (!usuarioEmEdicao || !sessao) {
+            return
+        }
+
+        if (
+            !formularioEdicao.agriculturaAtiva
+            && !formularioEdicao.pecuariaAtiva
+        ) {
+            setMensagem(
+                'Escolha Agricultura, Pecuaria ou as duas atividades.',
+            )
+            return
+        }
+
+        setSalvandoId(usuarioEmEdicao.id)
+        setMensagem('')
+
+        try {
+            const resposta = await fetch(
+                `${API_URL}/admin/usuarios/${usuarioEmEdicao.id}/dados`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        Authorization:
+                            `${sessao.tipoToken} ${sessao.token}`,
+                        'Content-Type':
+                            'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify(formularioEdicao),
+                },
+            )
+
+            if (!resposta.ok) {
+                throw new Error(
+                    await obterMensagemDeErro(resposta),
+                )
+            }
+
+            const usuarioAtualizado = await resposta.json()
+
+            setUsuarios((listaAtual) =>
+                listaAtual.map((usuario) =>
+                    usuario.id === usuarioAtualizado.id
+                        ? usuarioAtualizado
+                        : usuario,
+                ),
+            )
+            setUsuarioEmEdicao(null)
+            setMensagem('Dados do usuario salvos com sucesso.')
+        } catch (erro) {
+            setMensagem(
+                erro instanceof Error
+                    ? erro.message
+                    : 'Nao foi possivel salvar os dados',
+            )
+        } finally {
+            setSalvandoId(null)
+        }
+    }
+
+    function sair() {
+        limparSessao()
+        navigate('/login', { replace: true })
+    }
+
+    function abrirSistema() {
+        navigate('/dashboard')
+    }
+
+    function abrirAssinaturas() {
+        navigate('/admin/assinaturas')
+    }
+
+    return (
+        <main className="admin-painel">
+            <header className="admin-topo">
+                <div>
+                    <span className="admin-marca">Agro Gestão</span>
+                    <p className="admin-etiqueta">
+                        Administração
+                    </p>
+                    <h1>Painel administrativo</h1>
+                    <p>
+                        Acompanhe pagamentos, liberação de
+                        acesso e uso diário dos usuários.
+                    </p>
+                </div>
+
+                <div className="admin-topo-acoes">
+                    <button
+                        className="admin-botao-primario"
+                        onClick={abrirSistema}
+                        type="button"
+                    >
+                        Ir para o sistema
+                    </button>
+
+                    <button
+                        className="admin-botao-secundario"
+                        onClick={abrirAssinaturas}
+                        type="button"
+                    >
+                        Plano e pagamentos
+                    </button>
+
+                    <button
+                        className="admin-botao-secundario"
+                        onClick={sair}
+                        type="button"
+                    >
+                        Sair da conta
+                    </button>
+                </div>
+            </header>
+
+            {mensagem && (
+                <div className="admin-aviso" role="status">
+                    {mensagem}
+                </div>
+            )}
+
+            <section className="admin-resumo">
+                <article className="ag-metrica-verde">
+                    <IconeAgro nome="group" className="ag-metrica-icone" />
+                    <span>Usuários</span>
+                    <strong>{resumo.usuarios}</strong>
+                </article>
+
+                <article className="ag-metrica-verde">
+                    <IconeAgro nome="verified_user" className="ag-metrica-icone" />
+                    <span>Liberados</span>
+                    <strong>{resumo.liberados}</strong>
+                </article>
+
+                <article className="ag-metrica-neutro">
+                    <IconeAgro nome="lock" className="ag-metrica-icone" />
+                    <span>Bloqueados</span>
+                    <strong>{resumo.bloqueados}</strong>
+                </article>
+
+                <article className="ag-metrica-ambar">
+                    <IconeAgro nome="schedule" className="ag-metrica-icone" />
+                    <span>Atrasados</span>
+                    <strong>{resumo.atrasados}</strong>
+                </article>
+
+                <article className="ag-metrica-ambar">
+                    <IconeAgro nome="receipt_long" className="ag-metrica-icone" />
+                    <span>Sem pagar</span>
+                    <strong>{resumo.semPagamento}</strong>
+                </article>
+
+                <article className="ag-metrica-neutro">
+                    <IconeAgro nome="person_off" className="ag-metrica-icone" />
+                    <span>Sem uso</span>
+                    <strong>{resumo.semUso}</strong>
+                </article>
+            </section>
+
+            <section className="admin-tabela-bloco">
+                <div className="admin-tabela-cabecalho">
+                    <div>
+                        <span className="admin-secao-etiqueta">
+                            Gestão de clientes
+                        </span>
+                        <h2>Usuários cadastrados</h2>
+                        <p>
+                            {resumo.usosHoje} usos hoje ·{' '}
+                            {resumo.usosTotais} usos totais
+                        </p>
+                    </div>
+
+                    <div className="admin-tabela-ferramentas">
+                        <input
+                            aria-label="Buscar usuário"
+                            onChange={(evento) =>
+                                setBuscaUsuarios(evento.target.value)
+                            }
+                            placeholder="Buscar nome, e-mail ou propriedade"
+                            type="search"
+                            value={buscaUsuarios}
+                        />
+
+                        <select
+                            aria-label="Filtrar usuários"
+                            onChange={(evento) =>
+                                setFiltroUsuarios(evento.target.value)
+                            }
+                            value={filtroUsuarios}
+                        >
+                            {FILTROS_USUARIOS.map((item) => (
+                                <option key={item.valor} value={item.valor}>
+                                    {item.rotulo}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {carregando ? (
+                    <p className="admin-vazio">
+                        Carregando usuários...
+                    </p>
+                ) : (
+                    <div className="admin-tabela-area">
+                        <table className="admin-tabela">
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>Pagamento</th>
+                                    <th>Vencimento</th>
+                                    <th>Situação</th>
+                                    <th>Uso</th>
+                                    <th>Acesso</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {usuariosFiltrados.map((usuario) => (
+                                    <tr key={usuario.id}>
+                                        <td>
+                                            <strong>
+                                                {usuario.nome}
+                                            </strong>
+                                            <span>
+                                                {usuario.email}
+                                            </span>
+                                            {usuario.telefone && (
+                                                <span>
+                                                    {
+                                                        usuario.telefone
+                                                    }
+                                                </span>
+                                            )}
+                                            <span>
+                                                {usuario.nomeEmpresa}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <select
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onChange={(evento) =>
+                                                    atualizarPagamento(
+                                                        usuario,
+                                                        {
+                                                            statusPagamento:
+                                                                evento
+                                                                    .target
+                                                                    .value,
+                                                        },
+                                                    )
+                                                }
+                                                value={
+                                                    usuario.statusPagamento
+                                                }
+                                            >
+                                                {STATUS_PAGAMENTO.map(
+                                                    (status) => (
+                                                        <option
+                                                            key={
+                                                                status
+                                                            }
+                                                            value={
+                                                                status
+                                                            }
+                                                        >
+                                                            {formatarStatus(
+                                                                status,
+                                                            )}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <input
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onBlur={(evento) =>
+                                                    atualizarPagamento(
+                                                        usuario,
+                                                        {
+                                                            dataVencimentoPagamento:
+                                                                evento
+                                                                    .target
+                                                                    .value ||
+                                                                null,
+                                                        },
+                                                    )
+                                                }
+                                                type="date"
+                                                defaultValue={
+                                                    usuario.dataVencimentoPagamento ??
+                                                    ''
+                                                }
+                                            />
+                                            <span>
+                                                {formatarData(
+                                                    usuario.dataVencimentoPagamento,
+                                                )}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span
+                                                className={
+                                                    `admin-status admin-status-${usuario.situacao?.toLowerCase()}`
+                                                }
+                                            >
+                                                {formatarSituacao(
+                                                    usuario.situacao,
+                                                )}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <strong>
+                                                {usuario.usosHoje}
+                                            </strong>
+                                            <span>
+                                                hoje · média{' '}
+                                                {
+                                                    usuario.mediaUsoPorDia
+                                                }
+                                                /dia
+                                            </span>
+                                            <span>
+                                                Último uso:{' '}
+                                                {formatarDataHora(
+                                                    usuario.ultimoUsoEm,
+                                                )}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div className="admin-acesso-info">
+                                                <strong>
+                                                    {formatarTipoAcesso(
+                                                        usuario.tipoAcesso,
+                                                    )}
+                                                </strong>
+                                                <span>
+                                                    Expira:{' '}
+                                                    {formatarData(
+                                                        usuario.acessoExpiraEm,
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                className="admin-botao-secundario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    abrirEdicao(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Editar
+                                            </button>
+
+                                            <button
+                                                className={
+                                                    usuario.acessoLiberado
+                                                        ? 'admin-botao-perigo'
+                                                        : 'admin-botao-primario'
+                                                }
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    alternarAcesso(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                {usuario.acessoLiberado
+                                                    ? 'Bloquear'
+                                                    : 'Liberar'}
+                                            </button>
+
+                                            <button
+                                                className="admin-botao-primario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    darAcessoVitalicio(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Vitalicio
+                                            </button>
+
+                                            <div className="admin-prazo-acesso">
+                                                <input
+                                                    aria-label="Dias de acesso"
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    min="1"
+                                                    onChange={(
+                                                        evento,
+                                                    ) =>
+                                                        atualizarDiasAcesso(
+                                                            usuario.id,
+                                                            evento
+                                                                .target
+                                                                .value,
+                                                        )
+                                                    }
+                                                    type="number"
+                                                    value={
+                                                        diasAcesso[
+                                                            usuario.id
+                                                        ] ?? 30
+                                                    }
+                                                />
+
+                                                <button
+                                                    className="admin-botao-secundario"
+                                                    disabled={
+                                                        salvandoId ===
+                                                        usuario.id
+                                                    }
+                                                    onClick={() =>
+                                                        liberarPorPrazo(
+                                                            usuario,
+                                                        )
+                                                    }
+                                                    type="button"
+                                                >
+                                                    Liberar por prazo
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                className="admin-botao-secundario"
+                                                disabled={
+                                                    salvandoId ===
+                                                    usuario.id
+                                                }
+                                                onClick={() =>
+                                                    voltarAcessoNormal(
+                                                        usuario,
+                                                    )
+                                                }
+                                                type="button"
+                                            >
+                                                Normal
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+
+            {usuarioEmEdicao && (
+                <div
+                    className="admin-modal-fundo"
+                    role="presentation"
+                >
+                    <form
+                        className="admin-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        onSubmit={salvarDadosUsuario}
+                    >
+                        <div className="admin-modal-topo">
+                            <div>
+                                <span>Usuario</span>
+                                <h2>Editar dados</h2>
+                            </div>
+
+                            <button
+                                className="admin-modal-fechar"
+                                onClick={fecharEdicao}
+                                type="button"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+
+                        <label>
+                            Nome da propriedade
+                            <input
+                                maxLength={150}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'nomeEmpresa',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                value={
+                                    formularioEdicao.nomeEmpresa
+                                }
+                            />
+                        </label>
+
+                        <label>
+                            Nome do responsavel
+                            <input
+                                maxLength={120}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'nome',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                value={formularioEdicao.nome}
+                            />
+                        </label>
+
+                        <label>
+                            E-mail
+                            <input
+                                maxLength={150}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'email',
+                                        evento.target.value,
+                                    )
+                                }
+                                required
+                                type="email"
+                                value={formularioEdicao.email}
+                            />
+                        </label>
+
+                        <label>
+                            Telefone
+                            <input
+                                maxLength={20}
+                                onChange={(evento) =>
+                                    atualizarCampoEdicao(
+                                        'telefone',
+                                        evento.target.value,
+                                    )
+                                }
+                                value={formularioEdicao.telefone}
+                            />
+                        </label>
+
+                        <fieldset>
+                            <legend>Atividades</legend>
+
+                            <label>
+                                <input
+                                    checked={
+                                        formularioEdicao.agriculturaAtiva
+                                    }
+                                    onChange={(evento) =>
+                                        atualizarCampoEdicao(
+                                            'agriculturaAtiva',
+                                            evento.target.checked,
+                                        )
+                                    }
+                                    type="checkbox"
+                                />
+                                Agricultura
+                            </label>
+
+                            <label>
+                                <input
+                                    checked={
+                                        formularioEdicao.pecuariaAtiva
+                                    }
+                                    onChange={(evento) =>
+                                        atualizarCampoEdicao(
+                                            'pecuariaAtiva',
+                                            evento.target.checked,
+                                        )
+                                    }
+                                    type="checkbox"
+                                />
+                                Pecuaria
+                            </label>
+                        </fieldset>
+
+                        <div className="admin-modal-acoes">
+                            <button
+                                className="admin-botao-secundario"
+                                onClick={fecharEdicao}
+                                type="button"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                className="admin-botao-primario"
+                                disabled={
+                                    salvandoId ===
+                                    usuarioEmEdicao.id
+                                }
+                                type="submit"
+                            >
+                                Salvar dados
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+        </main>
+    )
+}
+
+export default AdminPainel

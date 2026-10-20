@@ -1,0 +1,250 @@
+{
+  "escopo": "Diferenças de fontes da cópia local contra o backup anterior à atualização de 05/10. O estado final contém também ajustes posteriores; não é uma fotografia exata do dia 05. Arquivos agrícolas novos, já integrados, não duplicados aqui.",
+  "arquivos": [
+    {
+      "arquivo": "src/App.css",
+      "sha256_copia_local": "19454848a41fe67d8515e5c976ebc1ee17652fc28856951565031d526f750585",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/App.jsx",
+      "sha256_copia_local": "6514c5e62905bf6ec600965a6a30a5ee5c294700e0359b3f63afb343392f0232",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/AcessibilidadeModais.jsx",
+      "sha256_copia_local": "923411fee68390d17435e5246dfc6389d9d77a9079b43306fcbc68baceb3ab0c",
+      "base_disponivel": false
+    },
+    {
+      "arquivo": "src/componentes/AlternadorModulos.css",
+      "sha256_copia_local": "95a642b12deb4232661b531744c14cca3b8b2c4f49e000dfa1fb90994081a2e3",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/CampoComVoz.css",
+      "sha256_copia_local": "ee5c4d21c1436c80bbfa6d0efe753af390ba01c1296f1229e2d3befc2c3dd515",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/ImagemCampo.jsx",
+      "sha256_copia_local": "4b4a33b1d694ce56e5e3e97bfa55590823248a6aeca294bcef7fedd967094f8a",
+      "base_disponivel": false
+    },
+    {
+      "arquivo": "src/componentes/MarcaAgro.jsx",
+      "sha256_copia_local": "05b7b0f9f7ec8968e360262b690aeb7a4bc1bf6ab615a624fec991e8c13315be",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/ResumoContasDashboard.css",
+      "sha256_copia_local": "1e2ad2a120d6d840cad624176cfada250f4bd9b555599646a365fea3349ff0b7",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/ResumoContasDashboard.jsx",
+      "sha256_copia_local": "bf38210a4cb0b7229e974968eb0f34eeb73da5a02b3b1adf2a0baca1eb9ec06b",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/ShellDashboard.jsx",
+      "sha256_copia_local": "afbf67724d03982e804f42c68e0096e2f9f17ca944a1f62f51d70872bb8a6f73",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/componentes/ValorMonetario.jsx",
+      "sha256_copia_local": "79d511e78d84cbfbf6b6d8e7e2261846b20bbd3a51c9afcbc00f0b08e03adc31",
+      "base_disponivel": false
+    },
+    {
+      "arquivo": "src/IdentidadeVisual.css",
+      "sha256_copia_local": "e6a1039f40575ff4450b23ac1a05682391befd4e61c8390fe10391671e796d76",
+      "base_disponivel": false
+    },
+    {
+      "arquivo": "src/index.css",
+      "sha256_copia_local": "6aa95b8912f4897f7d8748a46404a91353eb08d63b5a73b247193243c579d936",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/PaginaInicial.jsx",
+      "sha256_copia_local": "a7e3c05c8ece0f2c38b82a9c36d29ee2edede80d1e085dafbc47f90dd1725dc8",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AdminAssinaturas.css",
+      "sha256_copia_local": "b2dc919e2dd54b645843cfb98cc9f4491940d322db07650e168dc8606c1f35c3",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AdminAssinaturas.jsx",
+      "sha256_copia_local": "73dc9f41d3c3f32d91a5788b722da55fc00b3ed1751d49b62bde66228d67fe29",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AdminPainel.css",
+      "sha256_copia_local": "bdfaae93af470408b4bc51fd57c92aaa093e82c64edb824e9e5dd6d64bfde9f6",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AdminPainel.jsx",
+      "sha256_copia_local": "686a2929f8c227b1e4deef8a167a7a3640064ee8bfe17f6588b64c6be35a25c7",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AppMobile.css",
+      "sha256_copia_local": "c321c7c04f49ab3fc02bc10bec9352512baf4bebdbe2bbe62d37eda15fe20eff",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/AppMobile.jsx",
+      "sha256_copia_local": "6c73a970dfb807429bbd8bce2d8f378c31bee4cc74194d626057ace78fddb279",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Autenticacao.css",
+      "sha256_copia_local": "7899b1912e5f044c0256e1653c08f8521a9be3b3e8d1cc195e87e6c4b21da68a",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Cadastro.jsx",
+      "sha256_copia_local": "c22b00888200e18125c017082f535c1922442bf0ad91f0ca39e93448e8ce04d0",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Categorias.css",
+      "sha256_copia_local": "4a72e51c6d206b90815703658c3cebf7d6f18a8823ea4a7d0ac6cd0878b3cb36",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Categorias.jsx",
+      "sha256_copia_local": "fcb31ee7e952bb580808046dc75a98d8f43a60b4b7056bd43e08c99eebd66f55",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ContadorCarteira.css",
+      "sha256_copia_local": "8f4acfac174161b93f2159cc2b60d836e5408d04a123700ff40b8ba5edcc503a",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ContadorCarteira.jsx",
+      "sha256_copia_local": "c48286e1b35bb1f3329b33d06021092f451b3027b33e4abc470d3ea1d3b06d04",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ContasFinanceiras.css",
+      "sha256_copia_local": "12ad905176dd2e4e6556ac55f639990755d41f6179b4849f91190e713e8386a7",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ContasFinanceiras.jsx",
+      "sha256_copia_local": "e0a91cf97c9f285f8cf601aacf7e73e787943d5cb98e3ee87af0fcca136583ab",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Dashboard.css",
+      "sha256_copia_local": "e1f7624ef1fc264cf7dcbbb343b56f736e7aae7eb4b5580e012ee6dd1bd73853",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Dashboard.jsx",
+      "sha256_copia_local": "c7d4bbed4345fa60691275c2224b02536600011ec3c55c6e4611e3eb5c50dbf1",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/EditarMovimentacao.jsx",
+      "sha256_copia_local": "938afe73c81e5f10f256813b212873fc6406cb8cb9171df1b3b2b1b3688f351f",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/EscolhaModulo.css",
+      "sha256_copia_local": "24b4b32767148186c6d5ed50b473a83608835efe5e88cb1082d1e2d09e1237e6",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/EscolhaModulo.jsx",
+      "sha256_copia_local": "630a04ded2d20ec096d5eac1067835066cc30d12eec87212cc5a2f7386e773b9",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/EsqueciSenha.jsx",
+      "sha256_copia_local": "ddbd63ec57709b0f901be2f41d609e418b4e249abef7e3e230dbaf895560538f",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Fornecedores.css",
+      "sha256_copia_local": "1ee7f94bfa36f6b9699b77e878eaae486066d45dd1a3b09837f0f571cc252783",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Fornecedores.jsx",
+      "sha256_copia_local": "e65b7350eb5b2bcd391ba45963f3718bd6b6dc179c2ae7285e7a6dec8a43cdf6",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Login.jsx",
+      "sha256_copia_local": "472268c4dd944af810ee0911396d18d9068df721c1a4237dfc4b7349422f3394",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Movimentacoes.css",
+      "sha256_copia_local": "f7a96997d4659fb3856baab6beacf8d6ff4ffbce913c95683c76167d825dcd92",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Movimentacoes.jsx",
+      "sha256_copia_local": "4bd34d05cf4ff0e3ed7b567689277325cfc75b6a523c9578550129d99fb6abe5",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/NovaContaFinanceira.css",
+      "sha256_copia_local": "ceed249dc51e2a25dd54db3c8be4188daa33b90e0bfe5363a29ef3113ca04e11",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/NovaContaFinanceira.jsx",
+      "sha256_copia_local": "6fb4580482fa29c15b5a64905d804292ad939758482c7caf8f0d04a62d81b883",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/NovaMovimentacao.css",
+      "sha256_copia_local": "85a7234915b2448c7e0099e63c8d284972e3a95d82e17e410089b9995301c2cd",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/NovaMovimentacao.jsx",
+      "sha256_copia_local": "9c873d5f57467ff73245040ef7ba80837b692b08447233ed7ed958ed571f3f3e",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/Perfil.css",
+      "sha256_copia_local": "510aad8ebbc2a246e126684c25006490c3bb133025814234270b2b1032a4384c",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/PlanoPagamentos.css",
+      "sha256_copia_local": "2f8e0ba2b87e2780c945bd67a7b8bb76692203419d4a5889ed24e3d023298ce6",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/PlanoPagamentos.jsx",
+      "sha256_copia_local": "810e4151088a2851a99be7b820f5095915aa8b673b889b27ac493b9ac83f18e9",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ProdutorColaborativo.css",
+      "sha256_copia_local": "661b5d28ad9d1606154d149da4890cf48d912d2c81a00aaf99f229e92c83d944",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/ProdutorColaborativo.jsx",
+      "sha256_copia_local": "0eebc390d1f6df477d449347a14b96415815bc5569b22e0801b4e38533283334",
+      "base_disponivel": true
+    },
+    {
+      "arquivo": "src/paginas/RedefinirSenha.jsx",
+      "sha256_copia_local": "0196e4738f5cdbe05027d119c609aed7ecb637d8194b57f74b7da628649414b5",
+      "base_disponivel": true
+    }
+  ]
+}
