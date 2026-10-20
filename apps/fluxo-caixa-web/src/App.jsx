@@ -1,3 +1,4 @@
+import './SistemaVivo.css'
 import {
     lazy,
     Suspense,
@@ -80,7 +81,6 @@ function App() {
             <AppShell />
             <Suspense fallback={<CarregandoRota />}>
                 <Routes>
-                <Route path="/dashboard/agricola" element={<GestaoAgricola />} />
                 <Route
                     path="/"
                     element={<PaginaInicial />}
@@ -142,6 +142,7 @@ function App() {
                 />
 
                 <Route element={<ShellRotasAutenticadas />}>
+                    <Route path="/dashboard/agricola" element={<GestaoAgricola />} />
                     <Route path="/admin/assinaturas" element={<AdminAssinaturas />} />
                     <Route path="/admin/integracoes" element={<AdminIntegracoes />} />
                     <Route path="/app" element={<AppMobile />} />

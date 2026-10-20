@@ -6,6 +6,7 @@ import {
 import {
     useNavigate,
 } from 'react-router'
+import { obterPeriodoFinanceiro, salvarPeriodoFinanceiro, carregarTodasMovimentacoes } from '../servicos/periodoFinanceiro.js'
 import ShellDashboard from '../componentes/ShellDashboard.jsx'
 import CarregamentoTela from '../componentes/CarregamentoTela.jsx'
 import { API_BASE_URL as API_URL } from '../config.js'
@@ -268,12 +269,12 @@ function Dashboard() {
     const [
         dataInicialPersonalizada,
         setDataInicialPersonalizada,
-    ] = useState('')
+    ] = useState(() => obterPeriodoFinanceiro(sessao?.usuario?.empresaId).dataInicial)
 
     const [
         dataFinalPersonalizada,
         setDataFinalPersonalizada,
-    ] = useState('')
+    ] = useState(() => obterPeriodoFinanceiro(sessao?.usuario?.empresaId).dataFinal)
 
     const [
         areaSelecionada,
@@ -330,6 +331,10 @@ function Dashboard() {
 
     const hoje = new Date()
     const rotuloMes = `${MESES_PT[hoje.getMonth()]} ${hoje.getFullYear()}`
+    useEffect(() => {
+        salvarPeriodoFinanceiro(sessao?.usuario?.empresaId, periodoSelecionado)
+    }, [sessao, periodoSelecionado])
+
     const periodoMes = obterPeriodoMes()
 
     // Qual pílula de período está ativa.
@@ -380,13 +385,6 @@ function Dashboard() {
             periodoSelecionado.dataInicial
             > periodoSelecionado.dataFinal
         ) {
-            setErro(
-                'A data inicial não pode ser maior que a data final.',
-            )
-            setFluxoCaixa([])
-            setCarregando(false)
-            setCarregandoGrafico(false)
-
             return undefined
         }
 
@@ -411,15 +409,16 @@ function Dashboard() {
 
                 const [
                     respostaResumo,
-                    respostaMovimentacoes,
+                    listaMovimentacoes,
                     respostaFluxoCaixa,
                 ] = await Promise.all([
                     apiFetch(
                         `${API_URL}/empresas/${empresaId}/dashboard/resumo?${parametrosGrafico}`,
                     ),
 
-                    apiFetch(
-                        `${API_URL}/empresas/${empresaId}/movimentacoes`,
+                    carregarTodasMovimentacoes(
+                        `${API_URL}/empresas/${empresaId}/movimentacoes?${parametrosGrafico}`,
+                        apiFetch,
                     ),
 
                     apiFetch(
@@ -437,16 +436,6 @@ function Dashboard() {
                     throw new Error(mensagem)
                 }
 
-                if (!respostaMovimentacoes.ok) {
-                    const mensagem =
-                        await obterMensagemDeErro(
-                            respostaMovimentacoes,
-                            'Não foi possível carregar as movimentações.',
-                        )
-
-                    throw new Error(mensagem)
-                }
-
                 if (!respostaFluxoCaixa.ok) {
                     const mensagem =
                         await obterMensagemDeErro(
@@ -459,11 +448,9 @@ function Dashboard() {
 
                 const [
                     dadosResumo,
-                    dadosMovimentacoes,
                     dadosFluxoCaixa,
                 ] = await Promise.all([
                     respostaResumo.json(),
-                    respostaMovimentacoes.json(),
                     respostaFluxoCaixa.json(),
                 ])
 
@@ -473,10 +460,7 @@ function Dashboard() {
 
                 setResumo(dadosResumo)
 
-                setMovimentacoes(
-                    dadosMovimentacoes.content
-                    ?? [],
-                )
+                setMovimentacoes(listaMovimentacoes)
 
                 setFluxoCaixa(
                     Array.isArray(dadosFluxoCaixa)
@@ -536,11 +520,10 @@ function Dashboard() {
             )
 
         // Saldo acumulado: soma progressiva do saldo diário.
-        let acumulado = 0
-        const saldoAcumulado = fluxoCaixa.map((ponto) => {
-            acumulado += Number(ponto.saldoDoDia ?? 0)
-            return { data: ponto.data, valor: acumulado }
-        })
+        const saldoAcumulado = fluxoCaixa.reduce((pontos, ponto) => [
+            ...pontos,
+            { data: ponto.data, valor: (pontos.at(-1)?.valor ?? 0) + Number(ponto.saldoDoDia ?? 0) },
+        ], [])
 
         // Escala do eixo: maior entre barras e o pico do saldo acumulado.
         const maiorAcumulado = saldoAcumulado.reduce(
@@ -741,6 +724,10 @@ function Dashboard() {
 
     if (!sessao) {
         return null
+    }
+
+    if (periodoSelecionado.dataInicial > periodoSelecionado.dataFinal) {
+        return <ShellDashboard sessao={sessao} ativo="financeiro"><p role="alert">A data inicial não pode ser maior que a data final.</p><button type="button" onClick={() => { setDataInicialPersonalizada(''); setDataFinalPersonalizada('') }}>Restaurar últimos 30 dias</button></ShellDashboard>
     }
 
     if (carregando) {

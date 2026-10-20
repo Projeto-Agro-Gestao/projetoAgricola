@@ -55,7 +55,7 @@ function ShellDashboard({ sessao, ativo, children }) {
         { chave: 'contas', icone: 'account_balance_wallet', rotulo: 'Contas', rota: '/dashboard/contas' },
         { chave: 'fornecedores', icone: 'local_shipping', rotulo: 'Fornecedores', rota: '/dashboard/fornecedores' },
         { chave: 'fiscal', icone: 'account_balance', rotulo: 'Fiscal', rota: '/contador' },
-        { chave: 'config', icone: 'tune', rotulo: 'Configurações', rota: '/dashboard/perfil' },
+        { chave: 'config', icone: 'tune', rotulo: 'Meus dados', rota: '/dashboard/perfil' },
     ]
 
     // Item ativo pela rota atual; o prop `ativo` ainda funciona como override.
@@ -171,9 +171,9 @@ function ShellDashboard({ sessao, ativo, children }) {
                     </div>
                 </header>
 
-                <main className="ag-dash-main">
+                <div className="ag-dash-main">
                     {children}
-                </main>
+                </div>
             </div>
 
             <ModalAnimado

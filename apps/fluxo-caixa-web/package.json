@@ -10,6 +10,7 @@
     "test:security": "node scripts/test-security-headers.mjs",
     "test:pagamentos": "node scripts/test-pagamentos.mjs",
     "test:api": "node scripts/test-api-cliente.mjs",
+    "test:financeiro": "node scripts/test-periodo-financeiro.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "videos": "node --env-file-if-exists=videos/.env videos/gravar.js",

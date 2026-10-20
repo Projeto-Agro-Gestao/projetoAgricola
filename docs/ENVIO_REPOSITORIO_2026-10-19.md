@@ -24,3 +24,9 @@ A cópia inicial de desenvolvimento estava fora do checkout Git e desatualizada 
 ## Publicação e limites
 
 Envio em branch separada, sem merge em main nem acionamento manual de deploy de produção. Serviços de hospedagem podem criar previews da branch conforme suas configurações externas. A integração ainda precisa de homologação MySQL e das configurações externas descritas em CONFIGURACAO_INTEGRACOES_AGRO.md. O relatório original registra o escopo da implementação inicial, e este documento prevalece quanto à integração e validação desta branch.
+
+## Complemento: alterações locais dos últimos dias
+
+Integradas nesta mesma branch as pendências do checkout antigo: SistemaVivo.css, período financeiro compartilhado por empresa, carregamento paginado de movimentações, correções de consultas fiscais, indicação de Meus dados e teste de período financeiro. Os ajustes antigos de navegação, expiração de sessão e título do teste de segurança já estavam atendidos pela versão mais recente e foram preservados sem duplicação. A rota agrícola passa a utilizar o shell autenticado compartilhado.
+
+Validação do complemento: build e testes financeiro, remember, api, pagamentos e security aprovados. Sem mudanças adicionais no backend. Nenhum backup, dump de banco, segredo, node_modules, target ou dist incluído no envio. As cópias antigas foram preservadas.
