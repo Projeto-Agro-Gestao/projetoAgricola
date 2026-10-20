@@ -1614,7 +1614,8 @@ public class ColaboracaoService {
         if (valor == null) {
             return "";
         }
-        return "\"" + valor.replace("\"", "\"\"") + "\"";
+        String seguro = valor.stripLeading().matches("^[=+@-].*") ? "'" + valor : valor;
+        return "\"" + seguro.replace("\"", "\"\"") + "\"";
     }
 
     private record Periodo(LocalDate inicio, LocalDate fim) {

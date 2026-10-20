@@ -56,6 +56,7 @@ class IsolamentoEmpresaIntegrationTest {
     }
 
     @LocalServerPort private int port;
+    @Autowired private javax.sql.DataSource agroDataSource;
     @Autowired private EmpresaRepository empresas;
     @Autowired private UsuarioRepository usuarios;
     @Autowired private ContadorEmpresaRepository vinculos;
@@ -73,6 +74,12 @@ class IsolamentoEmpresaIntegrationTest {
 
     @BeforeEach
     void preparar() {
+        var jdbcAgro = new org.springframework.jdbc.core.JdbcTemplate(agroDataSource);
+        if (jdbcAgro.queryForObject("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='SAFRAS_AGRO'", Integer.class) == 0) {
+            for (String script : new String[]{"V35__gestao_producao_e_romaneios.sql", "V36__localizacao_e_cotacoes_agricolas.sql", "V37__estoque_contratos_conciliacao.sql", "V38__integrar_armazenagem_entregas_e_frota.sql", "V39__permissoes_agro_por_funcao_e_propriedade.sql", "V40__registrar_tara_romaneio.sql"}) {
+                new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(new org.springframework.core.io.ClassPathResource("db/migration/" + script)).execute(agroDataSource);
+            }
+        }
         String suffix = UUID.randomUUID().toString();
         propria = empresas.saveAndFlush(new Empresa("Propria " + suffix, null));
         terceira = empresas.saveAndFlush(new Empresa("Terceira " + suffix, null));

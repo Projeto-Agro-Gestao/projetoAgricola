@@ -10,11 +10,11 @@ const headers = Object.fromEntries(config.headers[0].headers.map(({ key, value }
 const server = createServer(async (req, res) => {
     try {
         const url = new URL(req.url, 'http://localhost')
-        const relative = url.pathname.startsWith('/assets/') ? url.pathname.slice(1) : 'index.html'
+        const relative = (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/media/')) ? url.pathname.slice(1) : 'index.html'
         const file = path.resolve(root, relative)
         assert.ok(file.startsWith(root + path.sep))
         const content = await readFile(file)
-        const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html'
+        const mime = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.webm') ? 'video/webm' : file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.jpg') ? 'image/jpeg' : 'text/html'
         res.writeHead(200, { ...headers, 'Content-Type': mime })
         res.end(content)
     } catch {
@@ -28,7 +28,7 @@ try {
     browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
     await page.goto(`http://127.0.0.1:${server.address().port}/login`)
-    await page.getByRole('heading', { name: 'Entrar na conta' }).waitFor()
+    await page.getByRole('heading', { name: 'Entrar na plataforma' }).waitFor()
     await page.evaluate(() => {
         window.__invasaoExecutada = false
         const script = document.createElement('script')

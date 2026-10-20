@@ -18,6 +18,7 @@ import { registrarRotaAtual } from './navegacao.js'
 import { obterSessao } from './servicos/sessao.js'
 
 const EscolhaModulo = lazy(() => import('./paginas/EscolhaModulo.jsx'))
+const GestaoAgricola = lazy(() => import('./paginas/GestaoAgricola.jsx'))
 const Dashboard = lazy(() => import('./paginas/Dashboard.jsx'))
 const Movimentacoes = lazy(() => import('./paginas/Movimentacoes.jsx'))
 const NovaMovimentacao = lazy(() => import('./paginas/NovaMovimentacao.jsx'))
@@ -79,6 +80,7 @@ function App() {
             <AppShell />
             <Suspense fallback={<CarregandoRota />}>
                 <Routes>
+                <Route path="/dashboard/agricola" element={<GestaoAgricola />} />
                 <Route
                     path="/"
                     element={<PaginaInicial />}

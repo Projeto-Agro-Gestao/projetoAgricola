@@ -112,7 +112,7 @@ export function salvarSessao({
     localStorage.setItem(CHAVE_TOKEN, token)
     localStorage.setItem(CHAVE_TIPO_TOKEN, tipoToken)
     localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario))
-    if (Number.isFinite(expiraEm) && expiraEm > 0) {
+    if (Number.isFinite(expiraEm) && expiraEmSegundos != null) {
         localStorage.setItem(
             CHAVE_EXPIRA_EM,
             String(Date.now() + expiraEm * 1000),

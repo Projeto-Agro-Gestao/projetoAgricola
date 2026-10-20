@@ -47,6 +47,7 @@ function ShellDashboard({ sessao, ativo, children }) {
     }
 
     const navItens = [
+        { chave: 'agricola', icone: 'grass', rotulo: 'Safras e operações', rota: '/dashboard/agricola' },
         { chave: 'visao-geral', icone: 'grid_view', rotulo: 'Visão Geral', rota: '/dashboard', exata: true },
         { chave: 'produtor', icone: 'agriculture', rotulo: 'Produtor', rota: '/dashboard/produtor', exata: true },
         { chave: 'financeiro', icone: 'monitoring', rotulo: 'Financeiro', rota: '/dashboard/financeiro' },
