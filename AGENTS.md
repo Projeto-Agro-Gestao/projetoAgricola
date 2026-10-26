@@ -6,4 +6,4 @@
 - O remoto `origin` usa SSH: `git@github.com:Projeto-Agro-Gestao/projetoAgricola.git`.
 - A branch `main` acompanha `origin/main`.
 - Antes de commits e envios, confira o estado atual do Git e preserve alteracoes existentes do usuario.
-- A autorizacao para enviar diretamente para `main` em 26/10/2026 foi especifica para o commit de teste que adicionou este arquivo; ela nao constitui autorizacao permanente para futuros envios.
+- Sempre que o usuario solicitar realizar um commit, isso inclui criar o commit e envia-lo para `origin/main`, sem excecao e sem pedir nova confirmacao. Essa e uma autorizacao permanente do usuario para envio direto a `main` neste repositorio.
