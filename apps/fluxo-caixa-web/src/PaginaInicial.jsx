@@ -2,7 +2,6 @@ import { Link } from 'react-router'
 import CabecalhoPublico from './componentes/CabecalhoPublico.jsx'
 import RodapePublico from './componentes/RodapePublico.jsx'
 import Revelar from './componentes/Revelar.jsx'
-import InstalarApp from './componentes/InstalarApp.jsx'
 import './App.css'
 
 // Ícone Material Symbols Outlined (webfont carregada em index.css).
@@ -827,7 +826,6 @@ function PaginaInicial() {
                 </svg>
             </a>
 
-            <InstalarApp />
         </div>
     )
 }
