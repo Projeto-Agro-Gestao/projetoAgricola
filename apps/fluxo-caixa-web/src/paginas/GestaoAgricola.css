@@ -1,0 +1,18 @@
+.gestao-agricola { max-width: 1400px; margin: auto; padding: 24px; color: #173e2b; }
+.gestao-agricola > section, .agri-formularios > section { background: #fff; border: 1px solid #dce5de; padding: 24px; border-radius: 20px; margin-top: 24px; }
+.agri-cards,.agri-formularios { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),1fr)); gap: 20px; }
+.agri-cards article { background: #f3f7f2; border-radius: 14px; padding: 20px; }
+.agri-cards dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #dce5de; }
+.agri-cards dd { margin: 0; font-weight: 700; }
+.gestao-agricola fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 14px; }
+.gestao-agricola label { display: grid; gap: 6px; margin-top: 10px; font-size: 14px; font-weight: 600; }
+.gestao-agricola input,.gestao-agricola select,.gestao-agricola textarea { width: 100%; min-width: 0; padding: 11px; border: 1px solid #acbdaf; border-radius: 8px; background: #fff; color: #173e2b; }
+.gestao-agricola input[type="checkbox"] { width: 18px; height: 18px; padding: 0; accent-color: #1d5a38; }
+.gestao-agricola summary { cursor: pointer; padding: 12px 0; font-weight: 700; }
+.gestao-agricola li { overflow-wrap: anywhere; margin-bottom: 8px; }
+.gestao-agricola button { padding: 13px 18px; border: 0; border-radius: 10px; background: #1d5a38; color: #fff; font-weight: 700; cursor: pointer; }
+.gestao-agricola button:disabled { opacity: .6; cursor: wait; }
+.gestao-agricola .agri-confirmacao { display: flex; align-items: start; }.agri-confirmacao input { width: auto; }
+.agri-erro { padding: 16px; background: #ffe9e7; color: #8f1e19; border-radius: 8px; }.agri-sucesso { padding: 16px; background: #e2f5e6; border-radius: 8px; }
+.agri-tabela { overflow: auto; }.agri-tabela table { width: 100%; border-collapse: collapse; text-align: left; }.agri-tabela th,.agri-tabela td { padding: 12px; border-bottom: 1px solid #dce5de; white-space: nowrap; }
+@media(max-width:600px) { .gestao-agricola { padding: 12px; }.gestao-agricola > section,.agri-formularios > section { padding: 16px; } }

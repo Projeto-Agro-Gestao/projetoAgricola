@@ -1,3 +1,4 @@
+import FundoAutenticacao from '../componentes/FundoAutenticacao.jsx'
 import {
     useRef,
     useState,
@@ -208,7 +209,8 @@ function Cadastro() {
     }
 
     return (
-        <div className="ag-login publica">
+        <div className="ag-login publica ag-auth-premium">
+            <FundoAutenticacao />
             <header className="ag-login-cabecalho">
                 <div className="ag-login-cabecalho-interno">
                     <MarcaAgro to="/" />

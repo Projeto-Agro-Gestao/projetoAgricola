@@ -558,6 +558,15 @@ public class ManipuladorGlobalDeErros {
                 "Documento deve ter no maximo 10 MB.", request.getRequestURI(), Map.of());
     }
 
+    @ExceptionHandler(org.springframework.dao.DuplicateKeyException.class)
+    public ResponseEntity<ErroResposta> tratarDuplicidade(
+            org.springframework.dao.DuplicateKeyException exception,
+            HttpServletRequest request) {
+        return criarResposta(HttpStatus.CONFLICT, "Registro duplicado",
+                "Este registro já existe. Atualize a tela e confira o histórico antes de reenviar.",
+                request.getRequestURI(), Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResposta>
     tratarErroInesperado(

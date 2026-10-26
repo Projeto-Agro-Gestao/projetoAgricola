@@ -1,5 +1,5 @@
+import FundoAutenticacao from '../componentes/FundoAutenticacao.jsx'
 import {
-    useEffect,
     useState,
 } from 'react'
 import { Link, useNavigate } from 'react-router'
@@ -47,21 +47,13 @@ function Login() {
     const navigate = useNavigate()
 
     const [mostrarSenha, setMostrarSenha] = useState(false)
-    const [email, setEmail] = useState('')
+    const [preferencia] = useState(obterPreferenciaLembrarAcesso)
+    const [email, setEmail] = useState(() => preferencia.lembrar ? preferencia.email : '')
     const [senha, setSenha] = useState('')
-    const [lembrarAcesso, setLembrarAcesso] = useState(false)
+    const [lembrarAcesso, setLembrarAcesso] = useState(() => preferencia.lembrar)
     const [acessoEmailAberto, setAcessoEmailAberto] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [carregando, setCarregando] = useState(false)
-
-    useEffect(() => {
-        const preferencia = obterPreferenciaLembrarAcesso()
-
-        if (preferencia.lembrar) {
-            setEmail(preferencia.email)
-            setLembrarAcesso(true)
-        }
-    }, [])
 
     async function entrar(evento) {
         evento.preventDefault()
@@ -138,7 +130,8 @@ function Login() {
     }
 
     return (
-        <div className="ag-login publica">
+        <div className="ag-login publica ag-auth-premium">
+            <FundoAutenticacao />
             <header className="ag-login-cabecalho">
                 <div className="ag-login-cabecalho-interno">
                     <MarcaAgro to="/" />

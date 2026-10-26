@@ -1,5 +1,6 @@
 import {
     useEffect,
+    useCallback,
     useState,
 } from 'react'
 import {
@@ -7,6 +8,7 @@ import {
     useNavigate,
     useSearchParams,
 } from 'react-router'
+import { obterPeriodoFinanceiro, salvarPeriodoFinanceiro, periodoValido, carregarTodasMovimentacoes } from '../servicos/periodoFinanceiro.js'
 import { API_BASE_URL as API_URL } from '../config.js'
 import { voltarPaginaAnterior } from '../navegacao.js'
 import './Movimentacoes.css'
@@ -85,6 +87,9 @@ function Movimentacoes() {
     const navigate = useNavigate()
     const [parametros] = useSearchParams()
     const [sessao] = useState(obterSessao)
+    const [periodo, setPeriodo] = useState(() => obterPeriodoFinanceiro(sessao?.usuario?.empresaId, {
+        dataInicial: parametros.get('dataInicial'), dataFinal: parametros.get('dataFinal'),
+    }))
 
     const categoriaId =
         parametros.get('categoriaId')
@@ -199,8 +204,9 @@ function Movimentacoes() {
 
         let componenteAtivo = true
 
-        const parametrosDaConsulta =
-            new URLSearchParams()
+        if (!periodoValido(periodo)) return undefined
+        salvarPeriodoFinanceiro(empresaId, periodo)
+        const parametrosDaConsulta = new URLSearchParams(periodo)
 
         if (categoriaId) {
             parametrosDaConsulta.set(
@@ -218,26 +224,14 @@ function Movimentacoes() {
 
         async function carregarMovimentacoes() {
             try {
-                const resposta = await apiFetch(endereco)
-
-                if (!resposta.ok) {
-                    const mensagem =
-                        await obterMensagemDeErro(
-                            resposta,
-                            'Não foi possível carregar as movimentações.',
-                        )
-
-                    throw new Error(mensagem)
-                }
-
-                const dados = await resposta.json()
+                const dados = await carregarTodasMovimentacoes(endereco, apiFetch)
 
                 if (!componenteAtivo) {
                     return
                 }
 
                 setMovimentacoes(
-                    dados.content ?? [],
+                    dados,
                 )
 
                 setErro('')
@@ -265,12 +259,13 @@ function Movimentacoes() {
         }
     }, [
         categoriaId,
+        periodo,
         empresaId,
         navigate,
         sessao,
     ])
 
-    async function carregarLixeira() {
+    const carregarLixeira = useCallback(async () => {
         if (!sessao || !empresaId) {
             limparSessao()
 
@@ -281,12 +276,7 @@ function Movimentacoes() {
             return
         }
 
-        setErro('')
-
-        try {
-            const resposta = await apiFetch(
-                `${API_URL}/empresas/${empresaId}/movimentacoes/lixeira`,
-            )
+        return apiFetch(`${API_URL}/empresas/${empresaId}/movimentacoes/lixeira`).then(async (resposta) => {
 
             if (!resposta.ok) {
                 throw new Error(
@@ -301,25 +291,24 @@ function Movimentacoes() {
                 await resposta.json(),
             )
             setMostrandoLixeira(true)
-        } catch (erroDaRequisicao) {
+        }).catch((erroDaRequisicao) => {
             setErro(
                 erroDaRequisicao instanceof Error
                     ? erroDaRequisicao.message
                     : 'Não foi possível carregar a lixeira.',
             )
-        }
-    }
+        })
+    }, [sessao, empresaId, navigate])
 
     useEffect(() => {
         if (
-            parametros.get('lixeira') === '1' &&
-            !mostrandoLixeira
+            parametros.get('lixeira') === '1'
         ) {
             void carregarLixeira()
         }
     }, [
         parametros,
-        mostrandoLixeira,
+        carregarLixeira,
     ])
 
     async function excluirMovimentacao(
@@ -819,6 +808,12 @@ function Movimentacoes() {
                 </div>
             )}
 
+            {!mostrandoLixeira && <section className="ag-periodo-compartilhado" aria-label="Período das movimentações">
+                <label>De<input type="date" value={periodo.dataInicial} onChange={(e) => setPeriodo({ ...periodo, dataInicial: e.target.value })} /></label>
+                <label>Até<input type="date" value={periodo.dataFinal} onChange={(e) => setPeriodo({ ...periodo, dataFinal: e.target.value })} /></label>
+                <p>Mesmo período do controle financeiro.</p>
+                {!periodoValido(periodo) && <p role="alert">Informe datas válidas, com início anterior ou igual ao fim.</p>}
+            </section>}
             <section className="movimentacoes-card">
                 {movimentacoesExibidas.length === 0 ? (
                     <div className="movimentacoes-vazio">

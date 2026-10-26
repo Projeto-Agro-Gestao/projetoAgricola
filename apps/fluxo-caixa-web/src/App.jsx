@@ -1,3 +1,4 @@
+import './SistemaVivo.css'
 import {
     lazy,
     Suspense,
@@ -18,6 +19,7 @@ import { registrarRotaAtual } from './navegacao.js'
 import { obterSessao } from './servicos/sessao.js'
 
 const EscolhaModulo = lazy(() => import('./paginas/EscolhaModulo.jsx'))
+const GestaoAgricola = lazy(() => import('./paginas/GestaoAgricola.jsx'))
 const Dashboard = lazy(() => import('./paginas/Dashboard.jsx'))
 const Movimentacoes = lazy(() => import('./paginas/Movimentacoes.jsx'))
 const NovaMovimentacao = lazy(() => import('./paginas/NovaMovimentacao.jsx'))
@@ -140,6 +142,7 @@ function App() {
                 />
 
                 <Route element={<ShellRotasAutenticadas />}>
+                    <Route path="/dashboard/agricola" element={<GestaoAgricola />} />
                     <Route path="/admin/assinaturas" element={<AdminAssinaturas />} />
                     <Route path="/admin/integracoes" element={<AdminIntegracoes />} />
                     <Route path="/app" element={<AppMobile />} />

@@ -1,0 +1,331 @@
+.admin-assinaturas {
+    min-height: 100vh;
+    background:
+        linear-gradient(180deg, var(--ag-campo) 0, var(--ag-campo) 280px),
+        var(--ag-campo);
+    color: var(--ag-on-surface);
+    padding: 44px clamp(18px, 5vw, 84px);
+}
+
+.admin-assinaturas-voltar {
+    background: transparent;
+    border: 0;
+    color: var(--ag-primary);
+    cursor: pointer;
+    font-weight: 700;
+    margin-bottom: 26px;
+}
+
+.admin-assinaturas-topo span,
+.admin-assinaturas-config small {
+    color: var(--ag-primary);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.admin-assinaturas-topo h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    margin: 8px 0;
+}
+
+.admin-assinaturas-topo p {
+    color: var(--ag-on-surface-variant);
+}
+
+.admin-assinaturas-topo,
+.admin-assinaturas-resumo,
+.admin-assinaturas-config,
+.admin-assinaturas-filtros,
+.admin-assinaturas-lista {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1180px;
+}
+
+.admin-assinaturas-resumo {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 24px;
+}
+
+.admin-assinaturas-resumo article {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    box-shadow: var(--ag-shadow-1);
+    padding: 16px;
+}
+
+.admin-assinaturas-resumo span {
+    color: var(--ag-on-surface-variant);
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.admin-assinaturas-resumo strong {
+    display: block;
+    font-size: clamp(1.25rem, 2vw, 1.8rem);
+    margin-top: 8px;
+}
+
+.admin-assinaturas-aviso,
+.admin-assinaturas-config,
+.admin-assinaturas-lista article,
+.admin-assinaturas-filtros {
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+}
+
+.admin-assinaturas-aviso {
+    color: var(--ag-primary);
+    font-weight: 700;
+    margin: 22px 0;
+    padding: 14px 18px;
+}
+
+.admin-assinaturas-config {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin: 26px 0;
+    padding: 18px;
+}
+
+.admin-assinaturas-config-topo {
+    border-right: 1px solid var(--ag-outline-variant);
+    display: grid;
+    gap: 4px;
+    padding-right: 12px;
+}
+
+.admin-assinaturas-config-topo h2,
+.admin-assinaturas-config-topo p {
+    margin: 0;
+}
+
+.admin-assinaturas-config-topo p {
+    color: var(--ag-on-surface-variant);
+    font-size: .9rem;
+}
+
+.admin-assinaturas-config label {
+    display: grid;
+    font-weight: 700;
+    gap: 8px;
+}
+
+.admin-assinaturas-config input {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.admin-assinaturas-config textarea {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    font: inherit;
+    min-height: 86px;
+    padding: 12px;
+    resize: vertical;
+}
+
+.admin-assinaturas-config-fiscal {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    display: grid;
+    gap: 14px;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 6px 0;
+    padding: 16px;
+}
+
+.admin-assinaturas-config-fiscal legend {
+    color: var(--ag-primary);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 0 8px;
+    text-transform: uppercase;
+}
+
+.admin-assinaturas-config-fiscal p {
+    color: var(--ag-on-surface-variant);
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.admin-assinaturas-config-longo {
+    grid-column: span 2;
+}
+
+.admin-assinaturas-check {
+    align-content: center;
+}
+
+.admin-assinaturas-check input {
+    min-height: auto;
+}
+
+.admin-assinaturas-config button,
+.admin-assinaturas-acoes button,
+.admin-assinaturas-filtros button {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    color: var(--ag-primary);
+    cursor: pointer;
+    font-weight: 700;
+    min-height: 42px;
+    padding: 0 14px;
+}
+
+.admin-assinaturas-config button {
+    background: var(--ag-primary);
+    color: var(--ag-surface-lowest);
+}
+
+.admin-assinaturas-filtros {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px;
+}
+
+.admin-assinaturas-filtros strong {
+    color: var(--ag-on-surface-variant);
+    margin-right: 4px;
+}
+
+.admin-assinaturas-filtros button.ativo {
+    background: var(--ag-primary);
+    color: var(--ag-surface-lowest);
+}
+
+.admin-assinaturas-lista {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-assinaturas-lista article {
+    box-shadow: var(--ag-shadow-1);
+    padding: 18px;
+}
+
+.admin-assinaturas-cliente {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-assinaturas-cliente div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-assinaturas-cliente span,
+.admin-assinaturas-dados {
+    color: var(--ag-on-surface-variant);
+}
+
+.admin-assinaturas-status {
+    background: var(--ag-campo);
+    border-radius: var(--ag-radius-full);
+    color: var(--ag-primary);
+    padding: 8px 12px;
+}
+
+.admin-assinaturas-status.status-overdue,
+.admin-assinaturas-status.status-blocked,
+.admin-assinaturas-status.status-suspended,
+.admin-assinaturas-status.status-trial_expired,
+.admin-assinaturas-status.status-cancelled {
+    background: color-mix(in srgb, var(--ag-error) 8%, var(--ag-surface-lowest));
+    color: var(--ag-error);
+}
+
+.admin-assinaturas-status.status-pending,
+.admin-assinaturas-status.status-grace_period,
+.admin-assinaturas-status.status-trial_expiring {
+    background: var(--ag-secondary-fixed);
+    color: var(--ag-secondary);
+}
+
+.admin-assinaturas-dados {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 18px 0;
+}
+
+.admin-assinaturas-dados span {
+    background: var(--ag-campo);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    color: var(--ag-on-surface);
+    display: grid;
+    font-weight: 700;
+    gap: 4px;
+    padding: 10px 12px;
+}
+
+.admin-assinaturas-dados small {
+    color: var(--ag-on-surface-variant);
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.admin-assinaturas-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-assinaturas-acoes input {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+@media (max-width: 900px) {
+    .admin-assinaturas-config,
+    .admin-assinaturas-dados,
+    .admin-assinaturas-config-fiscal,
+    .admin-assinaturas-resumo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-assinaturas-config-topo {
+        border-right: 0;
+        grid-column: 1 / -1;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-assinaturas-config,
+    .admin-assinaturas-dados,
+    .admin-assinaturas-config-fiscal,
+    .admin-assinaturas-resumo {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-assinaturas-config-longo {
+        grid-column: auto;
+    }
+
+    .admin-assinaturas-cliente {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

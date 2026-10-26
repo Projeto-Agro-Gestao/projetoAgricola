@@ -136,7 +136,7 @@ public class AsaasWebhookService {
         String tokenEsperado = properties.webhookToken();
 
         if (tokenEsperado == null || tokenEsperado.isBlank()) {
-            return;
+            throw new IllegalArgumentException("Webhook Asaas não configurado");
         }
 
         if (!tokenEsperado.equals(tokenRecebido)) {

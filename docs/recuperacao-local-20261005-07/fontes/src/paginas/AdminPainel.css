@@ -1,0 +1,422 @@
+.admin-painel {
+    min-height: 100vh;
+    background: var(--ag-surface-lowest);
+    color: var(--ag-on-surface);
+    padding: 32px clamp(16px, 4vw, 64px);
+}
+
+.admin-topo {
+    align-items: flex-start;
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    box-shadow: var(--ag-shadow-1);
+    display: flex;
+    gap: 24px;
+    justify-content: space-between;
+    margin: 0 auto 24px;
+    max-width: 1180px;
+    padding: 24px;
+}
+
+.admin-topo-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.admin-marca,
+.admin-etiqueta {
+    color: var(--ag-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.admin-topo h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+    margin: 8px 0;
+}
+
+.admin-topo p {
+    color: var(--ag-on-surface-variant);
+    margin: 0;
+    max-width: 560px;
+}
+
+.admin-botao-secundario,
+.admin-botao-primario,
+.admin-botao-perigo {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    cursor: pointer;
+    font-weight: 700;
+    min-height: 42px;
+    padding: 0 16px;
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+}
+
+.admin-botao-secundario:hover,
+.admin-botao-primario:hover,
+.admin-botao-perigo:hover {
+    box-shadow: var(--ag-shadow-2);
+    transform: translateY(-1px);
+}
+
+.admin-botao-secundario {
+    background: var(--ag-surface-lowest);
+    color: var(--ag-on-surface);
+}
+
+.admin-botao-primario {
+    background: var(--ag-primary);
+    border-color: var(--ag-outline);
+    color: var(--ag-surface-lowest);
+}
+
+.admin-botao-perigo {
+    background: color-mix(in srgb, var(--ag-error) 8%, var(--ag-surface-lowest));
+    border-color: var(--ag-outline-variant);
+    color: var(--ag-error);
+}
+
+.admin-aviso,
+.admin-resumo,
+.admin-tabela-bloco {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1180px;
+}
+
+.admin-aviso {
+    background: var(--ag-campo);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    color: var(--ag-primary-container);
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+}
+
+.admin-resumo {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin-bottom: 18px;
+}
+
+.admin-resumo article,
+.admin-tabela-bloco {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+}
+
+.admin-resumo article {
+    box-shadow: var(--ag-shadow-1);
+    padding: 16px;
+}
+
+.admin-resumo span {
+    color: var(--ag-on-surface-variant);
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.admin-resumo strong {
+    display: block;
+    font-size: 1.8rem;
+    margin-top: 8px;
+}
+
+.admin-tabela-bloco {
+    box-shadow: var(--ag-shadow-1);
+    overflow: hidden;
+}
+
+.admin-tabela-cabecalho {
+    align-items: center;
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    padding: 20px 22px;
+}
+
+.admin-secao-etiqueta {
+    color: var(--ag-primary);
+    display: inline-flex;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.admin-tabela-ferramentas {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(260px, 1fr) minmax(160px, auto);
+    min-width: min(100%, 480px);
+}
+
+.admin-tabela-ferramentas input,
+.admin-tabela-ferramentas select {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    color: var(--ag-on-surface);
+    min-height: 44px;
+    padding: 0 12px;
+}
+
+.admin-tabela-cabecalho h2 {
+    margin: 0 0 4px;
+}
+
+.admin-tabela-cabecalho p,
+.admin-vazio {
+    color: var(--ag-on-surface-variant);
+    margin: 0;
+}
+
+.admin-vazio {
+    padding: 24px;
+    text-align: center;
+}
+
+.admin-tabela-area {
+    overflow-x: auto;
+}
+
+.admin-tabela {
+    border-collapse: collapse;
+    min-width: 1080px;
+    width: 100%;
+}
+
+.admin-tabela th,
+.admin-tabela td {
+    border-top: 1px solid var(--ag-outline-variant);
+    padding: 14px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-tabela th {
+    background: var(--ag-campo);
+    color: var(--ag-on-surface-variant);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+}
+
+.admin-tabela tbody tr:hover {
+    background: var(--ag-campo);
+}
+
+.admin-tabela td > span {
+    color: var(--ag-on-surface-variant);
+    display: block;
+    font-size: 0.82rem;
+    margin-top: 4px;
+}
+
+.admin-tabela select,
+.admin-tabela input {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-lg);
+    color: var(--ag-on-surface);
+    min-height: 38px;
+    padding: 0 10px;
+    width: 100%;
+}
+
+.admin-tabela td:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-acesso-info {
+    display: grid;
+    flex-basis: 100%;
+    gap: 2px;
+}
+
+.admin-acesso-info strong {
+    font-size: 0.88rem;
+}
+
+.admin-prazo-acesso {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 86px minmax(150px, 1fr);
+    width: 100%;
+}
+
+.admin-prazo-acesso input {
+    min-width: 0;
+}
+
+.admin-status {
+    border-radius: var(--ag-radius-full);
+    display: inline-flex;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+}
+
+.admin-status-em_dia {
+    background: var(--ag-campo);
+    color: var(--ag-primary-container);
+}
+
+.admin-status-bloqueado,
+.admin-status-atrasado {
+    background: color-mix(in srgb, var(--ag-error) 8%, var(--ag-surface-lowest));
+    color: var(--ag-error);
+}
+
+.admin-status-usando_sem_pagar {
+    background: var(--ag-secondary-fixed);
+    color: var(--ag-secondary);
+}
+
+.admin-status-sem_uso {
+    background: var(--ag-campo);
+    color: var(--ag-on-surface-variant);
+}
+
+.admin-modal-fundo {
+    align-items: center;
+    background: var(--ag-overlay);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 18px;
+    position: fixed;
+    z-index: 50;
+}
+
+.admin-modal {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-2xl);
+    box-shadow: var(--ag-shadow-1);
+    display: grid;
+    gap: 14px;
+    max-height: 92vh;
+    max-width: 560px;
+    overflow: auto;
+    padding: 22px;
+    width: min(100%, 560px);
+}
+
+.admin-modal-topo {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.admin-modal-topo span {
+    color: var(--ag-primary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.admin-modal-topo h2 {
+    margin: 4px 0 0;
+}
+
+.admin-modal-fechar {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-2xl);
+    cursor: pointer;
+    font-weight: 700;
+    min-height: 36px;
+    padding: 0 12px;
+}
+
+.admin-modal label,
+.admin-modal fieldset {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-modal label,
+.admin-modal legend {
+    color: var(--ag-on-surface);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.admin-modal input {
+    background: var(--ag-surface-lowest);
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-2xl);
+    color: var(--ag-on-surface);
+    font: inherit;
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.admin-modal fieldset {
+    border: 1px solid var(--ag-outline-variant);
+    border-radius: var(--ag-radius-2xl);
+    margin: 0;
+    padding: 14px;
+}
+
+.admin-modal fieldset label {
+    align-items: center;
+    display: flex;
+    gap: 9px;
+}
+
+.admin-modal fieldset input {
+    min-height: auto;
+}
+
+.admin-modal-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 860px) {
+    .admin-topo {
+        flex-direction: column;
+    }
+
+    .admin-topo-acoes {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .admin-resumo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-tabela-cabecalho,
+    .admin-tabela-ferramentas {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-tabela-cabecalho {
+        flex-direction: column;
+    }
+}

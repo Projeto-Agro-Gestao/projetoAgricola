@@ -23,11 +23,13 @@ import java.util.List;
 public class ColaboracaoController {
 
     private final ColaboracaoService colaboracaoService;
+    private final br.com.fluxocaixa.agricola.PermissoesAgroService permissoes;
 
     public ColaboracaoController(
-            ColaboracaoService colaboracaoService) {
+            ColaboracaoService colaboracaoService, br.com.fluxocaixa.agricola.PermissoesAgroService permissoes) {
 
         this.colaboracaoService = colaboracaoService;
+        this.permissoes = permissoes;
     }
 
     @GetMapping("/produtor/dashboard")
@@ -41,7 +43,9 @@ public class ColaboracaoController {
     public List<PropriedadeRuralResponse> listarPropriedades(
             @PathVariable Long empresaId) {
 
-        return colaboracaoService.listarPropriedades(empresaId);
+        var props = colaboracaoService.listarPropriedades(empresaId);
+        var permitidas = permissoes.propriedadesPermitidas(empresaId);
+        return permitidas.isEmpty() ? props : props.stream().filter(p -> permitidas.get().contains(p.id())).toList();
     }
 
     @PostMapping("/propriedades")

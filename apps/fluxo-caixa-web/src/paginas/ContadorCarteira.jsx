@@ -1,9 +1,11 @@
 import {
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react'
 import { useNavigate } from 'react-router'
+import { obterPeriodoFinanceiro, salvarPeriodoFinanceiro, periodoValido } from '../servicos/periodoFinanceiro.js'
 import { API_BASE_URL as API_URL } from '../config.js'
 import './ContadorCarteira.css'
 import { apiFetch } from '../servicos/api.js'
@@ -152,6 +154,7 @@ const REFERENCIAS_TRIBUTARIAS = {
 }
 
 function formatarDinheiro(valor) {
+    if (valor == null || !Number.isFinite(Number(valor))) return 'Não disponível'
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -220,6 +223,9 @@ function referenciaTributaria(regime) {
 function ContadorCarteira() {
     const navigate = useNavigate()
     const [sessao] = useState(obterSessao)
+    const [periodo, setPeriodo] = useState(() => obterPeriodoFinanceiro(sessao?.usuario?.empresaId))
+    const consultaCliente = useRef(0)
+    const regimeFormulario = useRef(null)
     const [clientes, setClientes] = useState([])
     const [clienteSelecionado, setClienteSelecionado] = useState(null)
     const [pendencias, setPendencias] = useState([])
@@ -392,11 +398,7 @@ function ContadorCarteira() {
             return
         }
 
-        setCarregando(true)
-        setErro('')
-
-        try {
-            const dados = await requisicaoJson(`${API_URL}/contador/clientes`)
+        return requisicaoJson(`${API_URL}/contador/clientes`).then((dados) => {
             const fallbackProprio = clienteDaSessao(sessao)
             const lista =
                 dados.length > 0
@@ -418,7 +420,7 @@ function ContadorCarteira() {
             if (lista.length > 0 && !clienteSelecionado) {
                 setClienteSelecionado(lista[0])
             }
-        } catch (error) {
+        }).catch((error) => {
             const fallbackProprio = clienteDaSessao(sessao)
 
             if (fallbackProprio) {
@@ -436,9 +438,9 @@ function ContadorCarteira() {
                     error.message || 'Nao foi possivel carregar a carteira.',
                 )
             }
-        } finally {
+        }).finally(() => {
             setCarregando(false)
-        }
+        })
     }
 
     async function carregarCliente(cliente) {
@@ -446,12 +448,11 @@ function ContadorCarteira() {
             return
         }
 
-        setClienteSelecionado(cliente)
-        setErro('')
-        setMensagem('')
-        setCarregandoCliente(true)
+        if (!periodoValido(periodo)) return
+        const consultaAtual = ++consultaCliente.current
 
         const base = `${API_URL}/contador/clientes/${cliente.empresaId}`
+        const datas = new URLSearchParams(periodo)
         const buscar = (nome, url) =>
             requisicaoJson(url)
                 .then((dados) => ({
@@ -465,18 +466,20 @@ function ContadorCarteira() {
                     erro: error,
                 }))
 
-        try {
-            const resultados = await Promise.all([
+        return Promise.all([
                 buscar('pendencias', `${base}/pendencias`),
                 buscar('documentos', `${base}/documentos`),
-                buscar('visao', `${base}/visao-tributaria`),
-                buscar('dashboardFiscal', `${base}/dashboard-contabil`),
-                buscar('movimentacoes', `${base}/movimentacoes-fiscais`),
+                buscar('visao', `${base}/visao-tributaria?${datas}`),
+                buscar('dashboardFiscal', `${base}/dashboard-contabil?${datas}`),
+                buscar('movimentacoes', `${base}/movimentacoes-fiscais?${datas}`),
                 buscar('classificacoes', `${base}/classificacoes-contabeis`),
                 buscar('regimes', `${base}/regimes-tributarios`),
                 buscar('parametros', `${base}/parametros-tributarios`),
                 buscar('simulacao', `${base}/simulacao-tributaria`),
-            ])
+            ]).then((resultados) => {
+            if (consultaAtual !== consultaCliente.current) return
+            setErro('')
+            setMensagem('')
             const porNome = Object.fromEntries(
                 resultados.map((resultado) => [resultado.nome, resultado]),
             )
@@ -488,6 +491,32 @@ function ContadorCarteira() {
             setMovimentacoes(porNome.movimentacoes.dados ?? [])
             setClassificacoes(porNome.classificacoes.dados ?? [])
             setRegimes(porNome.regimes.dados ?? [])
+            const regimeCarregado = (porNome.regimes.dados ?? []).find((item) => item.situacao === 'ATIVO') ?? porNome.regimes.dados?.[0]
+            const chaveRegime = `${cliente.empresaId}-${regimeCarregado?.id}`
+            if (regimeCarregado?.regime && regimeFormulario.current !== chaveRegime) {
+                regimeFormulario.current = chaveRegime
+                setFormRegime((atual) => ({
+            ...atual,
+            regime: regimeCarregado.regime,
+            dataInicio:
+                regimeCarregado.dataInicio ?? atual.dataInicio,
+            competencia:
+                regimeCarregado.competencia ||
+                atual.competencia ||
+                hojeCompetencia(),
+            observacao:
+                atual.observacao || regimeCarregado.observacao || '',
+        }))
+        setFormParametro((atual) => ({
+            ...atual,
+            regime: regimeCarregado.regime,
+            competencia:
+                regimeCarregado.competencia ||
+                atual.competencia ||
+                hojeCompetencia(),
+        }))
+            }
+
             setParametros(porNome.parametros.dados ?? [])
             setSimulacao(porNome.simulacao.dados)
 
@@ -533,11 +562,11 @@ function ContadorCarteira() {
                     'Cliente selecionado. Alguns detalhes fiscais nao carregaram, mas os dados principais foram mantidos na tela.',
                 )
             }
-        } catch (error) {
-            setErro(error.message || 'Nao foi possivel carregar o cliente.')
-        } finally {
-            setCarregandoCliente(false)
-        }
+        }).catch((error) => {
+            if (consultaAtual === consultaCliente.current) setErro(error.message || 'Nao foi possivel carregar o cliente.')
+        }).finally(() => {
+            if (consultaAtual === consultaCliente.current) setCarregandoCliente(false)
+        })
     }
 
     function abrirLista(filtroLista, abaDestino = 'MOVIMENTACOES') {
@@ -956,35 +985,10 @@ function ContadorCarteira() {
         if (clienteSelecionado) {
             carregarCliente(clienteSelecionado)
         }
+        return () => { consultaCliente.current += 1 }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [clienteSelecionado?.empresaId])
+    }, [clienteSelecionado?.empresaId, periodo.dataInicial, periodo.dataFinal])
 
-    useEffect(() => {
-        if (!regimeAtual?.regime) {
-            return
-        }
-
-        setFormRegime((atual) => ({
-            ...atual,
-            regime: regimeAtual.regime,
-            dataInicio:
-                regimeAtual.dataInicio ?? atual.dataInicio,
-            competencia:
-                regimeAtual.competencia ||
-                atual.competencia ||
-                hojeCompetencia(),
-            observacao:
-                atual.observacao || regimeAtual.observacao || '',
-        }))
-        setFormParametro((atual) => ({
-            ...atual,
-            regime: regimeAtual.regime,
-            competencia:
-                regimeAtual.competencia ||
-                atual.competencia ||
-                hojeCompetencia(),
-        }))
-    }, [regimeAtual?.id])
 
     if (!sessao) {
         return null
@@ -1025,6 +1029,13 @@ function ContadorCarteira() {
                     <div className="contador-carteira-sucesso">{mensagem}</div>
                 )}
 
+                <section className="ag-periodo-compartilhado" aria-label="Período financeiro e fiscal">
+                    <label>De<input type="date" value={periodo.dataInicial} onChange={(e) => setPeriodo({ ...periodo, dataInicial: e.target.value })} /></label>
+                    <label>Até<input type="date" value={periodo.dataFinal} onChange={(e) => setPeriodo({ ...periodo, dataFinal: e.target.value })} /></label>
+                    <p>Financeiro e fiscal usam as movimentações reais do cliente neste período.</p>
+                    {!periodoValido(periodo) && <p role="alert">Informe datas válidas, com início anterior ou igual ao fim.</p>}
+                    {exibindoVisaoPropria && <button type="button" disabled={!periodoValido(periodo)} onClick={() => { salvarPeriodoFinanceiro(sessao.usuario.empresaId, periodo); navigate('/dashboard/financeiro') }}>Ver no financeiro</button>}
+                </section>
                 <section className="contador-carteira-filtros">
                     {[
                         ['TODOS', 'Todos', 'done_all'],
@@ -1090,7 +1101,7 @@ function ContadorCarteira() {
                                                 : ''
                                         }
                                         type="button"
-                                        onClick={() => carregarCliente(cliente)}
+                                        onClick={() => { consultaCliente.current += 1; setCarregandoCliente(true); setClienteSelecionado(cliente) }}
                                     >
                                         <span className="contador-empresa-identidade">
                                             <strong>{cliente.empresaNome}</strong>

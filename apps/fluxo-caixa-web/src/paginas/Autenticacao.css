@@ -1237,3 +1237,16 @@
     cursor: pointer;
 }
 .ag-cad-isento input { width: 15px; height: 15px; accent-color: var(--ag-primary); cursor: pointer; }
+
+.ag-auth-fundo { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: #102e20; }
+.ag-auth-fundo > img,.ag-auth-fundo > video,.ag-auth-contraste { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ag-auth-contraste { background: linear-gradient(120deg,rgba(4,24,13,.78),rgba(7,33,22,.45),rgba(4,24,13,.75)); }
+
+.ag-auth-premium.ag-login { position: relative; isolation: isolate; background: #102e20; }
+.ag-auth-premium .ag-login-main { background: transparent; }
+.ag-auth-premium .ag-login-grid { display: block; max-width: 520px; margin: auto; }
+.ag-auth-premium .ag-login-institucional { display: none; }
+.ag-auth-premium .ag-login-card-form { background: rgba(250,255,251,.91); border: 1px solid rgba(255,255,255,.6); backdrop-filter: blur(20px); box-shadow: 0 24px 80px rgba(0,0,0,.25); }
+.ag-auth-video-controle { position: relative; display: block; margin: 16px auto; padding: 10px 16px; color: #fff; background: rgba(5,30,17,.85); border: 1px solid rgba(255,255,255,.6); border-radius: 20px; cursor: pointer; font: inherit; }
+.ag-auth-video-controle:focus-visible { outline: 3px solid #d9b35b; outline-offset: 3px; }
+@supports not (backdrop-filter:blur(1px)) { .ag-auth-premium .ag-login-card-form { background: #fafffb; } }

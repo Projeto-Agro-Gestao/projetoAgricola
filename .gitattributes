@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Preserve original bytes and SHA-256 of recovered historical sources.
+docs/recuperacao-local-20261005-07/** -text
