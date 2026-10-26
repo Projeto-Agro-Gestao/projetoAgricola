@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import CabecalhoPublico from './componentes/CabecalhoPublico.jsx'
 import RodapePublico from './componentes/RodapePublico.jsx'
 import Revelar from './componentes/Revelar.jsx'
+import VideoCampo from './componentes/VideoCampo.jsx'
 import './App.css'
 
 // Ícone Material Symbols Outlined (webfont carregada em index.css).
@@ -84,7 +85,8 @@ function PaginaInicial() {
 
             <main className="ag-main">
                 {/* SEÇÃO 1 — HERO */}
-                <section className="ag-secao ag-secao-lowest ag-hero">
+                <section className="ag-secao ag-secao-lowest ag-hero ag-hero-com-video">
+                    <VideoCampo />
                     <div className="ag-container ag-hero-grid">
                         <Revelar className="ag-hero-texto">
                             <span className="ag-badge">
